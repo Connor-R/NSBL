@@ -1,58 +1,10 @@
 from py_db import db
+import NSBL_helpers as helper
 
 # Re-computes the advanced standings metrics and writes it to the db
 
 db = db('NSBL')
 
-mascot_names = {
-    "ANA": "Angels",
-    "ARI": "Diamondbacks",
-    "ATL": "Braves",
-    "AZ": "Diamondbacks",
-    "AZD": "Diamondbacks",
-    "BAL": "Orioles",
-    "BOS": "Red Sox",
-    "CHA": "White Sox",
-    "CHC": "Cubs",
-    "CHN": "Cubs",
-    "CIN": "Reds",
-    "CLE": "Indians",
-    "CLV": "Indians",
-    "COL": "Rockies",
-    "CWS": "White Sox",
-    "DET": "Tigers",
-    "FLA": "Marlins",
-    "FLO": "Marlins",
-    "HOU": "Astros",
-    "KC": "Royals",
-    "KCR": "Royals",
-    "LA": "Dodgers",
-    "LAA": "Angels",
-    "LAD": "Dodgers",
-    "LAN": "Dodgers",
-    "MIA": "Marlins",
-    "MIL": "Brewers",
-    "MIN": "Twins",
-    "NYA": "Yankees",
-    "NYM": "Mets",
-    "NYN": "Mets",
-    "NYY": "Yankees",
-    "OAK": "Athletics",
-    "PHI": "Phillies",
-    "PIT": "Pirates",
-    "SD": "Padres",
-    "SDP": "Padres",
-    "SEA": "Mariners",
-    "SF": "Giants",
-    "SFG": "Giants",
-    "STL": "Cardinals",
-    "TAM": "Rays",
-    "TB": "Rays",
-    "TBR": "Rays",
-    "TEX": "Rangers",
-    "TOR": "Blue Jays",
-    "WAS": "Nationals"
-}
 
 def process():
     table = 'processed_advanced_standings'
@@ -75,7 +27,7 @@ FROM processed_WAR_team
     for team in team_WAR_list:
         year, team_abb, dWAR, oWAR, repWAR, FIP_WAR, ERA_WAR = team
 
-        mascot_name = mascot_names.get(team_abb.upper())
+        mascot_name = helper.get_mascot_names(team_abb.upper())
 
         #a full season is ~17 replacement wins?
         repWAR = float(repWAR)

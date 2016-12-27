@@ -33,6 +33,11 @@ GROUP BY team_abb
         db.insertRowDict(entries, 'processed_WAR_team', replace=True, insertMany=True, rid=0)
     db.conn.commit()
 
+    # # used for debugging
+    # for e in entries:
+    #     print e
+    #     raw_input("")
+
 
 def team_war(team_abb, year):
     entry = {}

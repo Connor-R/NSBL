@@ -9,39 +9,6 @@ import csv
 db = db('NSBL')
 
 
-team_abbreviations =[
-    {"ANGELS":("ANA", "LAA", "", "")},
-    {"ASTROS":("HOU", "", "", "")},
-    {"ATHLETICS":("OAK", "", "", "")},
-    {"BLUE JAYS":("TOR", "", "", "")},
-    {"BRAVES":("ATL", "", "", "")},
-    {"BREWERS":("MIL", "", "", "")},
-    {"CARDINALS":("STL", "", "", "")},
-    {"CUBS":("CHC", "CHN", "", "")},
-    {"DIAMONDBACKS":("ARI", "AZ", "AZD", "")},
-    {"DODGERS":("LA", "LAD", "LAN", "")},
-    {"GIANTS":("SF", "SFG", "", "")},
-    {"INDIANS":("CLE", "CLV", "", "")},
-    {"MARINERS":("SEA", "", "", "")},
-    {"MARLINS":("FLA", "FLO", "MIA", "")},
-    {"METS":("NYM", "NYN", "", "")},
-    {"NATIONALS":("WAN", "WAS", "", "")},
-    {"ORIOLES":("BAL", "BALT", "", "")},
-    {"PADRES":("SAN", "SD", "SDP", "")},
-    {"PHILLIES":("PHI", "", "", "")},
-    {"PIRATES":("PIT", "", "", "")},
-    {"RANGERS":("TEX", "", "", "")},
-    {"RAYS":("TAM", "TB", "TBA", "TBR")},
-    {"RED SOX":("BOS", "", "", "")},
-    {"REDS":("CIN", "", "", "")},
-    {"ROCKIES":("COL", "", "", "")},
-    {"ROYALS":("KC", "KCR", "", "")},
-    {"TIGERS":("DET", "", "", "")},
-    {"TWINS":("MIN", "", "", "")},
-    {"WHITE SOX":("CHA", "CHW", "CWS", "")},
-    {"YANKEES":("NYA", "NYY", "", "")}
-    ]
-
 def process(year, path):
     for league in ('A', 'N'):
         if league == 'A':

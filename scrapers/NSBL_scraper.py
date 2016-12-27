@@ -3,6 +3,7 @@ from py_db import db
 from bs4 import BeautifulSoup
 from time import sleep # be nice
 import re
+import NSBL_helpers as helper
 
 # Scrapes the various statistics from each team home page and writes the data to a MySQL db
 
@@ -10,41 +11,6 @@ db = db('NSBL')
 
 base_url = "http://thensbl.com/"
 year = 2017
-
-team_abb_dict = {
-"Baltimore Orioles": "Bal",
-"Boston Red Sox": "Bos",
-"New York Yankees": "NYA",
-"Tampa Bay Rays": "Tam",
-"Toronto Blue Jays": "Tor",
-"Chicago White Sox": "ChA",
-"Cleveland Indians": "Cle",
-"Detroit Tigers": "Det",
-"Kansas City Royals": "KC",
-"Minnesota Twins": "Min",
-"Houston Astros": "Hou",
-"Los Angeles Angels of Anaheim": "LAA",
-"Oakland Athletics": "Oak",
-"Seattle Mariners": "Sea",
-"Texas Rangers": "Tex",
-"Atlanta Braves": "Atl",
-"Miami Marlins": "Mia",
-"New York Mets": "NYN",
-"Philadelphia Phillies": "Phi",
-"Washington Nationals": "Was",
-"Chicago Cubs": "ChN",
-"Cincinnati Reds": "Cin",
-"Milwaukee Brewers": "Mil",
-"Pittsburgh Pirates": "Pit",
-"St. Louis Cardinals": "StL",
-"Arizona Diamondbacks": "Ari",
-"Colorado Rockies": "Col",
-"Los Angeles Dodgers": "LAN",
-"San Diego Padres": "SD",
-"San Francisco Giants": "SF",
-"Florida Marlins": "Mia",
-}
-
 
 
 def initiate():
@@ -61,8 +27,8 @@ def initiate():
             html_ind = urllib2.urlopen(url_index)
             soup_ind = BeautifulSoup(html_ind,"lxml")
             team_name = soup_ind.title.get_text()
-            team_abb = team_abb_dict.get(team_name)
-            print str(team_id) + " - " + team_name
+            team_abb = helper.get_team_abb(team_name)
+            print str(team_id) + " - " + team_name + " - " + team_abb
             team_entry = {"year":year,"team_id":team_id, "team_name": team_name, "team_abb": team_abb}
             team_table = "teams"
             db.insertRowDict(team_entry, team_table, insertMany=False, rid=0, replace=False)

@@ -1,123 +1,18 @@
 from py_db import db
 import argparse
 from decimal import Decimal
-
+import NSBL_helpers as helper
 
 # Goes through the list of projected offensive players, and cycles through all 9 positions (including DH). if the position exists, it writes a row. if not, it doesn't.
 
 
 db = db('NSBL')
-park_factors = {
-    "ANA":98.33,
-    "LAA":98.33,
-    "HOU":98.33,
-    "OAK":100,
-    "TOR":99,
-    "ATL":99.67,
-    "MIL":101,
-    "STL":99.33,
-    "CHC":100.67,
-    "CHN":100.67,
-    "ARI":101.33,
-    "AZ":101.33,
-    "AZD":101.33,
-    "LA":98.67,
-    "LAD":98.67,
-    "LAN":98.67,
-    "SF":97.67,
-    "SFG":97.67,
-    "CLE":99,
-    "CLV":99,
-    "SEA":99,
-    "FLA":100.33,
-    "FLO":100.33,
-    "MIA":100.33,
-    "NYM":98.33,
-    "NYN":98.33,
-    "WAN":100,
-    "WAS":100,
-    "BAL":100.67,
-    "BALT":100.67,
-    "SAN":98,
-    "SD":98,
-    "SDP":98,
-    "PHI":100,
-    "PIT":99,
-    "TEX":102,
-    "TAM":98.33,
-    "TB":98.33,
-    "TBA":98.33,
-    "TBR":98.33,
-    "BOS":101.33,
-    "CIN":100.33,
-    "COL":105.67,
-    "KC":100.33,
-    "KCR":100.33,
-    "DET":100.67,
-    "MIN":100.33,
-    "CHA":101.33,
-    "CHW":101.33,
-    "CWS":101.33,
-    "NYA":101,
-    "NYY":101,
-    "NONE":100,
-    "":100,
-}
-
-pos_adj = {
-    "P":60.0,
-    "C":12.5,
-    "1B":-12.5,
-    "2B":2.5,
-    "3B":2.5,
-    "SS":7.5,
-    "LF":-7.5,
-    "CF":2.5,
-    "RF":-7.5,
-    "DH":-17.5,
-    "PH":-17.5,
-    "IF":2.5,
-    "":0
-}
-
-# [range, error, arm, passed ball]
-pos_formula = {
-    "P":[0.0,0.0,0.0,0.0],
-    "C":[2.0,0.0,2.33,1.0],
-    "1B":[9.46,7.78,0.0,0.0],
-    "2B":[7.92,14.06,0.0,0.0],
-    "3B":[15.25,14.22,0.0,0.0],
-    "SS":[6.83,19.61,0.0,0.0],
-    "LF":[15.46,5.94,5.17,0.0],
-    "CF":[15.46,6.39,8.0,0.0],
-    "RF":[15.75,6.44,6.83,0.0],
-    "DH":[0.0,0.0,0.0,0.0]
-}
 
 def process(year):
     calculate_war(year)
 
     # for year in range(2011,2017):
     #     calculate_war(year)
-
-def get_league_avg(year, category):
-    yr = year-1
-    q = """SELECT
-pa,
-r,
-(h+bb+hbp)/pa as obp,
-(1b + 2*2b + 3*3b + 4*hr)/ab as slg,
-woba
-FROM processed_league_averages_hitting
-WHERE year = %s
-"""
-    qry = q % yr
-    query = db.query(qry)[0]
-    lg_pa, lg_r, lg_obp, lg_slg, lg_woba = query
-    avgs = {"lg_pa":lg_pa, "lg_r":lg_r, "lg_obp":lg_obp, "lg_slg":lg_slg, "lg_woba":lg_woba}
-
-    return avgs.get(category)
-
 
 
 def get_zips_def_ratings(search_name, position, year):
@@ -192,7 +87,7 @@ WHERE player_name = '%s'"""
         else:
             num_arm = 0
 
-        weights = pos_formula.get(pos)
+        weights = helper.get_pos_formula(pos)
 
         rn_val = weights[0]*num_rn
         #100 is average error rating. we want the amount above/below this number
@@ -220,13 +115,13 @@ FROM zips_offense_%s
         pa = ab+bb+hbp+sh+sf
 
         team_abb = team_abb.upper()
-        pf = float(park_factors.get(team_abb))/float(100)
+        pf = float(helper.get_park_factors(team_abb))/float(100)
         
         wOBA = ((0.691*bb + 0.722*hbp + 0.884*_1b + 1.257*_2b + 1.593*_3b + 2.058*hr + 0.2*sb - 0.398*cs)/(pa))
         
         park_wOBA = wOBA/pf 
 
-        lg_woba = float(get_league_avg(year,'lg_woba'))
+        lg_woba = float(helper.get_league_average_hitters(year-1,'lg_woba'))
 
         # offensive runs added per 600 PA
         raa = 600*((park_wOBA-lg_woba)/1.25)
@@ -247,8 +142,7 @@ FROM zips_offense_%s
                 #defensive runs added per 600 pa
                 defense = 600*(rn_val + err_val + arm_val + pb_val)/700
 
-                position_adj = float(pos_adj.get(pos.upper()))
-               
+                position_adj = float(helper.get_pos_adj(pos.upper()))
 
                 dWAR = (defense+position_adj)/10.0
 
@@ -278,6 +172,10 @@ FROM zips_offense_%s
         db.insertRowDict(entries, table, replace=True, insertMany=True, rid=0)
     db.conn.commit()
 
+    # # used for debugging
+    # for e in entries:
+    #     print e
+    #     raw_input("")
 
 
 if __name__ == "__main__":        

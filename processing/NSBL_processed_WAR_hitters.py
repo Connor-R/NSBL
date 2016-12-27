@@ -110,7 +110,10 @@ AND year = %s
         db.insertRowDict(entries, table, replace=True, insertMany=True, rid=0)
     db.conn.commit()
 
-
+    # # used for debugging
+    # for e in entries:
+    #     print e
+    #     raw_input("")
 
 
 

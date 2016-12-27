@@ -4,6 +4,8 @@ from bs4 import BeautifulSoup
 import argparse
 from time import sleep # be nice
 import re
+import NSBL_helpers as helper
+
 
 # Scrapes the yearly registers from the home page and writes the data to a MySQL db
 
@@ -12,38 +14,6 @@ db = db('NSBL')
 base_url = "http://thensbl.com/"
 end_year = 2017
 
-team_names = {
-    "Baltimore": "Baltimore Orioles",
-    "Tampa Bay": "Tampa Bay Rays",
-    "New York (A)": "New York Yankees",
-    "Toronto": "Toronto Blue Jays",
-    "Boston": "Boston Red Sox",
-    "Minnesota": "Minnesota Twins",
-    "Detroit": "Detroit Tigers",
-    "Chicago (A)": "Chicago White Sox",
-    "Cleveland": "Cleveland Indians",
-    "Kansas City": "Kansas City Royals",
-    "Seattle": "Seattle Mariners",
-    "Texas": "Texas Rangers",
-    "Oakland": "Oakland Athletics",
-    "Los Angeles (A)": "Los Angeles Angels",
-    "Houston": "Houston Astros",
-    "New York (N)": "New York Mets",
-    "Miami": "Miami Marlins",
-    "Atlanta": "Atlanta Braves",
-    "Washington": "Washington Nationals",
-    "Philadelphia": "Philadelphia Phillies",
-    "Pittsburgh": "Pittsburgh Pirates",
-    "Cincinnati": "Cincinnati Reds",
-    "St. Louis": "St. Louis Cardinals",
-    "Chicago (N)": "Chicago Cubs",
-    "Milwaukee": "Milwaukee Brewers",
-    "Colorado": "Colorado Rockies",
-    "San Diego": "San Diego Padres",
-    "Los Angeles (N)": "Los Angeles Dodgers",
-    "San Francisco": "San Francisco Giants",
-    "Arizona": "Arizona Diamondbacks",
-}
 
 # We want to make sure that the season is valid before trying to grab the data
 def initiate(current):
@@ -130,7 +100,8 @@ def input_data(ratings, sql_table, cats, year):
         if entry.get("player_name") not in ('Total', None, '', 'Other'):
             entries.append(entry)
         elif entry.get("team_name") not in ('Total', None, '', 'Other'):
-            full_name = team_names.get(entry.get("team_name"))
+
+            full_name = helper.get_team_name(entry.get("team_name"))
             entry['team_name'] = full_name
             entries.append(entry)
 
@@ -138,7 +109,7 @@ def input_data(ratings, sql_table, cats, year):
         db.insertRowDict(entries, sql_table, insertMany=True, rid=0, replace=True)
     db.conn.commit() 
 
-    # # used for debugging
+    # used for debugging
     # if entries != []:
     #     for entry in entries[0:30]:
     #         print '\t\t',

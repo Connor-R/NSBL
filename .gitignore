@@ -1,5 +1,6 @@
 .DS_Store
 *.csv
 *.png
+*.pyc
 *.xls
 /db_backups

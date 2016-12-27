@@ -281,6 +281,11 @@ AND team_abb not in ('', '%s');
         db.insertRowDict(entries, 'register_pitching_primary', replace=True, insertMany=True, rid=0)
     db.conn.commit()
 
+    # # used for debugging
+    # for e in entries:
+    #     print e
+    #     raw_input("")
+    
 
 if __name__ == "__main__":        
     parser = argparse.ArgumentParser()

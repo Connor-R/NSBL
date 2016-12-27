@@ -1,6 +1,7 @@
 from py_db import db
 import argparse
 import csv
+import NSBL_helpers as helper
 
 
 # Takes in a year range and team name, and writes out 6 csvs (primary hitting/pitching, advanced hitting/pitching, draft picks, free agents)
@@ -9,45 +10,9 @@ import csv
 db = db('NSBL')
 
 
-team_abbreviations =[
-    {"ANGELS":("ANA", "LAA", "", "")},
-    {"ASTROS":("HOU", "", "", "")},
-    {"ATHLETICS":("OAK", "", "", "")},
-    {"BLUE JAYS":("TOR", "", "", "")},
-    {"BRAVES":("ATL", "", "", "")},
-    {"BREWERS":("MIL", "", "", "")},
-    {"CARDINALS":("STL", "", "", "")},
-    {"CUBS":("CHC", "CHN", "", "")},
-    {"DIAMONDBACKS":("ARI", "AZ", "AZD", "")},
-    {"DODGERS":("LA", "LAD", "LAN", "")},
-    {"GIANTS":("SF", "SFG", "", "")},
-    {"INDIANS":("CLE", "CLV", "", "")},
-    {"MARINERS":("SEA", "", "", "")},
-    {"MARLINS":("FLA", "FLO", "MIA", "")},
-    {"METS":("NYM", "NYN", "", "")},
-    {"NATIONALS":("WAN", "WAS", "", "")},
-    {"ORIOLES":("BAL", "BALT", "", "")},
-    {"PADRES":("SAN", "SD", "SDP", "")},
-    {"PHILLIES":("PHI", "", "", "")},
-    {"PIRATES":("PIT", "", "", "")},
-    {"RANGERS":("TEX", "", "", "")},
-    {"RAYS":("TAM", "TB", "TBA", "TBR")},
-    {"RED SOX":("BOS", "", "", "")},
-    {"REDS":("CIN", "", "", "")},
-    {"ROCKIES":("COL", "", "", "")},
-    {"ROYALS":("KC", "KCR", "", "")},
-    {"TIGERS":("DET", "", "", "")},
-    {"TWINS":("MIN", "", "", "")},
-    {"WHITE SOX":("CHA", "CHW", "CWS", "")},
-    {"YANKEES":("NYA", "NYY", "", "")}
-    ]
-
 def process(team_name, start_year, end_year, path):
-    team_abbs = []
-    for i in team_abbreviations:
-        if i.keys()[0] == team_name.upper():
-            team_abbs = i.get(team_name.upper())
-    ta = team_abbs[0]
+
+    team_abbs, ta = helper.get_team_abbs(team_name)
 
     prim_hit_q = """
 SELECT 
@@ -278,7 +243,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--team',default='white sox' )
-    parser.add_argument('--start_year',default=2006 )
+    parser.add_argument('--start_year',default=2004 )
     parser.add_argument('--end_year',default=2017 )
     parser.add_argument('--path',default='/Users/connordog/Desktop/')    
     args = parser.parse_args()
