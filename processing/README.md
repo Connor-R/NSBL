@@ -1,2 +1,2 @@
-# NSBL/db_backups
-Scripts to process the data after it has been scraped
+# NSBL/processing
+Scripts for post-processing after the data has been scraped
