@@ -9,10 +9,10 @@ import NSBL_helpers as helper
 db = db('NSBL')
 
 def process(year):
-    calculate_war(year)
+    # calculate_war(year)
 
-    # for year in range(2011,2017):
-    #     calculate_war(year)
+    for year in range(2011,2017):
+        calculate_war(year)
 
 
 def calculate_war(year):
@@ -70,6 +70,7 @@ FROM zips_pitching_%s
         ERA = float(era)
         park_ERA, ERA_min, ERA_WAR = helper.get_pitching_metrics(ERA, ip, year-1, pf, g, gs, 'era')
 
+        entry['year'] = year
         entry['player_name'] = player_name
         entry['team_abb'] = team_abb
         entry['pf'] = pf

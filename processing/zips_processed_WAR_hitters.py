@@ -109,7 +109,7 @@ FROM zips_offense_%s
 
     entries = []
     for row in player_list:
-        player_name, team_abb, g, ab, r, h, _2b, _3b, hr, rbi, bb, so, hbp, sb, cs, sh, sf, ibb = row
+        y, player_name, team_abb, g, ab, r, h, _2b, _3b, hr, rbi, bb, so, hbp, sb, cs, sh, sf, ibb = row
 
         _1b = h-_2b-_3b-hr
         pa = ab+bb+hbp+sh+sf
@@ -149,6 +149,7 @@ FROM zips_offense_%s
                 replacement = 20.0
 
                 entry = {}
+                entry['year'] = year
                 entry['player_name'] = player_name
                 entry['team_abb'] = team_abb
                 entry['position'] = pos

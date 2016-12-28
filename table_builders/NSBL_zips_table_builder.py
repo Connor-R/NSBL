@@ -11,6 +11,7 @@ year = str(2017)
 print year
 q = """
 CREATE TABLE `zips_defense_"""+year+"""` (
+    `year` int(11) NOT NULL,
     `player_name` varchar(50) NOT NULL DEFAULT '',
     `c_range` varchar(5) DEFAULT NULL,
     `c_error` int(5) DEFAULT NULL,
@@ -31,10 +32,11 @@ CREATE TABLE `zips_defense_"""+year+"""` (
     `c_arm` varchar(5) DEFAULT NULL,
     `of_arm` varchar(5) DEFAULT NULL,
     `c_pb` int(5) DEFAULT NULL,
-    PRIMARY KEY (`player_name`)
+    PRIMARY KEY (`year`,`player_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 CREATE TABLE `zips_offense_"""+year+"""` (
+    `year` int(11) NOT NULL,
     `player_name` varchar(50) NOT NULL DEFAULT '',
     `team_abb` varchar(5) NOT NULL DEFAULT '',
     `g` INT(11) DEFAULT NULL,
@@ -53,32 +55,31 @@ CREATE TABLE `zips_offense_"""+year+"""` (
     `sh` INT(11) DEFAULT NULL,
     `sf` INT(11) DEFAULT NULL,
     `ibb` INT(11) DEFAULT NULL,
-    PRIMARY KEY (`player_name`, `team_abb`)
+    PRIMARY KEY (`year`,`player_name`, `team_abb`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 CREATE TABLE `zips_pitching_"""+year+"""` (
+    `year` int(11) NOT NULL,
     `player_name` varchar(50) NOT NULL DEFAULT '',
-    `years` bigint(21) NOT NULL DEFAULT '0',
-    `pa` decimal(32,0) DEFAULT NULL,
-    `ab` decimal(32,0) DEFAULT NULL,
-    `avg` decimal(35,4) DEFAULT NULL,
-    `obp` decimal(35,4) DEFAULT NULL,
-    `slg` decimal(35,4) DEFAULT NULL,
-    `h` decimal(32,0) DEFAULT NULL,
-    `2b` decimal(32,0) DEFAULT NULL,
-    `3b` decimal(32,0) DEFAULT NULL,
-    `hr` decimal(32,0) DEFAULT NULL,
-    `r` decimal(32,0) DEFAULT NULL,
-    `rbi` decimal(32,0) DEFAULT NULL,
-    `hbp` decimal(32,0) DEFAULT NULL,
-    `bb` decimal(32,0) DEFAULT NULL,
-    `k` decimal(32,0) DEFAULT NULL,
-    `sb` decimal(32,0) DEFAULT NULL,
-    `cs` decimal(32,0) DEFAULT NULL
+    `team_abb` varchar(5) NOT NULL DEFAULT '',
+    `w` INT(11) DEFAULT NULL,
+    `l` INT(11) DEFAULT NULL,
+    `era` decimal(32,2) DEFAULT NULL,
+    `g` INT(11) DEFAULT NULL,
+    `gs` INT(11) DEFAULT NULL,
+    `ip` decimal(32,1) DEFAULT NULL,
+    `h` INT(11) DEFAULT NULL,
+    `r` INT(11) DEFAULT NULL,
+    `er` INT(11) DEFAULT NULL,
+    `hr` INT(11) DEFAULT NULL,
+    `bb` INT(11) DEFAULT NULL,
+    `so` INT(11) DEFAULT NULL,
+    PRIMARY KEY (`year`,`player_name`, `team_abb`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
 CREATE TABLE `zips_processed_WAR_hitters_"""+year+"""` (
+    `year` int(11) NOT NULL,
     `player_name` varchar(50) NOT NULL DEFAULT '',
     `team_abb` varchar(5) NOT NULL DEFAULT '',
     `position` VARCHAR(5) NOT NULL DEFAULT '',
@@ -90,10 +91,11 @@ CREATE TABLE `zips_processed_WAR_hitters_"""+year+"""` (
     `rAA` DECIMAL(30,4) DEFAULT NULL,
     `oWAR` DECIMAL (30,2) DEFAULT NULL,
     `WAR` DECIMAL (30,2) DEFAULT NULL,  
-    PRIMARY KEY (`player_name`, `team_abb`,`position`)
+    PRIMARY KEY (`year`,`player_name`, `team_abb`,`position`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 CREATE TABLE `zips_processed_WAR_pitchers_"""+year+"""` (
+    `year` int(11) NOT NULL,
     `player_name` varchar(50) NOT NULL DEFAULT '',
     `team_abb` varchar(5) NOT NULL DEFAULT '',
     `pf` decimal(32,4) DEFAULT NULL,
@@ -110,7 +112,7 @@ CREATE TABLE `zips_processed_WAR_pitchers_"""+year+"""` (
     `park_ERA` DECIMAL(30,4) DEFAULT NULL,
     `ERA_minus` DECIMAL(30,2) DEFAULT NULL,
     `ERA_WAR` DECIMAL(30,3) DEFAULT NULL,
-    PRIMARY KEY (`player_name`, `team_abb`)
+    PRIMARY KEY (`year`,`player_name`, `team_abb`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 """
 
