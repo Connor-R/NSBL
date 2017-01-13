@@ -8,6 +8,8 @@ db = db('NSBL')
 
 
 def build():
+    query = ""
+
     for y in range(2017,2018):
 
         year = str(y)
@@ -121,7 +123,9 @@ def build():
         ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
         """
 
-        db.query(q)
+        query = query+q
+
+    db.query(query)
 
 
 if __name__ == "__main__":        

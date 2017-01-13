@@ -8,13 +8,13 @@ import csv
 db = db("NSBL")
 
 def process():
-    # for year in range(2011,2017):
-    #     for _type in ('offense','pitching','defense'):
-    #         initiate(year, _type)
-
     year = 2017
     for _type in ('offense','pitching','defense'):
         initiate(year, _type)
+    
+    # for year in range(2011,2017):
+    #     for _type in ('offense','pitching','defense'):
+    #         initiate(year, _type)
 
 
 def initiate(year, _type):

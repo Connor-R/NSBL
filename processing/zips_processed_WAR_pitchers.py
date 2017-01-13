@@ -12,6 +12,7 @@ def process(year):
     calculate_war(year)
 
     # for year in range(2011,2017):
+    #     print year
     #     calculate_war(year)
 
 

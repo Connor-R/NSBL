@@ -187,5 +187,5 @@ if __name__ == "__main__":
     parser.add_argument('--year',default=2017)
     args = parser.parse_args()
     
-    process(args.year)
+    process()
     
