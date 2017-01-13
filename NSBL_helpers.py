@@ -18,6 +18,7 @@ def get_team_abb(team_name):
     "Minnesota Twins": "Min",
     "Houston Astros": "Hou",
     "Los Angeles Angels of Anaheim": "LAA",
+    "Los Angeles Angels": "LAA",
     "Oakland Athletics": "Oak",
     "Seattle Mariners": "Sea",
     "Texas Rangers": "Tex",
@@ -37,6 +38,7 @@ def get_team_abb(team_name):
     "San Diego Padres": "SD",
     "San Francisco Giants": "SF",
     "Florida Marlins": "Mia",
+    "World Champion Cardinals": "STL"
     }
 
     team_abb = team_abb_dict.get(team_name)

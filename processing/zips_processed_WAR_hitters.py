@@ -12,6 +12,7 @@ def process(year):
     calculate_war(year)
 
     # for year in range(2011,2017):
+    #     print year
     #     calculate_war(year)
 
 
@@ -44,7 +45,7 @@ WHERE player_name = '%s'"""
     except IndexError:
         rtgs = (0,0,0,0)
 
-    if rtgs[:2] == ('', None):
+    if rtgs[:2] == (None, None):
         rn_val, err_val, arm_val, pb_val = None, None, None, None
 
     else:
@@ -109,7 +110,7 @@ FROM zips_offense_%s
 
     entries = []
     for row in player_list:
-        y, player_name, team_abb, g, ab, r, h, _2b, _3b, hr, rbi, bb, so, hbp, sb, cs, sh, sf, ibb = row
+        y, player_name, team_abb, g, ab, r, h, _2b, _3b, hr, rbi, bb, so, hbp, sb, cs, sh, sf, ibb, foo = row
 
         _1b = h-_2b-_3b-hr
         pa = ab+bb+hbp+sh+sf
@@ -169,9 +170,11 @@ FROM zips_offense_%s
 
 
     table = 'zips_processed_WAR_hitters_%s' % year
+    print table
     if entries != []: 
-        db.insertRowDict(entries, table, replace=True, insertMany=True, rid=0)
-    db.conn.commit()
+        for i in range(0, len(entries), 1000):
+            db.insertRowDict(entries[i:i+1000], table, replace=True, insertMany=True, rid=0)
+        db.conn.commit()
 
     # # used for debugging
     # for e in entries:

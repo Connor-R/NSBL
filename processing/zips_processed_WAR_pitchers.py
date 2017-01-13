@@ -9,10 +9,10 @@ import NSBL_helpers as helper
 db = db('NSBL')
 
 def process(year):
-    # calculate_war(year)
+    calculate_war(year)
 
-    for year in range(2011,2017):
-        calculate_war(year)
+    # for year in range(2011,2017):
+    #     calculate_war(year)
 
 
 def calculate_war(year):
@@ -92,6 +92,7 @@ FROM zips_pitching_%s
 
 
     table = 'zips_processed_WAR_pitchers_%s' % year
+    print table
     if entries != []: 
         db.insertRowDict(entries, table, replace=True, insertMany=True, rid=0)
     db.conn.commit()
@@ -104,7 +105,7 @@ FROM zips_pitching_%s
 
 if __name__ == "__main__":        
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',default=2011)
+    parser.add_argument('--year',default=2017)
     args = parser.parse_args()
     
     process(args.year)
