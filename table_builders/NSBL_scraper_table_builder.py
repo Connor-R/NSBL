@@ -18,6 +18,32 @@ CREATE TABLE `current_rosters` (
 PRIMARY KEY (`year`,`team_id`,`player_name`,`position`,`age`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+-- Create syntax for TABLE 'free_agency_curr'
+CREATE TABLE `free_agency_curr` (
+  `player_name` varchar(50) NOT NULL DEFAULT '',
+  `team` varchar(50) DEFAULT NULL,
+  `position` varchar(50) DEFAULT NULL,
+  `fa_type` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`player_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- Create syntax for TABLE 'free_agency_plus1'
+CREATE TABLE `free_agency_plus1` (
+  `player_name` varchar(50) NOT NULL DEFAULT '',
+  `team` varchar(50) DEFAULT NULL,
+  `position` varchar(50) DEFAULT NULL,
+  `fa_type` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`player_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- Create syntax for TABLE 'free_agency_plus2'
+CREATE TABLE `free_agency_plus2` (
+  `player_name` varchar(50) NOT NULL DEFAULT '',
+  `team` varchar(50) DEFAULT NULL,
+  `position` varchar(50) DEFAULT NULL,
+  `fa_type` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`player_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- Create syntax for TABLE 'ratings_batting'
 CREATE TABLE `ratings_batting` (
