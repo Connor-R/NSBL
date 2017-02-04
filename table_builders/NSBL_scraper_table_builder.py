@@ -10,18 +10,32 @@ db = db('NSBL')
 q = """
 -- Create syntax for TABLE 'current_rosters'
 CREATE TABLE `current_rosters` (
-`year` int(11) NOT NULL,
-`team_id` varchar(32) NOT NULL,
-`player_name`  varchar(50) NOT NULL,
-`position` varchar(5) NOT NULL,
-`age` int(3) NOT NULL,
-PRIMARY KEY (`year`,`team_id`,`player_name`,`position`,`age`)
+  `year` int(11) NOT NULL,
+  `team_id` varchar(32) NOT NULL,
+  `player_name` varchar(50) NOT NULL,
+  `position` varchar(5) NOT NULL,
+  `age` int(3) NOT NULL,
+  PRIMARY KEY (`year`,`team_id`,`player_name`,`position`,`age`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- Create syntax for TABLE 'excel_current_rosters'
+CREATE TABLE `excel_current_rosters` (
+  `player_name` varchar(50) NOT NULL,
+  `team_abb` varchar(50) NOT NULL DEFAULT '',
+  `position` varchar(50) NOT NULL DEFAULT '',
+  `salary` decimal(32,3) NOT NULL,
+  `year` varchar(50) NOT NULL DEFAULT '',
+  `expires` int(12) DEFAULT NULL,
+  `option` varchar(50) DEFAULT NULL,
+  `NTC` varchar(50) DEFAULT NULL,
+  `salary_counted` varchar(50) NOT NULL DEFAULT '',
+  PRIMARY KEY (`team_abb`,`player_name`,`position`,`year`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- Create syntax for TABLE 'free_agency_curr'
 CREATE TABLE `free_agency_curr` (
   `player_name` varchar(50) NOT NULL DEFAULT '',
-  `team` varchar(50) DEFAULT NULL,
+  `team_abb` varchar(50) DEFAULT NULL,
   `position` varchar(50) DEFAULT NULL,
   `fa_type` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`player_name`)
@@ -30,7 +44,7 @@ CREATE TABLE `free_agency_curr` (
 -- Create syntax for TABLE 'free_agency_plus1'
 CREATE TABLE `free_agency_plus1` (
   `player_name` varchar(50) NOT NULL DEFAULT '',
-  `team` varchar(50) DEFAULT NULL,
+  `team_abb` varchar(50) DEFAULT NULL,
   `position` varchar(50) DEFAULT NULL,
   `fa_type` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`player_name`)
@@ -39,7 +53,7 @@ CREATE TABLE `free_agency_plus1` (
 -- Create syntax for TABLE 'free_agency_plus2'
 CREATE TABLE `free_agency_plus2` (
   `player_name` varchar(50) NOT NULL DEFAULT '',
-  `team` varchar(50) DEFAULT NULL,
+  `team_abb` varchar(50) DEFAULT NULL,
   `position` varchar(50) DEFAULT NULL,
   `fa_type` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`player_name`)
