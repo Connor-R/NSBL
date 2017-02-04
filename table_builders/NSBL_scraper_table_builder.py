@@ -37,6 +37,7 @@ CREATE TABLE `free_agency_curr` (
   `player_name` varchar(50) NOT NULL DEFAULT '',
   `team_abb` varchar(50) DEFAULT NULL,
   `position` varchar(50) DEFAULT NULL,
+  `salary` decimal(32,3) DEFAULT NULL,
   `fa_type` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`player_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -46,6 +47,7 @@ CREATE TABLE `free_agency_plus1` (
   `player_name` varchar(50) NOT NULL DEFAULT '',
   `team_abb` varchar(50) DEFAULT NULL,
   `position` varchar(50) DEFAULT NULL,
+  `salary` decimal(32,3) DEFAULT NULL,
   `fa_type` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`player_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -55,6 +57,7 @@ CREATE TABLE `free_agency_plus2` (
   `player_name` varchar(50) NOT NULL DEFAULT '',
   `team_abb` varchar(50) DEFAULT NULL,
   `position` varchar(50) DEFAULT NULL,
+  `salary` decimal(32,3) DEFAULT NULL,
   `fa_type` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`player_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;

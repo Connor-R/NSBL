@@ -47,40 +47,42 @@ def process():
             if team_sheet.cell(row, 1).value == 'Outfielders':
                 position = 'of'
 
+            salary = team_sheet.cell(row, 3).value
+
             reverse_name = team_sheet.cell(row, 1).value
             player_name = name_parser(reverse_name)
 
             if team_sheet.cell(row, 2).value == '6th':
-                entry = {'player_name':player_name, "team":primary_abb, "fa_type":"6th", "position":position}
+                entry = {'player_name':player_name, "team_abb":primary_abb, "fa_type":"6th", "position":position, "salary":salary}
                 entries_curr.append(entry)
 
             if team_sheet.cell(row, 2).value == '5th':
-                entry = {'player_name':player_name, "team":primary_abb, "fa_type":"5th", "position":position}
+                entry = {'player_name':player_name, "team_abb":primary_abb, "fa_type":"5th", "position":position, "salary":salary}
                 entries_plus1.append(entry)
 
             if team_sheet.cell(row, 2).value == '4th':
-                entry = {'player_name':player_name, "team":primary_abb, "fa_type":"4th", "position":position}
+                entry = {'player_name':player_name, "team_abb":primary_abb, "fa_type":"4th", "position":position, "salary":salary}
                 entries_plus2.append(entry)
 
             if team_sheet.cell(row, 4).value == curr_year:
                 if team_sheet.cell(row, 5).value == '':
-                    entry = {'player_name':player_name, "team":primary_abb, "fa_type":str(curr_year), "position":position}
+                    entry = {'player_name':player_name, "team_abb":primary_abb, "fa_type":str(curr_year), "position":position, "salary":salary}
                 else:
-                    entry = {'player_name':player_name, "team":primary_abb, "fa_type":str(curr_year)+"-opt", "position":position}
+                    entry = {'player_name':player_name, "team_abb":primary_abb, "fa_type":str(curr_year)+"-opt", "position":position, "salary":salary}
                 entries_curr.append(entry)
 
             if team_sheet.cell(row, 4).value == curr_year+1:
                 if team_sheet.cell(row, 5).value == '':
-                    entry = {'player_name':player_name, "team":primary_abb, "fa_type":str(curr_year+1), "position":position}
+                    entry = {'player_name':player_name, "team_abb":primary_abb, "fa_type":str(curr_year+1), "position":position, "salary":salary}
                 else:
-                    entry = {'player_name':player_name, "team":primary_abb, "fa_type":str(curr_year+1)+"-opt", "position":position}
+                    entry = {'player_name':player_name, "team_abb":primary_abb, "fa_type":str(curr_year+1)+"-opt", "position":position, "salary":salary}
                 entries_plus1.append(entry)
 
             if team_sheet.cell(row, 4).value == curr_year+2:
                 if team_sheet.cell(row, 5).value == '':
-                    entry = {'player_name':player_name, "team":primary_abb, "fa_type":str(curr_year+2), "position":position}
+                    entry = {'player_name':player_name, "team_abb":primary_abb, "fa_type":str(curr_year+2), "position":position, "salary":salary}
                 else:
-                    entry = {'player_name':player_name, "team":primary_abb, "fa_type":str(curr_year+2)+"-opt", "position":position}
+                    entry = {'player_name':player_name, "team_abb":primary_abb, "fa_type":str(curr_year+2)+"-opt", "position":position, "salary":salary}
                 entries_plus2.append(entry)
 
         if entries_curr != []: 
