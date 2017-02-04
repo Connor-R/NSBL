@@ -146,6 +146,7 @@ def get_team_abbs(team_name):
     {"ASTROS":("HOU", "", "", "")},
     {"ATHLETICS":("OAK", "", "", "")},
     {"BLUE JAYS":("TOR", "", "", "")},
+    {"BLUEJAYS":("TOR", "", "", "")},
     {"BRAVES":("ATL", "", "", "")},
     {"BREWERS":("MIL", "", "", "")},
     {"CARDINALS":("STL", "", "", "")},
@@ -165,12 +166,14 @@ def get_team_abbs(team_name):
     {"RANGERS":("TEX", "", "", "")},
     {"RAYS":("TAM", "TB", "TBA", "TBR")},
     {"RED SOX":("BOS", "", "", "")},
+    {"REDSOX":("BOS", "", "", "")},
     {"REDS":("CIN", "", "", "")},
     {"ROCKIES":("COL", "", "", "")},
     {"ROYALS":("KC", "KCR", "", "")},
     {"TIGERS":("DET", "", "", "")},
     {"TWINS":("MIN", "", "", "")},
     {"WHITE SOX":("CHA", "CHW", "CWS", "")},
+    {"WHITESOX":("CHA", "CHW", "CWS", "")},
     {"YANKEES":("NYA", "NYY", "", "")}
     ]
 
