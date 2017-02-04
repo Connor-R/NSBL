@@ -3,6 +3,7 @@
 
 python scrapers/NSBL_register_scraper.py
 python scrapers/NSBL_scraper.py
+python processing/NSBL_excel_current_rosters.py
 
 wait
 

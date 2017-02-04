@@ -142,7 +142,7 @@ def get_mascot_names(team_abb):
 
 def get_team_abbs(team_name):
     team_abbreviations =[
-    {"ANGELS":("ANA", "LAA", "", "")},
+    {"ANGELS":("LAA", "ANA", "", "")},
     {"ASTROS":("HOU", "", "", "")},
     {"ATHLETICS":("OAK", "", "", "")},
     {"BLUE JAYS":("TOR", "", "", "")},
@@ -152,15 +152,15 @@ def get_team_abbs(team_name):
     {"CARDINALS":("STL", "", "", "")},
     {"CUBS":("CHC", "CHN", "", "")},
     {"DIAMONDBACKS":("ARI", "AZ", "AZD", "")},
-    {"DODGERS":("LA", "LAD", "LAN", "")},
+    {"DODGERS":("LAN", "LAD", "LA", "")},
     {"GIANTS":("SF", "SFG", "", "")},
     {"INDIANS":("CLE", "CLV", "", "")},
     {"MARINERS":("SEA", "", "", "")},
-    {"MARLINS":("FLA", "FLO", "MIA", "")},
+    {"MARLINS":("MIA", "FLO", "FLA", "")},
     {"METS":("NYM", "NYN", "", "")},
-    {"NATIONALS":("WAN", "WAS", "", "")},
+    {"NATIONALS":("WAS", "WAN", "", "")},
     {"ORIOLES":("BAL", "BALT", "", "")},
-    {"PADRES":("SAN", "SD", "SDP", "")},
+    {"PADRES":("SD", "SAN", "SDP", "")},
     {"PHILLIES":("PHI", "", "", "")},
     {"PIRATES":("PIT", "", "", "")},
     {"RANGERS":("TEX", "", "", "")},
