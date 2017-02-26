@@ -47,7 +47,7 @@ def initiate(year, _type):
                     entries.append(entry)
 
                 elif _type == 'defense':
-                    year, player_name, c_rn, c_er, _1b_rn, _1b_er, _2b_rn, _2b_er, _3b_er, _3b_rn, ss_rn, ss_er, lf_rn, lf_er, cf_rn, cf_er, rf_rn, rf_er, c_arm, of_arm, pb, FOO = row 
+                    year, player_name, c_rn, c_er, _1b_rn, _1b_er, _2b_rn, _2b_er, _3b_rn, _3b_er, ss_rn, ss_er, lf_rn, lf_er, cf_rn, cf_er, rf_rn, rf_er, c_arm, of_arm, pb, FOO = row 
                     entry = {"year":year, "player_name":player_name, "c_range":c_rn, "c_error":c_er, "1b_range":_1b_rn, "1b_error":_1b_er, "2b_range":_2b_rn, "2b_error":_2b_er, "3b_range":_3b_rn, "3b_error":_3b_er, "ss_range":ss_rn, "ss_error":ss_er, "lf_range":lf_rn, "lf_error":lf_er, "cf_range":cf_rn, "cf_error":cf_er, "rf_range":rf_rn, "rf_error":rf_er, "c_arm":c_arm, "of_arm":of_arm, "c_pb":pb}
                     entries.append(entry)
                 # print i, _type, player_name
