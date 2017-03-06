@@ -74,7 +74,7 @@ def scrape_prospects(year, prospect_lists):
                 if entry["player_id"] in (669160,'ryan_ryder',):
                     entry["position"] = "RHP"
 
-                if entry["player_id"] in ('taylor,blake',):
+                if entry["player_id"] in ('taylor_blake',):
                     entry["position"] = "LHP"
                 
 
