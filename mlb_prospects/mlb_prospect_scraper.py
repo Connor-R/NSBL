@@ -22,7 +22,7 @@ player2_base_url = "http://mlb.com/lookup/json/named.player_info.bam?sport_code=
 def initiate():
     start_time = time()
 
-    for year in range(2013,2018):
+    for year in range(2017,2018):
 
         url = base_url % year
         json = getter.get_url_data(url, "json")
