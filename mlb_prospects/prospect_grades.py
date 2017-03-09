@@ -4,7 +4,6 @@ from decimal import Decimal
 from time import time
 
 sys.path.append('/Users/connordog/Dropbox/Desktop_Files/Work_Things/CodeBase/Python_Scripts/Python_Projects/packages')
-sys.path.append('/Users/connordog/Dropbox/Desktop_Files/Work_Things/maxdalury/sports/general')
 
 from py_db import db
 db = db('NSBL')
