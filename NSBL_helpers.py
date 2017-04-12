@@ -84,6 +84,7 @@ def get_team_name(city_name):
 
     return team_name
 
+
 def get_mascot_names(team_abb):
     mascot_names_dict = {
     "ANA": "Angels",
@@ -249,7 +250,6 @@ def get_park_factors(team_abb):
     return park_factor
 
 
-
 def get_pos_adj(position):
     pos_adj_dict = {
     "P":60.0,
@@ -292,17 +292,34 @@ def get_pos_formula(position):
     return pos_formula
 
 
-
 def get_league_average_hitters(year, category):
     q = """SELECT
-pa,
-r,
-(h+bb+hbp)/pa as obp,
-(1b + 2*2b + 3*3b + 4*hr)/ab as slg,
-woba
-FROM processed_league_averages_hitting
-WHERE year = %s
-"""
+    pa,
+    r,
+    (h+bb+hbp)/pa as obp,
+    (1b + 2*2b + 3*3b + 4*hr)/ab as slg,
+    woba
+    FROM processed_league_averages_hitting
+    WHERE year = %s
+    """
+    qry = q % year
+    query = db.query(qry)[0]
+    lg_pa, lg_r, lg_obp, lg_slg, lg_woba = query
+    avgs = {"lg_pa":lg_pa, "lg_r":lg_r, "lg_obp":lg_obp, "lg_slg":lg_slg, "lg_woba":lg_woba}
+
+    return avgs.get(category)
+
+
+def get_zips_average_hitters(year, category):
+    q = """SELECT
+    pa,
+    r,
+    (h+bb+hbp)/pa as obp,
+    (1b + 2*2b + 3*3b + 4*hr)/ab as slg,
+    woba
+    FROM zips_averages_hitting
+    WHERE year = %s
+    """
     qry = q % year
     query = db.query(qry)[0]
     lg_pa, lg_r, lg_obp, lg_slg, lg_woba = query
@@ -350,17 +367,73 @@ def get_offensive_metrics(year, pf, pa, ab, bb, hbp, _1b, _2b, _3b, hr, sb, cs):
     return ops, wOBA, park_wOBA, OPS_plus, wrc, wrc27, wRC_plus, raa, oWAR
 
 
+def get_zips_offensive_metrics(year, pf, pa, ab, bb, hbp, _1b, _2b, _3b, hr, sb, cs):
+    wOBA = ((0.691*bb + 0.722*hbp + 0.884*_1b + 1.257*_2b + 1.593*_3b + 2.058*hr + 0.2*sb - 0.398*cs)/(pa))
+    
+    park_wOBA = wOBA/pf
+    
+    h = _1b + _2b + _3b + hr 
+    if pa != 0:
+        obp = (h + bb + hbp)/float(pa)
+    else:
+        obp = 0.0
+    if ab != 0:
+        slg = (_1b + 2*_2b + 3*_3b + 4*hr)/float(ab)
+    else:
+        slg = 0.0
+
+    ops = obp+slg
+    lg_obp = float(get_zips_average_hitters(year,'lg_obp'))
+    lg_slg = float(get_zips_average_hitters(year,'lg_slg'))
+    OPS_plus = 100*(((obp/pf)/lg_obp)+((slg/pf)/lg_slg)-1)
+
+    lg_woba = float(get_zips_average_hitters(year,'lg_woba'))
+    lg_r = float(get_zips_average_hitters(year,'lg_r'))
+    lg_pa = float(get_zips_average_hitters(year,'lg_pa'))
+    wrc = (((park_wOBA-lg_woba)/1.15)+(lg_r/lg_pa))*pa
+
+    if (ab-h) != 0:
+        wrc27 = wrc*27/(ab-h)
+    else:
+        wrc27 = 0.0
+
+    wRC_plus = ((wrc/pa/(lg_r/lg_pa)*100))
+
+    raa = pa*((park_wOBA-lg_woba)/1.25)
+
+    oWAR = raa/10
+
+    return ops, wOBA, park_wOBA, OPS_plus, wrc, wrc27, wRC_plus, raa, oWAR
+
 
 def get_league_average_pitchers(year, category):
     q = """SELECT
-r,
-gs,
-era,
-era as fip,
-fip_const
-FROM processed_league_averages_pitching
-WHERE year = %s
-"""
+    r,
+    gs,
+    era,
+    era as fip,
+    fip_const
+    FROM processed_league_averages_pitching
+    WHERE year = %s
+    """
+    qry = q % year
+    query = db.query(qry)[0]
+    lg_r, lg_gs, lg_era, lg_fip, fip_const = query
+    avgs = {"lg_r":lg_r, "lg_gs":lg_gs, "lg_era":lg_era, "lg_fip":lg_fip, "fip_const":fip_const}
+
+    return avgs.get(category)
+
+
+def get_zips_average_pitchers(year, category):
+    q = """SELECT
+    r,
+    gs,
+    era,
+    era as fip,
+    fip_const
+    FROM zips_averages_pitching
+    WHERE year = %s
+    """
     qry = q % year
     query = db.query(qry)[0]
     lg_r, lg_gs, lg_era, lg_fip, fip_const = query
@@ -394,6 +467,31 @@ def get_pitching_metrics(metric_9, ip, year, pf,  g, gs, _type):
     return park_metric, metric_min, METRIC_WAR
 
 
+def get_zips_pitching_metrics(metric_9, ip, year, pf,  g, gs, _type):
+    park_metric = metric_9/pf
+
+    search_metric = 'lg_' + _type
+    lg_metric = float(get_zips_average_pitchers(year, search_metric))
+    metric_min = 100*(park_metric/lg_metric)
+
+    RApxMETRIC = float(park_metric)/0.92
+
+    lg_r = float(get_zips_average_pitchers(year, 'lg_r'))
+    lg_gs = float(get_zips_average_pitchers(year, 'lg_gs'))
+    metric_RE = ((((18-(float(ip)/float(g)))*(float(lg_r)/float(lg_gs))+(float(ip)/float(g))*RApxMETRIC)/18)+2)*1.5
+
+    if (float(gs)/float(g)) > 0.5:
+        METRIC_x_win = ((lg_metric-RApxMETRIC)/(metric_RE))+0.5
+        METRIC_x_win_9 = METRIC_x_win - 0.38
+    else:
+        METRIC_x_win = ((lg_metric-RApxMETRIC)/(metric_RE))+0.52
+        METRIC_x_win_9 = METRIC_x_win - 0.46
+
+    METRIC_WAR = METRIC_x_win_9*float(ip)/9.0
+
+    return park_metric, metric_min, METRIC_WAR
+
+
 def get_hand(player_name):
     if player_name[len(player_name)-1:] == "*":
         hand = 'l'
@@ -403,7 +501,6 @@ def get_hand(player_name):
         hand = 'r'
 
     return hand
-
 
 
 def get_def_values(search_name, position, year):
@@ -421,12 +518,12 @@ def get_def_values(search_name, position, year):
     try:
         if p not in ('p','dh'):
             rtg_q = """SELECT
-%s,
-%s,
-%s,
-%s
-FROM zips_defense_%s
-WHERE player_name = '%s'"""
+    %s,
+    %s,
+    %s,
+    %s
+    FROM zips_defense_%s
+    WHERE player_name = '%s'"""
         
             rtg_qry = rtg_q % (rn, er, arm, pb, year, search_name)
             rtgs = db.query(rtg_qry)[0]

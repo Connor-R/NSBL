@@ -9,7 +9,7 @@ def process():
 
     curr_year = 2017
 
-    #Each time we run this, we clear the free agency tables
+    #Each time we run this, we clear the pre-existing table
     db.query("TRUNCATE TABLE `excel_current_rosters`")
 
     workbook = xlrd.open_workbook(rosters_link)
@@ -61,7 +61,7 @@ def process():
 
 
         if entries != []: 
-            db.insertRowDict(entries, 'excel_current_rosters', replace=True, insertMany=True, rid=0)
+            db.insertRowDict(entries, 'current_rosters_excel', replace=True, insertMany=True, rid=0)
         db.conn.commit()
 
 

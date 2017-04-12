@@ -2,38 +2,45 @@ from py_db import db
 import argparse
 from decimal import Decimal
 import NSBL_helpers as helper
+from time import time
 
 # Goes through the list of projected pitchers and projects their WAR
 
 
 db = db('NSBL')
 
-def process(year):
-    calculate_war(year)
 
-    # for year in range(2011,2017):
-    #     print year
-    #     calculate_war(year)
+def process():
+    start_time = time()
+
+    calculate_war()
+
+    end_time = time()
+    elapsed_time = float(end_time - start_time)
+    print "zips_WAR_pitchers.py"
+    print "time elapsed (in seconds): " + str(elapsed_time)
+    print "time elapsed (in minutes): " + str(elapsed_time/60.0)
 
 
-def calculate_war(year):
+def calculate_war():
     player_q = """SELECT
-player_name,
-team_abb,
-g, 
-gs,
-era,
-ip,
-h, r, er, bb, so, hr
-FROM zips_pitching_%s
-"""
-    player_qry = player_q % (year)
+    year,
+    player_name,
+    team_abb,
+    g, 
+    gs,
+    era,
+    ip,
+    h, r, er, bb, so, hr
+    FROM zips_pitching
+    """
+    player_qry = player_q
     player_data = db.query(player_qry)
 
     entries = []
     for row in player_data:
         entry = {}
-        player_name, team_abb, g, gs, era, ip, h, r, er, bb, k, hr = row
+        year, player_name, team_abb, g, gs, era, ip, h, r, er, bb, k, hr = row
 
 
         team_abb = team_abb.upper()
@@ -64,12 +71,12 @@ FROM zips_pitching_%s
                 k_bb = (float(k)/float(bb))
 
 
-        fip_const = float(helper.get_league_average_pitchers(year-1, 'fip_const'))
+        fip_const = float(helper.get_zips_average_pitchers(year-1, 'fip_const'))
         FIP = ((((13*float(hr))+(3*float(bb))-(2*float(k)))/float(ip))+fip_const)
-        park_FIP, FIP_min, FIP_WAR = helper.get_pitching_metrics(FIP, ip, year-1, pf, g, gs, 'fip')
+        park_FIP, FIP_min, FIP_WAR = helper.get_zips_pitching_metrics(FIP, ip, year-1, pf, g, gs, 'fip')
 
         ERA = float(era)
-        park_ERA, ERA_min, ERA_WAR = helper.get_pitching_metrics(ERA, ip, year-1, pf, g, gs, 'era')
+        park_ERA, ERA_min, ERA_WAR = helper.get_zips_pitching_metrics(ERA, ip, year-1, pf, g, gs, 'era')
 
         entry['year'] = year
         entry['player_name'] = player_name
@@ -92,11 +99,12 @@ FROM zips_pitching_%s
         entries.append(entry)
 
 
-    table = 'zips_processed_WAR_pitchers_%s' % year
+    table = 'zips_WAR_pitchers'
     print table
-    if entries != []: 
-        db.insertRowDict(entries, table, replace=True, insertMany=True, rid=0)
-    db.conn.commit()
+    if entries != []:
+        for i in range(0, len(entries), 1000):
+            db.insertRowDict(entries[i: i + 1000], table, insertMany=True, replace=True, rid=0,debug=1)
+            db.conn.commit()
 
     # # used for debugging
     # for e in entries:
@@ -106,7 +114,7 @@ FROM zips_pitching_%s
 
 if __name__ == "__main__":        
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',default=2017)
+    # parser.add_argument('--year',default=2017)
     args = parser.parse_args()
     
-    process(args.year)
+    process()
