@@ -41,7 +41,7 @@ def process(year, current):
 
 
 def get_row_data(table, field=False, hand=""):
-    sleep(0.5)
+    sleep(2)
     players = []
     rosters = table.find_all('tr', class_ = re.compile('dmrptbody'))
     

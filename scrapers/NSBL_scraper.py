@@ -99,7 +99,7 @@ def get_row_data(table, team_id, field=False, hand=""):
     return players
 
 def get_tables(team_url):
-    sleep(0.5)
+    sleep(2)
     html_team = urllib2.urlopen(team_url)
     soup_team = BeautifulSoup(html_team, "lxml")
 

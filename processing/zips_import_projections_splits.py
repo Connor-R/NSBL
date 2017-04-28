@@ -10,16 +10,16 @@ from time import time
 db = db("NSBL")
 
 
-def process():
+def process(player_mapper):
     start_time = time()
 
-    # year = 2017
-    # for _type in ('offense','pitching'):
-    #     initiate(year, _type)
+    year = 2017
+    for _type in ('offense','pitching'):
+        initiate(year, _type, player_mapper)
     
-    for year in range(2014,2018):
-        for _type in ('offense','pitching'):
-            initiate(year, _type)
+    # for year in range(2014,2018):
+    #     for _type in ('offense','pitching'):
+    #         initiate(year, _type, player_mapper)
 
     end_time = time()
     elapsed_time = float(end_time - start_time)
@@ -28,7 +28,7 @@ def process():
     print "time elapsed (in minutes): " + str(elapsed_time/60.0)
 
 
-def initiate(yr, _type):
+def initiate(yr, _type, player_mapper):
     path = '/Users/connordog/Dropbox/Desktop_Files/Work_Things/CodeBase/Python_Scripts/Python_Projects/NSBL/ad_hoc/historical_csv_files/'
 
     csv_file = path+'%s_zips_%s_splits.csv'  % (yr, _type)
@@ -46,7 +46,9 @@ def initiate(yr, _type):
                 continue
             else:
                 i += 1
-                year, player_name, vs_hand, ab, h, _2b, _3b, hr, rbi , bb, so , hbp, ibb, sh, sf = row 
+                year, player_name, vs_hand, ab, h, _2b, _3b, hr, rbi , bb, so , hbp, ibb, sh, sf = row
+                if player_name in player_mapper:
+                    player_name = player_mapper.get(player_name) 
                 entry = {"year":yr, "player_name":player_name, "vs_hand":vs_hand, "ab":ab, "h":h, "2b":_2b, "3b":_3b, "hr":hr, "rbi":rbi, "bb":bb, "so":so, "hbp":hbp, "ibb":ibb, "sh":sh, "sf":sf}
                 entries.append(entry)
 
@@ -58,5 +60,10 @@ def initiate(yr, _type):
 
 
 if __name__ == "__main__":        
+    player_mapper = {
+    "Jackie Bradley Jr.":"Jackie Bradley",
+    "Brock Holt!":"Brock Holt",
+    "Tyler Holt ?!?":"Tyler Holt"
+    }      
 
-    process()
+    process(player_mapper)

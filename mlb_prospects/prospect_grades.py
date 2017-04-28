@@ -16,6 +16,7 @@ def initiate():
 
     end_time = time()
     elapsed_time = float(end_time - start_time)
+    print "\n\nprospect_grades.py"
     print "time elapsed (in seconds): " + str(elapsed_time)
     print "time elapsed (in minutes): " + str(elapsed_time/60.0)
 

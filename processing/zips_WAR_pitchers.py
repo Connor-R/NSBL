@@ -100,7 +100,6 @@ def calculate_war():
 
 
     table = 'zips_WAR_pitchers'
-    print table
     if entries != []:
         for i in range(0, len(entries), 1000):
             db.insertRowDict(entries[i: i + 1000], table, insertMany=True, replace=True, rid=0,debug=1)

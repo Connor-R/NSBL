@@ -10,7 +10,7 @@ def process():
     curr_year = 2017
 
     #Each time we run this, we clear the pre-existing table
-    db.query("TRUNCATE TABLE `excel_current_rosters`")
+    db.query("TRUNCATE TABLE `current_rosters_excel`")
 
     workbook = xlrd.open_workbook(rosters_link)
 
@@ -66,7 +66,33 @@ def process():
 
 
 def name_parser(reverse_name):
+    player_mapper = {
+    "Michael Trout":"Mike Trout",
+    "AJ Reed":"A.J. Reed",
+    "Jackie Bradley Jr":"Jackie Bradley Jr.",
+    "Matt Joyce":"Matthew Joyce",
+    "Steven Souza Jr.":"Steven Souza",
+    "Greg Bird":"Gregory Bird",
+    "Jonathan Singleton":"Jon Singleton",
+    "Steven Pearce":"Steve Pearce",
+    "Jung-ho Kang":"Jung Ho Kang",
+    "AJ Pollock":"A.J. Pollock",
+    "Adam C. Eaton":"Adam Eaton",
+    "Chris (86) Carter":"Chris Carter",
+    "CJ Cron":"C.J. Cron",
+    "Greg Polanco":"Gregory Polanco",
+    "Steven Souza Jr":"Steven Souza",
+    "Chris Young":"Chris B. Young",
+    "Jonathon Schoop":"Jonathan Schoop",
+    "Phillip Ervin":"Phil Ervin",
+    "Matt M (91) Duffy":"Matt M. Duffy",
+    "JJ Hardy":"J.J. Hardy",
+    "Ozhaino Albies":"Ozzie Albies",
+    }
+
     player_name = ' '.join(reversed(reverse_name.split(', ')))
+    if player_name in player_mapper:
+        player_name = player_mapper.get(player_name)
     return player_name
 
 if __name__ == "__main__":     

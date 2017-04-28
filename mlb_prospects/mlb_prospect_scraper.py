@@ -31,6 +31,7 @@ def initiate():
 
     end_time = time()
     elapsed_time = float(end_time - start_time)
+    print "\n\nmlb_prospect_scraper.py"
     print "time elapsed (in seconds): " + str(elapsed_time)
     print "time elapsed (in minutes): " + str(elapsed_time/60.0)
 
@@ -53,6 +54,7 @@ def scrape_prospects(year, prospect_lists):
                 player_id = player['player_id']
                 player_url = player_base_url % (year, player_id)
                 print '\t'+player_url
+                sleep(0.5)
                 player_json = getter.get_url_data(player_url, "json")
 
 
@@ -90,6 +92,7 @@ def scrape_prospects(year, prospect_lists):
                     info_url = player2_base_url % player_id
                     print '\t\t'+info_url
                     try:
+                        sleep(0.5)
                         info_json = getter.get_url_data(info_url, "json")
                         info_info = info_json["player_info"]["queryResults"]["row"]
                         bats = info_info["bats"]
