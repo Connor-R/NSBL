@@ -73,8 +73,7 @@ AND year = %s
 %s
 """
         def_qry = def_q % (search_name, year, team_q)
-
-        def_query = db.query(def_qry)
+        print def_qry
 
 
         if def_query[0] != (None, None, None, None, None):
@@ -84,7 +83,7 @@ AND year = %s
             entry['dWAR'] = dWAR
 
             if inn is not None:
-                replacement = 10.0*(float(inn)/1450) + 10.0*(float(d_pa)/700)
+                replacement = 10.0*(float(inn)/1450) + 10.0*(float(pa)/700)
             else:
                 replacement = 20.0*(float(d_pa)/700)
 
@@ -103,6 +102,7 @@ AND year = %s
         WAR = float(oWAR) + float(dWAR) + float(repWAR)
         entry['WAR'] = WAR
 
+        print entry
         entries.append(entry)
 
     table = 'processed_WAR_hitters'

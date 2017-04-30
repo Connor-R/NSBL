@@ -67,9 +67,14 @@ AND year = %s
             rep_team_win_pct = 0.333
             rep_team_wins = rep_team_win_pct*games
 
-            f_wins = (pos_WAR/repWAR)*17.0 + float(FIP_WAR) + rep_team_wins
+            # f_wins = (pos_WAR/repWAR)*17.0 + float(FIP_WAR) + rep_team_wins
+            # f_losses = games - (f_wins)
+            # r_wins = (pos_WAR/repWAR)*17.0 + float(ERA_WAR) + rep_team_wins
+            # r_losses = games - (r_wins)
+
+            f_wins = fWAR + rep_team_wins
             f_losses = games - (f_wins)
-            r_wins = (pos_WAR/repWAR)*17.0 + float(ERA_WAR) + rep_team_wins
+            r_wins = rWAR + rep_team_wins
             r_losses = games - (r_wins)
 
             entry = {"year":year, "team_name":team_name, "repWAR":repWAR, "oWAR":oWAR, "dWAR":dWAR, "FIP_WAR":FIP_WAR, "ERA_WAR":ERA_WAR, "RF":rf, "RA":ra, "f_Wins":f_wins, "f_Losses":f_losses, "r_Wins":r_wins, "r_Losses":r_losses, "py_Wins":pythag_wins, "py_Losses":pythag_losses, "W":w, "L":l}

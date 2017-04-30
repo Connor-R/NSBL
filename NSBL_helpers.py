@@ -522,8 +522,9 @@ def get_def_values(search_name, position, year):
     %s,
     %s,
     %s
-    FROM zips_defense_%s
-    WHERE player_name = '%s'"""
+    FROM zips_defense
+    WHERE year = %s
+    AND player_name = '%s'"""
         
             rtg_qry = rtg_q % (rn, er, arm, pb, year, search_name)
             rtgs = db.query(rtg_qry)[0]

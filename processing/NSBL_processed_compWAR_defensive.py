@@ -150,7 +150,6 @@ WHERE year = %s
 
             entries.append(entry)
 
-
     table = 'processed_compWAR_defensive'
     if entries != []: 
         db.insertRowDict(entries, table, replace=True, insertMany=True, rid=0)

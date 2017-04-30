@@ -105,10 +105,6 @@ def input_data(ratings, sql_table, cats, year):
             entry['team_name'] = full_name
             entries.append(entry)
 
-    if entries != []:
-        db.insertRowDict(entries, sql_table, insertMany=True, rid=0, replace=True)
-    db.conn.commit() 
-
     # used for debugging
     # if entries != []:
     #     for entry in entries[0:30]:
@@ -116,7 +112,9 @@ def input_data(ratings, sql_table, cats, year):
     #         print entry
     #     raw_input("")
 
-
+    if entries != []:
+        db.insertRowDict(entries, sql_table, insertMany=True, rid=0, replace=True)
+    db.conn.commit() 
 
 
 def scrape_registers(year, current):
@@ -201,17 +199,17 @@ def scrape_standings(year, current):
 
     for table in tables:
 
-        title = table.find_all('tr', class_ = re.compile('dmrptsecttitle'))
+        titles = table.find_all('tr', class_ = re.compile('dmrptsecttitle'))
 
-
-        if title == []:
-            sql_table = 'team_standings'
-            ratings = get_row_data(table)
-            cats = ['foo','team_name','w','l','foo','foo','foo','foo','foo','foo','RF','RA','foo','foo']
-
-            input_data(ratings, sql_table, cats, year)
-        else:
-            pass
+        for title in titles:
+            tit = title.get_text()
+            if tit == 'Divisional':
+                sql_table = 'team_standings'
+                ratings = get_row_data(table)
+                cats = ['foo','team_name','w','l','foo','foo','foo','foo','foo','foo','RF','RA','foo','foo']
+                input_data(ratings, sql_table, cats, year)
+            else:
+                pass
 
 
 if __name__ == "__main__":     

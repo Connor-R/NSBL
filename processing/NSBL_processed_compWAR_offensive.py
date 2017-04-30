@@ -11,8 +11,8 @@ db = db('NSBL')
 def process(year):
     offensive_war(year)
 
-    if year >= 2017:
-        multi_team_war(year)
+    # if year >= 2017:
+    #     multi_team_war(year)
 
     # for year in range (2006, 2017):
     #     offensive_war(year)
