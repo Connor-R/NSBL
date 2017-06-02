@@ -8,8 +8,8 @@ from py_db import db
 db = db('NSBL')
 
 q = """
--- Create syntax for TABLE 'processed_advanced_standings'
-CREATE TABLE `processed_advanced_standings` (
+-- Create syntax for TABLE 'processed_team_standings_advanced'
+CREATE TABLE `processed_team_standings_advanced` (
   `year` int(11) NOT NULL,
   `team_name` varchar(32) NOT NULL DEFAULT '',
   `repWAR` decimal(32,2) DEFAULT NULL,

@@ -15,10 +15,14 @@ db = db('NSBL')
 def process():
     start_time = time()
 
-    team_dict = {"2.0":('cha', 'tam', 'pit', 'col', 'sea', 'ari', 'mia', 'tex', 'sd'), 
-        "1.5":('oak', 'nyn', 'stl', 'chn', 'det', 'laa', 'mil', 'min', 'lan'),
-        "1.0":('cle', 'bal', 'bos', 'hou', 'sf', 'tor', 'was'),
-        "0.5":('atl', 'cin', 'kc', 'phi', 'nya')
+    team_dict = {
+        "2.75":('tam', 'tex'),
+        "2.5":('pit', 'col', 'sea', 'mia', 'sd'),
+        "2.0":('oak', 'nyn', 'cha', 'ari'),
+        "1.8":('lan', 'lan'),
+        "1.5":('bos', 'hou', 'was', 'chn', 'det', 'laa', 'mil', 'min', 'stl'),
+        "1.0":('bal', 'kc', 'nya', 'cle', 'sf', 'tor'),
+        "0.5":('atl', 'cin', 'phi')
         }
 
     i = 0 
@@ -31,6 +35,7 @@ def process():
         ORDER BY team_abb ASC
         """
         team_qry = team_q % (str(team_tup))
+        # raw_input(team_qry)
         teams = db.query(team_qry)
         for team in teams:
             team_abb = team[0]
@@ -55,19 +60,23 @@ def process():
 
 
 def process_lineups(team_abb, min_war):
+    if team_abb == 'ChN':
+        qry_add = "AND (t.team_abb = 'ChN' OR z.player_name = 'Jackie Bradley Jr.')"
+    else:
+        qry_add = "AND t.team_abb = '%s'" % team_abb
     q = """SELECT
     player_name, z.position, 
     WAR, vsL_WAR, vsR_WAR
     FROM zips_WAR_hitters z
     LEFT JOIN current_rosters USING (player_name, year)
-    JOIN teams t USING (team_id, year)
+    LEFT JOIN teams t USING (team_id, year)
     WHERE z.year = 2017
-    AND t.team_abb = '%s'
-    AND (vsL_WAR > %s OR vsR_WAR > %s OR (z.position = '1b' AND WAR > 1.0) OR (z.position = 'c' AND WAR > 1.0))
+    %s
+    AND (vsL_WAR > %s OR vsR_WAR > %s OR (z.position = '1b' AND WAR > 1.0) OR (z.position = 'c' AND WAR > 1.0) OR (z.position = 'dh' AND WAR > -0.5))
     ORDER BY position DESC, WAR DESC
     """
 
-    qry = q % (team_abb, min_war, min_war)
+    qry = q % (qry_add, min_war, min_war)
 
     res = db.query(qry)
 

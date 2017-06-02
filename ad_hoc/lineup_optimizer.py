@@ -41,6 +41,11 @@ def process():
     print "time elapsed (in minutes): " + str(elapsed_time/60.0)
 
 def get_player_matrix(team_abb):
+    if team_abb == 'ChN':
+        tq_add = "AND (t.team_abb = 'ChN' OR z.player_name = 'Jackie Bradley Jr.')"
+    else:
+        tq_add = "AND t.team_abb = '%s'" % team_abb
+
     for lu_type in ('all', 'r', 'l'):
         for dh_type in ('with', 'without'):
             if lu_type == 'all':
@@ -57,13 +62,12 @@ def get_player_matrix(team_abb):
     SELECT DISTINCT player_name, t.team_abb
     FROM zips_WAR_hitters z
     LEFT JOIN current_rosters c USING (player_name, YEAR)
-    JOIN teams t USING (team_id, YEAR)
+    LEFT JOIN teams t USING (team_id, YEAR)
     WHERE z.year = 2017
-    AND t.team_abb = '%s'
-    ) base
-    """
+    %s
+    ) base"""
 
-            q = q % (team_abb)
+            q = q % (tq_add)
 
             positions = ('dh', 'c', '1b', '2b', '3b', 'ss', 'lf', 'cf', 'rf')
             a = 0
@@ -72,7 +76,7 @@ def get_player_matrix(team_abb):
                 position_map[a]=pos
                 a += 1
 
-                q_add = """LEFT JOIN (
+                q_add = """\nLEFT JOIN (
     SELECT player_name, %s AS '%s_WAR'
     FROM zips_WAR_hitters z
     WHERE z.year = 2017
@@ -89,14 +93,15 @@ def get_player_matrix(team_abb):
             cnt_q = """SELECT COUNT(DISTINCT player_name)
     FROM zips_WAR_hitters z
     LEFT JOIN current_rosters c USING (player_name, YEAR)
-    JOIN teams t USING (team_id, YEAR)
+    LEFT JOIN teams t USING (team_id, YEAR)
     WHERE z.year = 2017
-    AND t.team_abb = '%s'"""
+    %s"""
 
-            cnt_qry = cnt_q % (team_abb)
+            cnt_qry = cnt_q % (tq_add)
             cnt = db.query(cnt_qry)[0][0]
 
-            # raw_input(q)
+            # if team_abb == 'ChN':
+            #     raw_input(q)
             res = db.query(q)
             j = 0
             player_map = {}

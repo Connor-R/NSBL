@@ -43,12 +43,11 @@ def initiate():
     nsbl_era_list = []
     zips_fip_list = []
     nsbl_fip_list = []
-    for year in range (2011, 2017):
-        for _type in ('era','fip'):
-            if _type == 'era':    
-                process(year, append_era_comp, zips_era_list, nsbl_era_list, _type, zips_list, nsbl_list, _type_list)
-            elif _type == 'fip':
-                process(year, append_fip_comp, zips_fip_list, nsbl_fip_list, _type, zips_list, nsbl_list, _type_list)
+    for _type in ('era','fip'):
+        if _type == 'era':    
+            process(append_era_comp, zips_era_list, nsbl_era_list, _type, zips_list, nsbl_list, _type_list)
+        elif _type == 'fip':
+            process(append_fip_comp, zips_fip_list, nsbl_fip_list, _type, zips_list, nsbl_list, _type_list)
 
 
 
@@ -61,10 +60,12 @@ def initiate():
     plot2(zips_list, nsbl_list, _type_list, path)
 
 
-def process(year, append_comp, zips_metric_list, nsbl_metric_list, _type, zips_list, nsbl_list, _type_list):
+def process(append_comp, zips_metric_list, nsbl_metric_list, _type, zips_list, nsbl_list, _type_list):
 
     player_q = """SELECT
 search_name,
+nsbl.year,
+zips.year,
 n_ip,
 n_team,
 n_pf,
@@ -75,7 +76,7 @@ z_%s,
 (n_%s - z_%s) as diff
 FROM (
     SELECT
-    player_name,
+    player_name, year,
     CASE 
         WHEN (RIGHT(player_name, 1) IN ('*','#')) THEN LEFT(player_name, LENGTH(player_name)-1)
         ELSE player_name 
@@ -85,26 +86,26 @@ FROM (
     ip AS n_ip,
     park_%s AS n_%s
     FROM processed_WAR_pitchers p
-    WHERE year = %s
-    AND ip > 60
+    WHERE ip > 60
 ) nsbl
 JOIN (
     SELECT
-    player_name,
+    player_name, year,
     park_%s AS z_%s,
     team_abb AS z_team,
     pf AS z_pf
-    FROM zips_processed_WAR_pitchers_%s
-) zips ON (nsbl.search_name = zips.player_name)
+    FROM zips_WAR_pitchers
+) zips ON (nsbl.search_name = zips.player_name AND nsbl.year = zips.year)
 """
-    player_qry = player_q % (_type, _type, _type, _type, _type, _type, year, _type, _type, year)
+    player_qry = player_q % (_type, _type, _type, _type, _type, _type, _type, _type)
+    # raw_input(player_qry)
 
     player_list = db.query(player_qry)
 
     for player in player_list:
-        player_name, n_ip, n_team, n_pf, n_metric, z_team, z_pf, z_metric, diff = player
+        player_name, year1, year2, n_ip, n_team, n_pf, n_metric, z_team, z_pf, z_metric, diff = player
 
-        row = [year, player_name, n_ip, n_team, n_pf, n_metric, z_team, z_pf, z_metric, diff]
+        row = [year1, player_name, n_ip, n_team, n_pf, n_metric, z_team, z_pf, z_metric, diff]
 
         append_comp.writerow(row)
         zips_metric_list.append(float(z_metric))

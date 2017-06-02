@@ -159,6 +159,7 @@ AND team_abb not in ('', '%s');
 
             entries.append(entry)
 
+    print entries
     if entries != []: 
         db.insertRowDict(entries, 'register_batting_primary', replace=True, insertMany=True, rid=0)
     db.conn.commit()
@@ -276,7 +277,7 @@ AND team_abb not in ('', '%s');
 
             entries.append(entry)
 
-
+    print entries
     if entries != []: 
         db.insertRowDict(entries, 'register_pitching_primary', replace=True, insertMany=True, rid=0)
     db.conn.commit()

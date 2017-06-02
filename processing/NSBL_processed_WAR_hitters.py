@@ -73,23 +73,32 @@ AND year = %s
 %s
 """
         def_qry = def_q % (search_name, year, team_q)
-        print def_qry
+        def_query = db.query(def_qry)
 
 
         if def_query[0] != (None, None, None, None, None):
             defense, inn, d_pa, position_adj, dWAR = def_query[0]
             entry['defense'] = defense
-            entry['position_adj'] = position_adj
-            entry['dWAR'] = dWAR
+
+            pa_games = 162*(float(pa)/700)
+            ip_games = float(inn)/9
+            dh_adj = -17.5*((pa_games - ip_games)/150.0)
+
+            if (pa_games/ip_games) < 1.2:
+                dh_adj = 0.0
+
+            entry['position_adj'] = float(position_adj) + dh_adj
+            dWAR_adj = (float(defense) + float(position_adj) + dh_adj)/10.0
+            entry['dWAR'] = dWAR_adj
 
             if inn is not None:
-                replacement = 10.0*(float(inn)/1450) + 10.0*(float(pa)/700)
+                replacement = 20.0*(float(pa)/700)
             else:
                 replacement = 20.0*(float(d_pa)/700)
 
             entry['replacement'] = replacement
         else:
-            # if a player hasn't played defense, we treat them as a DH
+            # if a player hasn't played defense, we treat them as a full-time DH
             entry['defense'] = 0.0
             position_adj = (float(pa)/700)*(-17.5)
             entry['position_adj'] = position_adj
@@ -99,10 +108,10 @@ AND year = %s
             entry['replacement'] = replacement 
 
         repWAR = float(replacement)/10.0
-        WAR = float(oWAR) + float(dWAR) + float(repWAR)
+        WAR = float(oWAR) + float(dWAR_adj) + float(repWAR)
         entry['WAR'] = WAR
 
-        print entry
+        # print entry
         entries.append(entry)
 
     table = 'processed_WAR_hitters'

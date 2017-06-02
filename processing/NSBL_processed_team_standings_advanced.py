@@ -7,7 +7,7 @@ db = db('NSBL')
 
 
 def process():
-    table = 'processed_advanced_standings'
+    table = 'processed_team_standings_advanced'
     db.query("TRUNCATE TABLE `"+table+"`")
 
     entries = []

@@ -28,16 +28,7 @@ SUM(cs) AS cs,
 (SUM(h)-SUM(hr))/(SUM(ab)-SUM(k)-SUM(hr)) AS BABIP,
 SUM(rc) AS rc,
 SUM(r)*27/(SUM(ab)-SUM(h)) AS 'rc/27'
-FROM (
-    SELECT *
-    FROM (
-        SELECT a.*, count(*) AS cnt
-        FROM register_batting_primary a
-        JOIN register_batting_primary b USING (year, player_name, position, age)
-        GROUP BY year, player_name, position, age
-    ) a
-    WHERE (cnt = 1 OR team_abb = '')
-) b
+FROM register_batting_primary
 JOIN register_batting_secondary USING (year, player_name, team_abb, position, age)
 WHERE year = """+year+"""
 """

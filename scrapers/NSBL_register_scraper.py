@@ -13,10 +13,11 @@ db = db('NSBL')
 
 base_url = "http://thensbl.com/"
 end_year = 2017
+current = True
 
 
 # We want to make sure that the season is valid before trying to grab the data
-def initiate(current):
+def initiate():
     if current == False:
         for year in range (2006, end_year):
             url_index = "http://thensbl.com/%sseason.htm" % year
@@ -97,7 +98,8 @@ def input_data(ratings, sql_table, cats, year):
             # any category we aren't interested in recording, we mark as foo
             if cat != 'foo':
                 entry[cat] = val
-        if entry.get("player_name") not in ('Total', None, '', 'Other'):
+
+        if (entry.get("player_name") not in ('Total', None, '', 'Other') and entry.get("team_abb") not in ('Total', None, '', 'Other')):
             entries.append(entry)
         elif entry.get("team_name") not in ('Total', None, '', 'Other'):
 
@@ -213,10 +215,6 @@ def scrape_standings(year, current):
 
 
 if __name__ == "__main__":     
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--current',default=True)
-    args = parser.parse_args()
-    
-    initiate(args.current)
+    initiate()
 
 

@@ -97,7 +97,7 @@ if __name__ == "__main__":
 
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',default=2016 )
+    parser.add_argument('--year',default=2017)
     parser.add_argument('--path',default='/Users/connordog/Desktop/')    
     args = parser.parse_args()
     

@@ -4,11 +4,10 @@
 
 python scrapers/NSBL_register_scraper.py
 python scrapers/NSBL_scraper.py
-python processing/NSBL_current_rosters_excel.py
 
 wait
 
-python processing/NSBL_processed_multi_team.py
+python processing/NSBL_current_rosters_excel.py
 
 wait
 
@@ -32,4 +31,10 @@ python processing/NSBL_historical_stats_advanced.py
 
 wait
 
-python processing/NSBL_processed_advanced_standings.py
+python processing/NSBL_processed_team_standings_advanced.py
+
+wait
+
+python processing/NSBL_processed_team_hitting.py
+python processing/NSBL_processed_team_defense.py
+python processing/NSBL_processed_team_pitching.py

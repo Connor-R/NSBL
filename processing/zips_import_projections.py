@@ -76,7 +76,6 @@ def initiate(yr, _type, player_mapper):
 
 if __name__ == "__main__":  
     player_mapper = {
-    "Jackie Bradley Jr.":"Jackie Bradley",
     "Brock Holt!":"Brock Holt",
     "Tyler Holt?!?":"Tyler Holt",
     }      

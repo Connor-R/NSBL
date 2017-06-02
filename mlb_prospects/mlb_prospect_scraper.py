@@ -3,6 +3,7 @@ import urllib
 import csv
 import os
 import sys
+import datetime
 from time import time, sleep
 
 
@@ -21,7 +22,7 @@ player2_base_url = "http://mlb.com/lookup/json/named.player_info.bam?sport_code=
 def initiate():
     start_time = time()
 
-    for year in range(2017,2018):
+    for year in range(2013,2018):
 
         url = base_url % year
         json = getter.get_url_data(url, "json")
@@ -38,8 +39,8 @@ def initiate():
 
 def scrape_prospects(year, prospect_lists):
 
-
-    for list_type in prospect_lists:
+    # for list_type in (prospect_lists):
+    for list_type in ('draft','int'):
         entries = []
         if list_type not in ('rule5', 'prospects', 'pdp', 'rhp', 'lhp', 'c', '1b', '2b', '3b', 'ss', 'of'):
         # if list_type in ('draft'):
@@ -88,6 +89,16 @@ def scrape_prospects(year, prospect_lists):
                     except (IndexError, ValueError, AttributeError):
                         height = None
                     weight = player_info["weight"]
+                    try:
+                        dob = player_info["birthdate"]
+                        byear = dob.split("/")[2]
+                        bmonth = dob.split("/")[0]
+                        bday = dob.split("/")[1]
+                    except IndexError:
+                        byear = None
+                        bmonth = None
+                        bday = None              
+
                 else:
                     info_url = player2_base_url % player_id
                     print '\t\t'+info_url
@@ -99,6 +110,11 @@ def scrape_prospects(year, prospect_lists):
                         throws = info_info["throws"]
                         height = int(info_info["height_feet"])*12+int(info_info["height_inches"])
                         weight = int(info_info["weight"])
+                        dob = info_info["birth_date"]
+                        byear = dob.split("-")[0]
+                        bmonth = dob.split("-")[1]
+                        bday = dob.split("-")[2].split("T")[0]                      
+
                     except UnicodeDecodeError:
                         bats, throws, height, weight = (None, None, None, None)
                 
@@ -107,7 +123,9 @@ def scrape_prospects(year, prospect_lists):
                 entry["throws"] = throws
                 entry["height"] = height
                 entry["weight"] = weight
-
+                entry["birth_year"] = byear
+                entry["birth_month"] = bmonth
+                entry["birth_day"] = bday
 
                 entry["team"] = player['team_file_code']
                 drafted = player_info["drafted"]
@@ -125,6 +143,10 @@ def scrape_prospects(year, prospect_lists):
                         signed = int(signed.replace('$','').replace(',',''))
                     except ValueError:
                         signed = None
+
+                    schoolcity = player_info["school"]
+                    gradecountry = player_info["year"]
+                    commit = None
                 elif list_type == 'draft':
                     try:
                         signed = player_info["preseason20"].replace(' ','').replace(',','').replace('$','').split('-')[1]
@@ -134,11 +156,20 @@ def scrape_prospects(year, prospect_lists):
                         signed = int(signed)
                     except ValueError:
                         signed = None
+                    schoolcity = player_info["school"]
+                    gradecountry = player_info["year"]
+                    commit = player_info["signed"]
                 else:
                     signed = player_info["signed"]
+                    schoolcity = None
+                    schoolgrade = None
+                    schoolcommit = None
+
                 entry["drafted"] = drafted
                 entry["signed"] = signed
-
+                entry["school_city"] = schoolcity
+                entry["grade_country"] = gradecountry
+                entry["college_commit"] = commit
 
                 if list_type not in ('int', 'draft'):
                     eta = player_info["eta"]
@@ -149,6 +180,7 @@ def scrape_prospects(year, prospect_lists):
                 else:
                     pre_top100 = None
                     eta = None
+
                 entry["pre_top100"] = pre_top100
                 entry["eta"] = eta
 

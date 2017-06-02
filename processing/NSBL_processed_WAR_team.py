@@ -16,6 +16,7 @@ FROM(
     SELECT team_abb FROM processed_WAR_hitters WHERE YEAR = %s
     UNION SELECT team_abb FROM processed_WAR_pitchers WHERE YEAR = %s
 ) combo
+WHERE team_abb != ''
 GROUP BY team_abb
 """
     team_list_qry = team_list_q % (year, year)

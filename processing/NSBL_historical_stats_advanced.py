@@ -11,6 +11,9 @@ def process():
     hit_q = """
 SELECT 
 player_name,
+GROUP_CONCAT(DISTINCT team_abb ORDER BY YEAR ASC SEPARATOR '/') AS teams,
+MAX(YEAR) AS end_year,
+MIN(YEAR) AS start_year,
 COUNT(*) AS years,
 SUM(o.pa) AS pa,
 SUM(d.defense) AS defense,
@@ -23,16 +26,7 @@ SUM(o.rAA) as rAA,
 SUM(o.oWAR) as oWAR,
 SUM(w.replacement) as replacement,
 SUM(w.WAR) as WAR
-FROM (
-    SELECT *
-    FROM (
-        SELECT a.*, count(*) AS cnt
-        FROM processed_compWAR_offensive a
-        JOIN processed_compWAR_offensive b USING (year, player_name, age)
-        GROUP BY year, player_name, age
-    ) c
-    WHERE (cnt = 1 OR team_abb = '')
-) o
+FROM processed_compWAR_offensive o
 JOIN (
     SELECT 
     year,
@@ -49,7 +43,7 @@ GROUP BY player_name
 
     hit_vals = db.query(hit_q)
     hit_table = "historical_stats_hitters_advanced"
-    hit_keys = ['player_name','years','pa','defense','position_adj','dWAR','park_wOBA','OPS_plus','wRC_plus','rAA','oWAR','replacement','WAR']
+    hit_keys = ['player_name','teams','end_year','start_year','years','pa','defense','position_adj','dWAR','park_wOBA','OPS_plus','wRC_plus','rAA','oWAR','replacement','WAR']
 
     hit_entries = []
     for row in hit_vals:
@@ -66,6 +60,9 @@ GROUP BY player_name
     pitch_q = """
 SELECT 
 player_name,
+GROUP_CONCAT(DISTINCT team_abb ORDER BY YEAR ASC SEPARATOR '/') AS teams,
+MAX(YEAR) AS end_year,
+MIN(YEAR) AS start_year,
 COUNT(*) AS years,
 SUM(ip) AS ip,
 SUM(k_9*ip)/SUM(ip) AS k_9,
@@ -80,21 +77,12 @@ SUM(ERA*ip)/SUM(ip) AS ERA,
 SUM(park_ERA*ip)/SUM(ip) AS park_ERA,
 SUM(ERA_minus*ip)/SUM(ip) AS ERA_minus,
 SUM(ERA_WAR) AS ERA_WAR
-FROM (
-    SELECT *
-    FROM (
-        SELECT a.*, count(*) AS cnt
-        FROM processed_WAR_pitchers a
-        JOIN processed_WAR_pitchers b USING (year, player_name, position, age)
-        GROUP BY year, player_name, position, age
-    ) a
-    WHERE (cnt = 1 OR team_abb = '')
-) b
+FROM processed_WAR_pitchers
 GROUP BY player_name
 """
     pitch_vals = db.query(pitch_q)
     pitch_table = "historical_stats_pitchers_advanced"
-    pitch_keys = ['player_name','years','ip','k_9','bb_9','k_bb','hr_9','FIP','park_FIP','FIP_minus','FIP_WAR','ERA','park_ERA','ERA_minus','ERA_WAR']
+    pitch_keys = ['player_name','teams','end_year','start_year','years','ip','k_9','bb_9','k_bb','hr_9','FIP','park_FIP','FIP_minus','FIP_WAR','ERA','park_ERA','ERA_minus','ERA_WAR']
     pitch_entries = []
     for row in pitch_vals:
         entry = {}

@@ -9,52 +9,80 @@ import NSBL_helpers as helper
 
 db = db('NSBL')
 
-base_url = "http://thensbl.com/"
-year = 2017
+yr = 2017
+current = True
 
+invalid_names = {
+    'Cincinatti Reds':'Cincinnati Reds',
+    'World Champion Cardinals':'St. Louis Cardinals',
+    'Los Angeles Angels of Anaheim':'Los Angeles Angels',
+    }
 
 def initiate():
-    #Each week we truncate the current_rosters and re-fill. That's how we keep it current!
-    db.query("TRUNCATE TABLE `current_rosters`")
+    if current == True:
+        year = yr
 
+        #Each week we truncate the current_rosters and re-fill. That's how we keep it current!
+        db.query("TRUNCATE TABLE `current_rosters`")
 
-    for team_id in range(1,31):
+        for team_id in range(1,31):
+            url_base = "http://thensbl.com/"
+            url_ext = "tmindex%s.htm" % team_id
+            url_index = url_base + url_ext
 
-        url_index = "http://thensbl.com/tmindex%s.htm" % team_id
-
-        # we want to make sure that the team is valid, and then input the team into the year_teams table
-        try:
+            print url_index
             html_ind = urllib2.urlopen(url_index)
             soup_ind = BeautifulSoup(html_ind,"lxml")
             team_name = soup_ind.title.get_text()
-            team_abb = helper.get_team_abb(team_name)
-            print str(team_id) + " - " + team_name + " - " + team_abb
-            team_entry = {"year":year,"team_id":team_id, "team_name": team_name, "team_abb": team_abb}
-            team_table = "teams"
-            db.insertRowDict(team_entry, team_table, insertMany=False, rid=0, replace=False)
-            db.conn.commit()
-            # raw_input("")
-        except urllib2.HTTPError:
-            print str(team_id) + " - not a valid team_id"
-            continue
 
-        process(team_id)
+            initiate_names(team_name, team_id, year, current, url_base)
+
+    else:
+        for year in range(2011, 2017):
+            for team_id in range(1,31):
+                url_base = "http://thensbl.com/%s/" % year
+                url_ext = "tmindex%s.htm" % team_id
+                url_index = url_base + url_ext
+
+                print url_index
+                html_ind = urllib2.urlopen(url_index)
+                soup_ind = BeautifulSoup(html_ind,"lxml")
+                team_name = (' '.join(soup_ind.find_all('h2')[1].get_text().split(" ")[1:]).split("\n")
+                )[0].split("\r")[0]
+
+                initiate_names(team_name, team_id, year, current, url_base)
+
+def initiate_names(team_name, team_id, year, current, url_base):
+
+    if team_name in invalid_names:
+        team_name = invalid_names[team_name]
+    abb_search = str(year)+team_name
+    team_abb = helper.get_team_abb2(abb_search)
+    print str(year) + " - " + str(team_id) + " - " + team_name + " - " + team_abb
+    team_entry = {"year":year,"team_id":team_id, "team_name": team_name, "team_abb": team_abb}
+    team_table = "teams"
+    db.insertRowDict(team_entry, team_table, insertMany=False, rid=0, replace=True)
+    db.conn.commit()
+    # raw_input("")
+
+    process(team_id, year, current, url_base)
 
 
-def process(team_id):
+def process(team_id, year, current, url_base):
     # the 4 different scraping functions could be merged into 1 big function, but I found it easier to comprehend as separate functions, and scrape_ratings may be better off being re-written as 2 functions as well
-    scrape_ratings(team_id, 'Batter Ratings')
-    scrape_ratings(team_id, 'Pitcher Ratings')
-    scrape_ratings(team_id, 'Fielding')
+    scrape_ratings(team_id, url_base, year, 'Batter Ratings')
+    scrape_ratings(team_id, url_base, year, 'Pitcher Ratings')
+    scrape_ratings(team_id, url_base, year, 'Fielding')
 
-    scrape_stats(team_id, 'batting')
-    scrape_stats(team_id, 'pitching')
-    scrape_stats(team_id, 'pitching_splits')
+    # scrape_stats(team_id, url_base, year, 'batting')
+    # scrape_stats(team_id, url_base, year, 'pitching')
+    # scrape_stats(team_id, url_base, year, 'pitching_splits')
 
-    scrape_fielding(team_id)
+    scrape_fielding(team_id, url_base, year)
 
-    scrape_current_rosters(team_id, 'Batter Ratings')
-    scrape_current_rosters(team_id, 'Pitcher Ratings')
+    if current == True:
+        scrape_current_rosters(team_id, url_base, year, 'Batter Ratings')
+        scrape_current_rosters(team_id, url_base, year, 'Pitcher Ratings')
 
 
 def get_row_data(table, team_id, field=False, hand=""):
@@ -98,8 +126,9 @@ def get_row_data(table, team_id, field=False, hand=""):
 
     return players
 
+
 def get_tables(team_url):
-    sleep(2)
+    sleep(0.5)
     html_team = urllib2.urlopen(team_url)
     soup_team = BeautifulSoup(html_team, "lxml")
 
@@ -107,8 +136,7 @@ def get_tables(team_url):
     return tables
 
 
-
-def input_data(ratings, sql_table, cats):
+def input_data(ratings, year, sql_table, cats):
     print '\t' + sql_table
     entries = []
     for player in ratings:
@@ -124,15 +152,15 @@ def input_data(ratings, sql_table, cats):
     db.conn.commit()
 
 
-
-
-def scrape_stats(team_id, _type):
+def scrape_stats(team_id, url_base, year, _type):
     if _type == 'batting':
-        team_url = "http://thensbl.com/tm%s_tmbat.htm" % team_id
+        url_ext = "tm%s_tmbat.htm" % team_id
     elif _type == 'pitching':
-        team_url = "http://thensbl.com/tm%s_tmpch.htm" % team_id
+        url_ext = "tm%s_tmpch.htm" % team_id
     elif _type == 'pitching_splits':
-        team_url = "http://thensbl.com/tm%s_tmpch2.htm" % team_id
+        url_ext = "tm%s_tmpch2.htm" % team_id
+
+    team_url = url_base + url_ext
 
     tables = get_tables(team_url)
 
@@ -204,11 +232,13 @@ def scrape_stats(team_id, _type):
 
         ratings = get_row_data(table, team_id, hand = vsH)
 
-        input_data(ratings, sql_table, cats)
+        input_data(ratings, year, sql_table, cats)
 
 
-def scrape_fielding(team_id):
-    team_url = "http://thensbl.com/tm%s_tmfld.htm" % team_id
+def scrape_fielding(team_id, url_base, year):
+    url_ext = "tm%s_tmfld.htm" % team_id
+
+    team_url = url_base + url_ext
 
     tables = get_tables(team_url)
 
@@ -220,13 +250,16 @@ def scrape_fielding(team_id):
             cats = ['team_id', 'pos', 'foo', 'foo', 'player_name', 'g', 'gs', 'inn', 'po', 'a', 'e', 'dp', 'tc', 'f_pct', 'pb', 'sb', 'cs', 'sb_pct', 'pk']
             ratings = get_row_data(table, team_id, field = True)
 
-            input_data(ratings, sql_table, cats)
+            input_data(ratings, year, sql_table, cats)
 
         else:
             continue
 
-def scrape_ratings(team_id, rating_type):
-    team_url = "http://thensbl.com/tm%s_tmroster.htm" % team_id
+
+def scrape_ratings(team_id, url_base, year, rating_type):
+    url_ext = "tm%s_tmroster.htm" % team_id
+
+    team_url = url_base + url_ext
 
     tables = get_tables(team_url)
 
@@ -237,26 +270,28 @@ def scrape_ratings(team_id, rating_type):
 
             if rating_type == "Batter Ratings":
                 sql_table = "ratings_batting"
-                cats = ['team_id', 'foo', 'player_name', 'position', 'bats', 'age', 'vsL_avg', 'vsL_pwr', 'vsR_avg', 'vsR_pwr', 'bunt_sac', 'bunt_hit', 'run', 'steal', 'jump', 'injury', 'clutch']
+                cats = ['foo', 'foo', 'player_name', 'position', 'bats', 'age', 'vsL_avg', 'vsL_pwr', 'vsR_avg', 'vsR_pwr', 'bunt_sac', 'bunt_hit', 'run', 'steal', 'jump', 'injury', 'clutch']
             
             elif rating_type == "Pitcher Ratings":
                 sql_table = "ratings_pitching"
-                cats = ['team_id', 'foo', 'player_name', 'position', 'throws', 'age', 'vsL_avg', 'vsR_avg', 'bunt_sac', 'bunt_hit', 'run', 'steal', 'jump', 'dur_s', 'dur_r', 'hld', 'wp', 'bk', 'gb_pct', 'jam', 'injury']
+                cats = ['foo', 'foo', 'player_name', 'position', 'throws', 'age', 'vsL_avg', 'vsR_avg', 'bunt_sac', 'bunt_hit', 'run', 'steal', 'jump', 'dur_s', 'dur_r', 'hld', 'wp', 'bk', 'gb_pct', 'jam', 'injury']
 
             elif rating_type == "Fielding":
                 sql_table = "ratings_fielding"
-                cats = ['team_id', 'foo', 'player_name', 'position', 'p', 'c', '1b', '2b', '3b', 'ss', 'lf', 'cf', 'rf', 'thr_of', 'thr_c', 'pb']
+                cats = ['foo', 'foo', 'player_name', 'position', 'p', 'c', '1b', '2b', '3b', 'ss', 'lf', 'cf', 'rf', 'thr_of', 'thr_c', 'pb']
 
             ratings = get_row_data(table, team_id)
 
-            input_data(ratings, sql_table, cats)
+            input_data(ratings, year, sql_table, cats)
 
         else:
             continue
 
 
-def scrape_current_rosters(team_id, rating_type):
-    team_url = "http://thensbl.com/tm%s_tmroster.htm" % team_id
+def scrape_current_rosters(team_id, url_base, year, rating_type):
+    url_ext = "tm%s_tmroster.htm" % team_id
+
+    team_url = url_base + url_ext
 
     tables = get_tables(team_url)
 
@@ -278,7 +313,7 @@ def scrape_current_rosters(team_id, rating_type):
 
             ratings = get_row_data(table, team_id)
 
-            input_data(ratings, sql_table, cats)
+            input_data(ratings, year, sql_table, cats)
 
         else:
             continue
