@@ -57,8 +57,13 @@ def get_optimal_lineups():
         current_g = float(W+L)
         w_pct = float(W)/float(W+L)
 
+        # current_g = 162
         ros_g = 162-current_g
-        ros_pct = (roster_pct + (current_g/162.0)*w_pct)/(1 + (current_g/162.0))
+        # weighted geometric mean (regressed towards roster strength)
+        ros_pct = ((roster_pct**(ros_g+80)) * (max(w_pct,0.001)**(current_g+8))) ** (1.0/250.0)
+
+        # weighted arithmetic mean
+        # ros_pct = (roster_pct + (current_g/162.0)*w_pct)/(1 + (current_g/162.0))
 
         ros_W = ros_pct*ros_g
 
@@ -66,6 +71,7 @@ def get_optimal_lineups():
         projected_pct = projected_W/162.0
 
         entry['team_abb'] = team_abb
+        entry['team_name'] = team_name
         entry['roster_strength'] = roster_WAR
         entry['roster_W'] = roster_W
         entry['roster_L'] = 162.0 - roster_W
