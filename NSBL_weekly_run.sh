@@ -38,3 +38,12 @@ wait
 python processing/NSBL_processed_team_hitting.py
 python processing/NSBL_processed_team_defense.py
 python processing/NSBL_processed_team_pitching.py
+
+wait
+
+python team_strength/lineup_optimizer.py
+python team_strength/pitching_optimizer.py
+
+wait
+
+python team_strength/team_strength.py

@@ -17,6 +17,9 @@ db = db('NSBL')
 def process():
     start_time = time()
 
+    #Each time we run this, we clear the pre-existing table
+    db.query("TRUNCATE TABLE `__optimal_lineups`")
+
     i = 0 
 
     team_q = """SELECT DISTINCT team_abb FROM teams 

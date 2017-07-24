@@ -144,7 +144,11 @@ def input_data(ratings, year, sql_table, cats):
         entry['year'] = year
         for cat, val in zip(cats, player):
             if cat != 'foo':
-                entry[cat] = val
+                entry[cat] = val #####
+                # if cat == 'player_name' and val[-1] in ('*', '#'):
+                #     entry[cat] = val[:-1]
+                # else:
+                #     entry[cat] = val
         if entry.get("player_name") not in ('Total', None, '', 'Other'):
             entries.append(entry)
     if entries != []:

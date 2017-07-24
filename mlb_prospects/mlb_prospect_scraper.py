@@ -22,7 +22,7 @@ player2_base_url = "http://mlb.com/lookup/json/named.player_info.bam?sport_code=
 def initiate():
     start_time = time()
 
-    for year in range(2013,2018):
+    for year in range(2017,2018):
 
         url = base_url % year
         json = getter.get_url_data(url, "json")
@@ -51,11 +51,11 @@ def scrape_prospects(year, prospect_lists):
             for player in ind_list:
                 entry = {}
                 i += 1
-                sleep(0) # be nice
+                sleep(1) # be nice
                 player_id = player['player_id']
                 player_url = player_base_url % (year, player_id)
                 print '\t'+player_url
-                sleep(0.5)
+                sleep(1)
                 player_json = getter.get_url_data(player_url, "json")
 
 
@@ -103,7 +103,7 @@ def scrape_prospects(year, prospect_lists):
                     info_url = player2_base_url % player_id
                     print '\t\t'+info_url
                     try:
-                        sleep(0.5)
+                        sleep(1)
                         info_json = getter.get_url_data(info_url, "json")
                         info_info = info_json["player_info"]["queryResults"]["row"]
                         bats = info_info["bats"]

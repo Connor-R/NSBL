@@ -47,7 +47,7 @@ WHERE year = %s
         bats = helper.get_hand(player_name)
         entry['bats'] = bats
 
-        if bats == 'r':
+        if player_name[-1] in ('*', '#'):
             s_name = player_name
         else:
             s_name = player_name[:len(player_name)-1]

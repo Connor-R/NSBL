@@ -97,7 +97,11 @@ def input_data(ratings, sql_table, cats, year):
         for cat, val in zip(cats, player):
             # any category we aren't interested in recording, we mark as foo
             if cat != 'foo':
-                entry[cat] = val
+                entry[cat] = val #####
+                # if cat == 'player_name' and val[-1] in ('*', '#'):
+                #     entry[cat] = val[:-1]
+                # else:
+                #     entry[cat] = val
 
         if (entry.get("player_name") not in ('Total', None, '', 'Other') and entry.get("team_abb") not in ('Total', None, '', 'Other')):
             entries.append(entry)
