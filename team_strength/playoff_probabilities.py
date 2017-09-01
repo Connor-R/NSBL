@@ -7,7 +7,7 @@ import numpy as np
 import math
 from scipy.stats import norm as NormDist, binom as BinomDist
 
-# script that estiamtes playoff probabilities based on both optimized and projected roster strength
+# script that estimates playoff probabilities based on both optimized and projected roster strength and variance. it then bootstrapps to estimate probabilities of round advancements using the log5 odds ratio and binomial probability mass function to find the odds of winning a 5/7 game series
 
 
 db = db('NSBL')
