@@ -78,16 +78,7 @@ SUM(bb) AS bb,
 SUM(k) AS k,
 SUM(hr) AS hr,
 SUM(gdp) AS gdp
-FROM (
-    SELECT *
-    FROM (
-        SELECT a.*, count(*) AS cnt
-        FROM register_pitching_primary a
-        JOIN register_pitching_primary b USING (year, player_name, position, age)
-        GROUP BY year, player_name, position, age
-    ) a
-    WHERE (cnt = 1 OR team_abb = '')
-) b
+FROM register_pitching_primary
 JOIN register_pitching_secondary USING (year, player_name, team_abb, position, age)
 GROUP BY player_name
 """

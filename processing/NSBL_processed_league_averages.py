@@ -4,7 +4,7 @@ from py_db import db
 
 db = db('NSBL')
 
-for y in range(2017,2018):
+for y in range(2006,2018):
     year = str(y)
     print year
     hit_q = """
@@ -36,7 +36,7 @@ WHERE year = """+year+"""
     hit_avgs = db.query(hit_q)[0]
     hit_table = "processed_league_averages_hitting"
     hit_keys = ['year','pa','ab','h','1b','2b','3b','hr','r','rbi','hbp','bb','k','sb','cs','wOBA','babip','rc','rc_27']
-    db.insertRow(table=hit_table, keys=hit_keys, values=hit_avgs, replace=False)
+    db.insertRow(table=hit_table, keys=hit_keys, values=hit_avgs, replace=True)
     db.conn.commit()
 
     pitch_q = """
@@ -69,6 +69,6 @@ WHERE year = """+year+"""
     pitch_avgs = db.query(pitch_q)[0]
     pitch_table = "processed_league_averages_pitching"
     pitch_keys = ['year','era','w','l','sv','g','gs','cg','sho','ip','h','r','er','bb','k','hr','gdp','k_9','bb_9','k_bb','hr_9','fip_const']
-    db.insertRow(table=pitch_table, keys=pitch_keys, values=pitch_avgs, replace=False)
+    db.insertRow(table=pitch_table, keys=pitch_keys, values=pitch_avgs, replace=True)
     db.conn.commit()
 

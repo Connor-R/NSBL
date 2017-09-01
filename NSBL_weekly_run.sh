@@ -47,3 +47,7 @@ python team_strength/pitching_optimizer.py
 wait
 
 python team_strength/team_strength.py
+
+wait
+
+python team_strength/playoff_probabilities.py

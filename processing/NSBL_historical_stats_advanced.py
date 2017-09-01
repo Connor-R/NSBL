@@ -15,28 +15,18 @@ GROUP_CONCAT(DISTINCT team_abb ORDER BY YEAR ASC SEPARATOR '/') AS teams,
 MAX(YEAR) AS end_year,
 MIN(YEAR) AS start_year,
 COUNT(*) AS years,
-SUM(o.pa) AS pa,
-SUM(d.defense) AS defense,
-SUM(d.position_adj) AS position_adj,
-SUM(d.dWAR) AS dWAR,
+SUM(w.pa) AS pa,
+SUM(w.defense) AS defense,
+SUM(w.position_adj) AS position_adj,
+SUM(w.dWAR) AS dWAR,
 SUM(o.park_wOBA*o.pa)/SUM(o.pa) AS park_wOBA,
 SUM(o.OPS_plus*o.pa)/SUM(o.pa) AS OPS_plus,
 SUM(o.wRC_plus*o.pa)/SUM(o.pa) AS wRC_plus,
 SUM(o.rAA) as rAA,
-SUM(o.oWAR) as oWAR,
+SUM(w.oWAR) as oWAR,
 SUM(w.replacement) as replacement,
 SUM(w.WAR) as WAR
 FROM processed_compWAR_offensive o
-JOIN (
-    SELECT 
-    year,
-    player_name,
-    SUM(defense) as defense,
-    SUM(position_adj) as position_adj,
-    SUM(dWAR) as dWAR
-    FROM processed_compWAR_defensive 
-    GROUP BY year, player_name
-) d USING (year, player_name)
 JOIN processed_WAR_hitters w USING (year, team_abb, player_name)
 GROUP BY player_name
 """

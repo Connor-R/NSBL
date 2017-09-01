@@ -3,7 +3,7 @@ import argparse
 from decimal import Decimal
 import NSBL_helpers as helper
 
-# Calculates the pitching portion of WAR for every player in a years hitting register. If a player switches teams (and his `team_abb` is None), WAR can be accurately calculate for the portion of the season spent with their first team (2017 and on), but their overall season is calculated without park factors.
+# Calculates the pitching portion of WAR for every player in a years pitching register.
 
 
 db = db('NSBL')
@@ -12,7 +12,7 @@ db = db('NSBL')
 def process(year):
     pitching_war(year)
 
-    # for year in range (2006, 2017):
+    # for year in range (2006, 2018):
     #     pitching_war(year)
 
 def pitching_war(year):
@@ -41,12 +41,7 @@ WHERE year = %s
         entry['player_name'] = player_name
         entry['team_abb'] = team_abb
         entry['position'] = position
-        if player_name[len(player_name)-1:] == "*":
-            throws = 'l'
-        elif player_name[len(player_name)-1:] == "#":
-            throws = 's'
-        else:
-            throws = 'r'
+        throws = None
         entry['throws'] = throws
         entry['age'] = age
         entry['ip'] = ip

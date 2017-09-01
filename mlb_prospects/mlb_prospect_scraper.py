@@ -15,6 +15,8 @@ from py_db import db
 db = db('NSBL')
 getter = data_getter()
 
+sleep_time = 1
+
 base_url = 'http://m.mlb.com/gen/players/prospects/%s/playerProspects.json'
 player_base_url = 'http://m.mlb.com/gen/players/prospects/%s/%s.json'
 player2_base_url = "http://mlb.com/lookup/json/named.player_info.bam?sport_code='mlb'&player_id=%s"
@@ -39,23 +41,27 @@ def initiate():
 
 def scrape_prospects(year, prospect_lists):
 
-    # for list_type in (prospect_lists):
-    for list_type in ('draft','int'):
+    list_cnt = 0
+    for list_type in (prospect_lists):
         entries = []
         if list_type not in ('rule5', 'prospects', 'pdp', 'rhp', 'lhp', 'c', '1b', '2b', '3b', 'ss', 'of'):
         # if list_type in ('draft'):
-            print year, list_type
+            list_cnt += 1
+            print '\n', list_cnt, year, list_type
             ind_list = prospect_lists[list_type]
             
             i = 0
             for player in ind_list:
                 entry = {}
                 i += 1
-                sleep(1) # be nice
+                sleep(sleep_time) # be nice
                 player_id = player['player_id']
                 player_url = player_base_url % (year, player_id)
-                print '\t'+player_url
-                sleep(1)
+                
+                print str(player_id) + '\t',
+                sys.stdout.flush()
+
+                sleep(sleep_time)
                 player_json = getter.get_url_data(player_url, "json")
 
 
@@ -101,9 +107,9 @@ def scrape_prospects(year, prospect_lists):
 
                 else:
                     info_url = player2_base_url % player_id
-                    print '\t\t'+info_url
+                    # print '\t\t'+info_url
                     try:
-                        sleep(1)
+                        sleep(sleep_time)
                         info_json = getter.get_url_data(info_url, "json")
                         info_info = info_json["player_info"]["queryResults"]["row"]
                         bats = info_info["bats"]
@@ -162,8 +168,8 @@ def scrape_prospects(year, prospect_lists):
                 else:
                     signed = player_info["signed"]
                     schoolcity = None
-                    schoolgrade = None
-                    schoolcommit = None
+                    gradecountry = None
+                    commit = None
 
                 entry["drafted"] = drafted
                 entry["signed"] = signed

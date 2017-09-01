@@ -5,6 +5,7 @@ import NSBL_helpers as helper
 import itertools
 from time import time
 from scipy import optimize
+import math
 import numpy as np
 
 # script that determines the best possible lineup for all teams.
@@ -62,10 +63,11 @@ def get_player_matrix(team_abb):
 
             q = """SELECT *
     FROM (
-    SELECT DISTINCT player_name, t.team_abb
+    SELECT DISTINCT player_name, t.team_abb, (ab+bb+hbp+sh+sf) as 'zips_pa'
     FROM zips_WAR_hitters z
-    LEFT JOIN current_rosters c USING (player_name, YEAR)
-    LEFT JOIN teams t USING (team_id, YEAR)
+    JOIN zips_offense USING (player_name, year, team_abb)
+    LEFT JOIN current_rosters c USING (player_name, year)
+    LEFT JOIN teams t USING (team_id, year)
     WHERE z.year = 2017
     %s
     ) base"""
@@ -101,21 +103,23 @@ def get_player_matrix(team_abb):
     %s"""
 
             cnt_qry = cnt_q % (tq_add)
+            # raw_input(cnt_qry)
             cnt = db.query(cnt_qry)[0][0]
 
             # if team_abb == 'ChN':
             #     raw_input(q)
+            # raw_input(q)
             res = db.query(q)
             j = 0
             player_map = {}
             for row in res:
-                player_map[j] = row[0]
+                player_map[j] = [row[0],row[2]]
                 j += 1
                 matrix_row = []
-                for i in range(0, cnt+2):
-                    if i > 10:
+                for i in range(0, cnt+3):
+                    if i > 11:
                         matrix_row.append(500)
-                    elif i >= 2:
+                    elif i >= 3:
                         if row[i] is None:
                             matrix_row.append(500)
                         else:
@@ -124,41 +128,59 @@ def get_player_matrix(team_abb):
                 matrix.append(matrix_row)
 
             # print matrix
+            # raw_input(matrix)
             lu = optimize.linear_sum_assignment(matrix)
 
             # raw_input(position_map)
             # raw_input(player_map)
 
             optimized_lu = zip(lu[1],lu[0])
+            # raw_input(optimized_lu)
             entry = {}
             entry['team_abb'] = team_abb
             entry['vs_hand'] = lu_type
 
             total_val = 0
+            total_std = 0
+            # https://stats.stackexchange.com/questions/17800/what-is-the-distribution-of-the-sum-of-independent-normal-variables
             for i,v in optimized_lu:
-                if i < 9 and (i > 0 or (i == 0 and dh_type == 'with')):
+                if i < 9 and (i > 0 or (i >= 0 and dh_type == 'with')):
                     opt_pos = position_map.get(i)
-                    p_name = player_map.get(v)
-                    war_val = 100-matrix[v][i]
+                    p_name = player_map.get(v)[0]
+                    # print v,i
+                    # raw_input(p_name)
+                    war_val = 100.0-matrix[v][i]
+                    zips_pa = player_map.get(v)[1]
+                    # woba_std formula from the sigma_research.py script
+                    woba_std = -0.00001*zips_pa + 0.03278
+                    # each point of woba variance is worth 0.52 runs of variance
+                    war_std = (650.0*woba_std/1.25)/10.0
                     total_val += war_val
+                    total_std += war_std**2
 
                     # print opt_pos, p_name, war_val
 
                     e_name = opt_pos + '_' + 'name'
                     e_war = opt_pos + '_' + 'WAR'
+                    e_std = opt_pos + '_' + 'std'
                     entry[e_name] = p_name
                     entry[e_war] = war_val
+                    entry[e_std] = war_std
+                    # raw_input(entry)
 
             lineup_id = entry['c_name'] + '_' + entry['1b_name'] + '_' + entry['2b_name'] + '_' + entry['3b_name'] + '_' + entry['ss_name'] + '_' + entry['lf_name'] + '_' + entry['cf_name'] + '_' + entry['rf_name']
             try:
                 lineup_id += '_' + entry['dh_name']
             except KeyError:
                 lineup_id += '_' + 'NONE'
+
             lineup_id = lineup_id.replace(' ','')
 
+            total_std = math.sqrt(total_std)
 
             entry['lineup_id'] = lineup_id
             entry['lineup_val'] = total_val
+            entry['lineup_std'] = total_std
             # raw_input(entry)
 
             db.insertRowDict(entry, '__optimal_lineups', insertMany=False, replace=True, rid=0,debug=1)

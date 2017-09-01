@@ -413,6 +413,56 @@ def get_team_abb2(team_name):
 
     return team_abb
 
+def get_division(team_name):
+
+    division_dict = {
+    "Arizona Diamondbacks": "NL West",
+    "Atlanta Braves": "NL East",
+    "Baltimore Orioles": "AL East",
+    "Boston Red Sox": "AL East",
+    "Chicago Cubs": "NL Central",
+    "Chicago White Sox": "AL Central",
+    "Cincinnati Reds": "NL Central",
+    "Cleveland Indians": "AL Central",
+    "Colorado Rockies": "NL West",
+    "Detroit Tigers": "AL Central",
+    "Houston Astros": "AL West",
+    "Kansas City Royals": "AL Central",
+    "Los Angeles Angels": "AL West",
+    "Los Angeles Dodgers": "NL West",
+    "Miami Marlins": "NL East",
+    "Milwaukee Brewers": "NL Central",
+    "Minnesota Twins": "AL Central",
+    "New York Mets": "NL East",
+    "New York Yankees": "AL East",
+    "Oakland Athletics": "AL West",
+    "Philadelphia Phillies": "NL East",
+    "Pittsburgh Pirates": "NL Central",
+    "San Diego Padres": "NL West",
+    "San Francisco Giants": "NL West",
+    "Seattle Mariners": "AL West",
+    "St. Louis Cardinals": "NL Central",
+    "Tampa Bay Rays": "AL East",
+    "Texas Rangers": "AL West",
+    "Toronto Blue Jays": "AL East",
+    "Washington Nationals": "NL East"
+    }
+
+    division = division_dict.get(team_name)
+
+    divisional_teams = []
+    conference_teams = []
+    non_conference_teams = []
+    for k,v in division_dict.items():
+        if v == division and k != team_name:
+            divisional_teams.append(k)
+        if v[:2] == division[:2] and k != team_name:
+            conference_teams.append(k)
+        if v[:2] != division[:2]:
+            non_conference_teams.append(k)
+
+    return division, divisional_teams, conference_teams, non_conference_teams
+
 def get_team_name(city_name):
     team_names_dict = {
     "Baltimore": "Baltimore Orioles",
@@ -450,7 +500,6 @@ def get_team_name(city_name):
     team_name = team_names_dict.get(city_name)
 
     return team_name
-
 
 def get_mascot_names(team_abb):
     mascot_names_dict = {
@@ -507,7 +556,6 @@ def get_mascot_names(team_abb):
 
     return mascot_name
 
-
 def get_team_abbs(team_name):
     team_abbreviations =[
     {"ANGELS":("LAA", "ANA", "", "")},
@@ -552,7 +600,6 @@ def get_team_abbs(team_name):
     primary_abb = team_abbs[0]
 
     return team_abbs, primary_abb
-
 
 def get_park_factors(team_abb):
     park_factors_dict = {
@@ -616,7 +663,6 @@ def get_park_factors(team_abb):
 
     return park_factor
 
-
 def get_pos_adj(position):
     pos_adj_dict = {
     "P":60.0,
@@ -638,7 +684,6 @@ def get_pos_adj(position):
 
     return pos_adj
 
-
 def get_pos_formula(position):
     # [range, error, arm, passed ball]
     pos_formula_dict = {
@@ -658,7 +703,6 @@ def get_pos_formula(position):
 
     return pos_formula
 
-
 def get_league_average_hitters(year, category):
     q = """SELECT
     pa,
@@ -676,7 +720,6 @@ def get_league_average_hitters(year, category):
 
     return avgs.get(category)
 
-
 def get_zips_average_hitters(year, category):
     q = """SELECT
     pa,
@@ -693,7 +736,6 @@ def get_zips_average_hitters(year, category):
     avgs = {"lg_pa":lg_pa, "lg_r":lg_r, "lg_obp":lg_obp, "lg_slg":lg_slg, "lg_woba":lg_woba}
 
     return avgs.get(category)
-
 
 def get_offensive_metrics(year, pf, pa, ab, bb, hbp, _1b, _2b, _3b, hr, sb, cs):
     wOBA = ((0.691*bb + 0.722*hbp + 0.884*_1b + 1.257*_2b + 1.593*_3b + 2.058*hr + 0.2*sb - 0.398*cs)/(pa))
@@ -733,7 +775,6 @@ def get_offensive_metrics(year, pf, pa, ab, bb, hbp, _1b, _2b, _3b, hr, sb, cs):
 
     return ops, wOBA, park_wOBA, OPS_plus, wrc, wrc27, wRC_plus, raa, oWAR
 
-
 def get_zips_offensive_metrics(year, pf, pa, ab, bb, hbp, _1b, _2b, _3b, hr, sb, cs):
     wOBA = ((0.691*bb + 0.722*hbp + 0.884*_1b + 1.257*_2b + 1.593*_3b + 2.058*hr + 0.2*sb - 0.398*cs)/(pa))
     
@@ -772,7 +813,6 @@ def get_zips_offensive_metrics(year, pf, pa, ab, bb, hbp, _1b, _2b, _3b, hr, sb,
 
     return ops, wOBA, park_wOBA, OPS_plus, wrc, wrc27, wRC_plus, raa, oWAR
 
-
 def get_league_average_pitchers(year, category):
     q = """SELECT
     r,
@@ -790,7 +830,6 @@ def get_league_average_pitchers(year, category):
 
     return avgs.get(category)
 
-
 def get_zips_average_pitchers(year, category):
     q = """SELECT
     r,
@@ -807,7 +846,6 @@ def get_zips_average_pitchers(year, category):
     avgs = {"lg_r":lg_r, "lg_gs":lg_gs, "lg_era":lg_era, "lg_fip":lg_fip, "fip_const":fip_const}
 
     return avgs.get(category)
-
 
 def get_pitching_metrics(metric_9, ip, year, pf,  g, gs, _type):
     park_metric = metric_9/pf
@@ -833,7 +871,6 @@ def get_pitching_metrics(metric_9, ip, year, pf,  g, gs, _type):
 
     return park_metric, metric_min, METRIC_WAR
 
-
 def get_zips_pitching_metrics(metric_9, ip, year, pf,  g, gs, _type):
     park_metric = metric_9/pf
 
@@ -858,7 +895,6 @@ def get_zips_pitching_metrics(metric_9, ip, year, pf,  g, gs, _type):
 
     return park_metric, metric_min, METRIC_WAR
 
-
 def get_hand(player_name):
     if player_name[len(player_name)-1:] == "*":
         hand = 'l'
@@ -868,7 +904,6 @@ def get_hand(player_name):
         hand = 'r'
 
     return hand
-
 
 def get_def_values(search_name, position, year):
     p = position.lower()

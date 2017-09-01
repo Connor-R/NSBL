@@ -4,20 +4,25 @@ from decimal import Decimal
 import NSBL_helpers as helper
 
 
-# Calculates the defense only portion of WAR for every player in a years hitting register (pre-2017), or every player in `statistics_fielding` (2017 forward)
+# Calculates the defense only portion of WAR for every player in a years hitting register (pre-2011), or every player in `statistics_fielding` (2011 forward)
+
+# make sure the team statistics fielding tables online are changed with the register update by Joe for years 2011-2016
 
 
 db = db('NSBL')
 
 
 def process(year):
-    if year <= 2016:
-        register_war(year)
-    else:
-        statistics_war(year)
-
-    # for year in range(2006,2017):
+    # if year <= 2016:
     #     register_war(year)
+    # else:
+    #     statistics_war(year)
+
+    for year in range(2006,2011):
+        register_war(year)
+
+    for year in range(2011,2018):
+        statistics_war(year)
 
 def register_war(year):
     player_q = """SELECT

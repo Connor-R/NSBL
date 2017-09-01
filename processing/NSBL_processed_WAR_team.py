@@ -9,6 +9,12 @@ from decimal import Decimal
 db = db('NSBL')
 
 
+def initiate(year):
+    process(year)
+
+    # for year in range(2006,2018):
+    #     process(year)
+
 def process(year):
     team_list_q = """
 SELECT team_abb
@@ -102,5 +108,5 @@ if __name__ == "__main__":
     parser.add_argument('--year',default=2017)
     args = parser.parse_args()
     
-    process(args.year)
+    initiate(args.year)
     

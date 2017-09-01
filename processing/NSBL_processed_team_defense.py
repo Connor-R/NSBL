@@ -23,19 +23,10 @@ def process():
 def process_defense(year):
     entries = []
     qry = """SELECT 
-r.team_abb, SUM(defense), SUM(inn), SUM(dpa), SUM(p_adj), SUM(dWAR)
+r.team_abb, SUM(defense), SUM(position_adj), SUM(dWAR)
 FROM register_batting_primary r
 JOIN processed_compWAR_offensive o USING (player_name, team_abb, YEAR)
-LEFT JOIN(
-    SELECT
-    player_name, team_abb, YEAR, SUM(defense) AS defense, 
-    SUM(inn) AS inn,
-    SUM(pa) AS dpa,
-    SUM(position_adj) AS p_adj,
-    SUM(dWAR) AS dWAR
-    FROM processed_compWAR_defensive
-    GROUP BY player_name, YEAR, team_abb
-) d ON (r.player_name LIKE CONCAT(d.player_name,'%%') AND r.team_abb = d.team_abb AND r.year = d.year)
+JOIN processed_WAR_hitters w USING (player_name, team_abb, YEAR)
 WHERE r.year = %s
 GROUP BY r.team_abb"""
 
@@ -43,13 +34,11 @@ GROUP BY r.team_abb"""
     res = db.query(query)
 
     for row in res:
-        team_abb, defense, inn, dpa, pos_adj, dWAR = row
+        team_abb, defense, pos_adj, dWAR = row
 
         entry = {}
         entry["year"] = year
         entry["team_abb"] = team_abb
-        entry["pa"] = dpa
-        entry["inn"] = inn
         entry["defense"] = defense
         entry["position_adj"] = pos_adj
         entry["dWAR"] = dWAR

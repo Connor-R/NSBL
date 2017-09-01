@@ -42,7 +42,7 @@ def process(year, current):
 
 
 def get_row_data(table, field=False, hand=""):
-    sleep(2)
+    sleep(0.5)
     players = []
     rosters = table.find_all('tr', class_ = re.compile('dmrptbody'))
     
@@ -97,11 +97,11 @@ def input_data(ratings, sql_table, cats, year):
         for cat, val in zip(cats, player):
             # any category we aren't interested in recording, we mark as foo
             if cat != 'foo':
-                entry[cat] = val #####
-                # if cat == 'player_name' and val[-1] in ('*', '#'):
-                #     entry[cat] = val[:-1]
-                # else:
-                #     entry[cat] = val
+                # entry[cat] = val #####
+                if cat == 'player_name' and val is not None:
+                    entry[cat] = val.replace('*','').replace('#','')
+                else:
+                    entry[cat] = val
 
         if (entry.get("player_name") not in ('Total', None, '', 'Other') and entry.get("team_abb") not in ('Total', None, '', 'Other')):
             entries.append(entry)
@@ -196,7 +196,8 @@ def scrape_registers(year, current):
 
 def scrape_standings(year, current):
     if current == False:
-        pass
+        # print year, current
+        return None
     else:
         table_url = 'http://thensbl.com/orgstand.htm'
 

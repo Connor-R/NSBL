@@ -12,7 +12,7 @@ db = db('NSBL')
 def process(year):
     calculate_war(year)
 
-    # for year in range(2006,2017):
+    # for year in range(2006,2018):
     #     calculate_war(year)
 
 
@@ -75,14 +75,18 @@ AND year = %s
         def_qry = def_q % (search_name, year, team_q)
         def_query = db.query(def_qry)
 
+        # print def_qry
 
         if def_query[0] != (None, None, None, None, None):
             defense, inn, d_pa, position_adj, dWAR = def_query[0]
             entry['defense'] = defense
 
             pa_games = 162*(float(pa)/700)
-            ip_games = float(inn)/9
-            dh_adj = -17.5*((pa_games - ip_games)/150.0)
+            if year >= 2012:
+                ip_games = float(inn)/9
+                dh_adj = -17.5*((pa_games - ip_games)/150.0)
+            else:
+                ip_games = pa_games
 
             if (pa_games/ip_games) < 1.2:
                 dh_adj = 0.0

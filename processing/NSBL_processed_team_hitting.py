@@ -32,16 +32,7 @@ r.team_abb,
 SUM(pa), SUM(ab), SUM(h), SUM(2B), SUM(3b), SUM(Hr), SUM(r), SUM(rbi), SUM(hbp), SUM(bb), SUM(k), SUM(sb), SUM(cs)
 FROM register_batting_primary r
 JOIN processed_compWAR_offensive o USING (player_name, team_abb, YEAR)
-LEFT JOIN(
-    SELECT
-    player_name, team_abb, YEAR, SUM(defense) AS defense, 
-    SUM(inn) AS inn,
-    SUM(pa) AS dpa,
-    SUM(position_adj) AS position_adj,
-    SUM(dWAR) AS dWAR
-    FROM processed_compWAR_defensive
-    GROUP BY player_name, YEAR, team_abb
-) d ON (r.player_name LIKE CONCAT(d.player_name,'%%') AND r.team_abb = d.team_abb AND r.year = d.year)
+JOIN processed_WAR_hitters w USING (pa, player_name, team_abb, YEAR)
 WHERE r.year = %s
 GROUP BY r.team_abb"""
 
@@ -85,19 +76,10 @@ GROUP BY r.team_abb"""
 def process_advanced(year):
     entries = []
     qry = """SELECT 
-r.team_abb, SUM(pa), SUM(pf*pa)/SUM(pa), SUM(wOBA*pa)/SUM(pa), SUM(park_wOBA*pa)/SUM(pa), SUM(OPS*pa)/SUM(pa), SUM(OPS_plus*pa)/SUM(pa), SUM(babip*pa)/SUM(pa), SUM(wRC), SUM(wRC_27*pa)/SUM(pa), SUM(wRC_plus*pa)/SUM(pa), SUM(rAA), SUM(oWAR)
+r.team_abb, SUM(pa), SUM(pf*pa)/SUM(pa), SUM(wOBA*pa)/SUM(pa), SUM(park_wOBA*pa)/SUM(pa), SUM(OPS*pa)/SUM(pa), SUM(OPS_plus*pa)/SUM(pa), SUM(babip*pa)/SUM(pa), SUM(wRC), SUM(wRC_27*pa)/SUM(pa), SUM(wRC_plus*pa)/SUM(pa), SUM(rAA), SUM(w.oWAR)
 FROM register_batting_primary r
 JOIN processed_compWAR_offensive o USING (player_name, team_abb, YEAR)
-LEFT JOIN(
-    SELECT
-    player_name, team_abb, YEAR, SUM(defense) AS defense, 
-    SUM(inn) AS inn,
-    SUM(pa) AS dpa,
-    SUM(position_adj) AS position_adj,
-    SUM(dWAR) AS dWAR
-    FROM processed_compWAR_defensive
-    GROUP BY player_name, YEAR, team_abb
-) d ON (r.player_name LIKE CONCAT(d.player_name,'%%') AND r.team_abb = d.team_abb AND r.year = d.year)
+JOIN processed_WAR_hitters w USING (pa, player_name, team_abb, YEAR)
 WHERE r.year = %s
 GROUP BY r.team_abb"""
 

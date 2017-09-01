@@ -144,13 +144,14 @@ def input_data(ratings, year, sql_table, cats):
         entry['year'] = year
         for cat, val in zip(cats, player):
             if cat != 'foo':
-                entry[cat] = val #####
-                # if cat == 'player_name' and val[-1] in ('*', '#'):
-                #     entry[cat] = val[:-1]
-                # else:
-                #     entry[cat] = val
+                # entry[cat] = val #####
+                if cat == 'player_name' and val is not None:
+                    entry[cat] = val.replace('*','').replace('#','')
+                else:
+                    entry[cat] = val
         if entry.get("player_name") not in ('Total', None, '', 'Other'):
             entries.append(entry)
+    # raw_input(entries)
     if entries != []:
         db.insertRowDict(entries, sql_table, insertMany=True, rid=0, replace=True)
     db.conn.commit()

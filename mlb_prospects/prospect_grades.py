@@ -37,7 +37,8 @@ def process_pitchers():
         entry = {}
         year, player_id, blurb = row
 
-        print player_id, year
+        print str(player_id) + ' (' + str(year) + ')',
+        sys.stdout.flush()
 
         entry["year"] = year
         entry["player_id"] = player_id
@@ -182,6 +183,9 @@ def process_hitters():
         entry = {}
         year, player_id, blurb = row
 
+        print str(player_id) + ' (' + str(year) + ')',
+        sys.stdout.flush()
+
         entry["year"] = year
         entry["player_id"] = player_id
 
@@ -201,7 +205,9 @@ def process_hitters():
             run = int(blurb.split("Run")[1].split("|")[0].split('\n')[0].split('/')[-1].replace(':','').replace(' ','')[:8])
         except IndexError:
             run = int(blurb.split("Speed")[1].split("|")[0].split('\n')[0].split('/')[-1].replace(':','').replace(' ','')[:8])
-        if run < 20:
+        except ValueError:
+            run = None
+        if run < 20 and run > 0:
             run = run*10
         arm = int(blurb.split("Arm")[1].split("|")[0].split('\n')[0].split('/')[-1].replace(':','').replace(' ','')[:8])
         if arm < 20:
