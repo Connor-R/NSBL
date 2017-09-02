@@ -12,13 +12,10 @@ import numpy as np
 db = db('NSBL')
 
 
-def process():
+def process(year):
     start_time = time()
 
-    #Each time we run this, we clear the pre-existing table
-    db.query("TRUNCATE TABLE `__team_strength`")
-
-    get_optimal_lineups()
+    get_optimal_lineups(year)
 
     end_time = time()
 
@@ -27,7 +24,7 @@ def process():
     print "time elapsed (in seconds): " + str(elapsed_time)
     print "time elapsed (in minutes): " + str(elapsed_time/60.0)
 
-def get_optimal_lineups():
+def get_optimal_lineups(year):
     optimal_query = """SELECT team_abb, 
     starter_val, bullpen_val, 
     l.lineup_val AS lineup_vsL, r.lineup_val AS lineup_vsR,
@@ -58,7 +55,7 @@ def get_optimal_lineups():
 
         mascot_name = helper.get_mascot_names(team_abb.upper())
 
-        team_name, rep_WAR, oWAR, dWAR, FIP_WAR, W, L, py_W, py_L = get_standing_metrics(mascot_name)
+        team_name, rep_WAR, oWAR, dWAR, FIP_WAR, W, L, py_W, py_L = get_standing_metrics(year, mascot_name)
 
         current_g = float(W+L)
         w_pct = float(W)/float(W+L)
@@ -81,6 +78,8 @@ def get_optimal_lineups():
 
         entry['team_abb'] = team_abb
         entry['team_name'] = team_name
+        entry['year'] = year
+        entry['games_played'] = current_g
         entry['starter_val'] = starter_val
         entry['bullpen_val'] = bullpen_val
         entry['vsR_val'] = lu_vsR
@@ -109,22 +108,22 @@ def get_optimal_lineups():
         db.conn.commit()
 
 
-def get_standing_metrics(mascot_name):
+def get_standing_metrics(year, mascot_name):
     qry = """SELECT 
 team_name, repWAR, oWAR, dWAR, FIP_WAR, W, L, py_Wins, py_Losses
 FROM processed_team_standings_advanced
-WHERE year = 2017
+WHERE year = %s
 AND team_name LIKE '%%%s%%'"""
 
-    query = qry % (mascot_name)
+    query = qry % (year, mascot_name)
 
     return db.query(query)[0]
 
 
 if __name__ == "__main__":  
     parser = argparse.ArgumentParser()
-    # parser.add_argument('--year',default=2017)
+    parser.add_argument('--year',default=2017)
     args = parser.parse_args()
     
-    process()
+    process(args.year)
     
