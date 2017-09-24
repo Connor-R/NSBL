@@ -38,18 +38,20 @@ def process(f_wins_list, r_wins_list, pythag_wins_list, wins_list):
     teamWAR_q = """SELECT
 year,
 team_name,
+games_played,
 f_wins,
 r_wins,
 py_wins,
 w
 FROM processed_team_standings_advanced
+JOIN (SELECT YEAR, team_name, MAX(games_played) AS 'games_played'  FROM processed_team_standings_advanced GROUP BY YEAR, team_name) a USING (YEAR, team_name, games_played)
 """
     team_WAR_qry = teamWAR_q
 
     team_WAR_list = db.query(team_WAR_qry)
 
     for team in team_WAR_list:
-        year, team_name, f_wins, r_wins, pythag_wins, w = team
+        year, team_name, games_played, f_wins, r_wins, pythag_wins, w = team
 
 
         f_wins_list.append(float(f_wins))

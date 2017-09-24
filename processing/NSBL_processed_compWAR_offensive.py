@@ -41,13 +41,13 @@ WHERE year = %s
         entry['player_name'] = player_name
         entry['team_abb'] = team_abb
         entry['position'] = position
-        if player_name[len(player_name)-1:] == "*":
-            bats = 'l'
-        elif player_name[len(player_name)-1:] == "#":
-            bats = 's'
-        else:
-            bats = 'r'
-        entry['bats'] = bats
+        # if player_name[len(player_name)-1:] == "*":
+        #     bats = 'l'
+        # elif player_name[len(player_name)-1:] == "#":
+        #     bats = 's'
+        # else:
+        #     bats = 'r'
+        # entry['bats'] = bats
         
         entry['age'] = age
 

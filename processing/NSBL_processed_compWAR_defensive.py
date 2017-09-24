@@ -49,8 +49,8 @@ WHERE year = %s
         entry['team_abb'] = team_abb
         entry['position'] = position
 
-        bats = helper.get_hand(player_name)
-        entry['bats'] = bats
+        # bats = helper.get_hand(player_name)
+        # entry['bats'] = bats
 
         if player_name[-1] in ('*', '#'):
             s_name = player_name
@@ -132,7 +132,7 @@ WHERE year = %s
             continue
         else:
 
-            entry['bats'] = None
+            # entry['bats'] = None
             
             entry['age'] = None
 

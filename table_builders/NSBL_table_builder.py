@@ -8,13 +8,50 @@ from py_db import db
 db = db('NSBL')
 
 q = """
--- Create syntax for TABLE '__matchup_matrix'
-CREATE TABLE `__matchup_matrix` (
+-- Create syntax for TABLE '____matchup_matrix'
+CREATE TABLE `____matchup_matrix` (
   `team_abb` varchar(32) NOT NULL DEFAULT '',
+  `year` int(11) NOT NULL DEFAULT '0',
+  `games_played` int(11) NOT NULL DEFAULT '0',
   `opponent` varchar(32) NOT NULL DEFAULT '',
   `strength_type` varchar(32) NOT NULL DEFAULT '',
   `odds_ratio` decimal(32,6) DEFAULT NULL,
-  PRIMARY KEY (`team_abb`,`opponent`,`strength_type`)
+  PRIMARY KEY (`team_abb`,`year`,`games_played`,`opponent`,`strength_type`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- Create syntax for TABLE '____playoff_probabilities'
+CREATE TABLE `____playoff_probabilities` (
+  `team_abb` varchar(11) NOT NULL DEFAULT '',
+  `team_name` varchar(32) DEFAULT NULL,
+  `year` int(11) NOT NULL DEFAULT '0',
+  `games_played` int(11) NOT NULL DEFAULT '0',
+  `division` varchar(32) DEFAULT NULL,
+  `strength_type` varchar(32) NOT NULL DEFAULT '',
+  `strength_pct` decimal(32,3) DEFAULT NULL,
+  `std` decimal(32,3) DEFAULT NULL,
+  `mean_W` decimal(32,3) DEFAULT NULL,
+  `mean_L` decimal(32,3) DEFAULT NULL,
+  `top_seed` decimal(32,8) DEFAULT NULL,
+  `win_division` decimal(32,8) DEFAULT NULL,
+  `wc_1` decimal(32,8) DEFAULT NULL,
+  `wc_2` decimal(32,8) DEFAULT NULL,
+  `win_wc` decimal(32,8) DEFAULT NULL,
+  `make_ds` decimal(32,8) DEFAULT NULL,
+  `make_cs` decimal(32,8) DEFAULT NULL,
+  `make_ws` decimal(32,8) DEFAULT NULL,
+  `win_ws` decimal(32,8) DEFAULT NULL,
+  PRIMARY KEY (`team_abb`,`year`,`games_played`,`strength_type`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- Create syntax for TABLE '__matchup_matrix'
+CREATE TABLE `__matchup_matrix` (
+  `team_abb` varchar(32) NOT NULL DEFAULT '',
+  `year` int(11) NOT NULL DEFAULT '0',
+  `games_played` int(11) NOT NULL DEFAULT '0',
+  `opponent` varchar(32) NOT NULL DEFAULT '',
+  `strength_type` varchar(32) NOT NULL DEFAULT '',
+  `odds_ratio` decimal(32,6) DEFAULT NULL,
+  PRIMARY KEY (`team_abb`,`year`,`games_played`,`opponent`,`strength_type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- Create syntax for TABLE '__optimal_lineups'
@@ -110,6 +147,8 @@ CREATE TABLE `__optimal_pitching` (
 CREATE TABLE `__playoff_probabilities` (
   `team_abb` varchar(11) NOT NULL DEFAULT '',
   `team_name` varchar(32) DEFAULT NULL,
+  `year` int(11) NOT NULL DEFAULT '0',
+  `games_played` int(11) NOT NULL DEFAULT '0',
   `division` varchar(32) DEFAULT NULL,
   `strength_type` varchar(32) NOT NULL DEFAULT '',
   `strength_pct` decimal(32,3) DEFAULT NULL,
@@ -125,7 +164,7 @@ CREATE TABLE `__playoff_probabilities` (
   `make_cs` decimal(32,8) DEFAULT NULL,
   `make_ws` decimal(32,8) DEFAULT NULL,
   `win_ws` decimal(32,8) DEFAULT NULL,
-  PRIMARY KEY (`team_abb`,`strength_type`)
+  PRIMARY KEY (`team_abb`,`year`,`games_played`,`strength_type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- Create syntax for TABLE '__team_lineups'
@@ -159,6 +198,8 @@ CREATE TABLE `__team_lineups` (
 CREATE TABLE `__team_strength` (
   `team_abb` varchar(11) NOT NULL DEFAULT '',
   `team_name` varchar(32) DEFAULT NULL,
+  `year` int(11) NOT NULL DEFAULT '0',
+  `games_played` int(11) NOT NULL DEFAULT '0',
   `starter_val` decimal(32,3) DEFAULT NULL,
   `bullpen_val` decimal(32,3) DEFAULT NULL,
   `vsR_val` decimal(32,3) DEFAULT NULL,
@@ -181,7 +222,7 @@ CREATE TABLE `__team_strength` (
   `projected_W` decimal(32,3) DEFAULT NULL,
   `projected_L` decimal(32,3) DEFAULT NULL,
   `projected_pct` decimal(32,3) DEFAULT NULL,
-  PRIMARY KEY (`team_abb`)
+  PRIMARY KEY (`team_abb`,`year`,`games_played`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- Create syntax for TABLE '_draft_prospects'
@@ -448,14 +489,13 @@ CREATE TABLE `processed_compWAR_defensive` (
   `team_abb` varchar(5) NOT NULL DEFAULT '',
   `player_name` varchar(50) NOT NULL DEFAULT '',
   `position` varchar(5) NOT NULL DEFAULT '',
-  `bats` varchar(5) NOT NULL DEFAULT '',
   `age` int(3) NOT NULL,
   `pa` int(5) DEFAULT NULL,
   `inn` decimal(6,1) DEFAULT NULL,
   `defense` decimal(6,3) DEFAULT NULL,
   `position_adj` decimal(6,3) DEFAULT NULL,
   `dWAR` decimal(5,2) DEFAULT NULL,
-  PRIMARY KEY (`year`,`team_abb`,`player_name`,`position`,`bats`,`age`)
+  PRIMARY KEY (`year`,`team_abb`,`player_name`,`position`,`age`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- Create syntax for TABLE 'processed_compWAR_offensive'
@@ -464,7 +504,6 @@ CREATE TABLE `processed_compWAR_offensive` (
   `team_abb` varchar(5) NOT NULL DEFAULT '',
   `player_name` varchar(50) NOT NULL DEFAULT '',
   `position` varchar(5) NOT NULL DEFAULT '',
-  `bats` varchar(5) NOT NULL DEFAULT '',
   `age` int(3) NOT NULL,
   `pa` int(5) DEFAULT NULL,
   `pf` decimal(32,4) DEFAULT NULL,
@@ -478,7 +517,7 @@ CREATE TABLE `processed_compWAR_offensive` (
   `wRC_plus` decimal(6,2) DEFAULT NULL,
   `rAA` decimal(5,2) DEFAULT NULL,
   `oWAR` decimal(5,2) DEFAULT NULL,
-  PRIMARY KEY (`year`,`team_abb`,`player_name`,`position`,`bats`,`age`)
+  PRIMARY KEY (`year`,`team_abb`,`player_name`,`position`,`age`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- Create syntax for TABLE 'processed_league_averages_hitting'
@@ -658,7 +697,6 @@ CREATE TABLE `processed_WAR_hitters` (
   `team_abb` varchar(5) NOT NULL DEFAULT '',
   `player_name` varchar(50) NOT NULL DEFAULT '',
   `position` varchar(5) NOT NULL DEFAULT '',
-  `bats` varchar(5) NOT NULL DEFAULT '',
   `age` int(3) NOT NULL,
   `pa` int(5) DEFAULT NULL,
   `defense` decimal(6,3) DEFAULT NULL,
@@ -667,7 +705,7 @@ CREATE TABLE `processed_WAR_hitters` (
   `oWAR` decimal(5,2) DEFAULT NULL,
   `replacement` decimal(6,3) DEFAULT NULL,
   `WAR` decimal(6,3) DEFAULT NULL,
-  PRIMARY KEY (`year`,`team_abb`,`player_name`,`position`,`bats`,`age`)
+  PRIMARY KEY (`year`,`team_abb`,`player_name`,`position`,`age`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- Create syntax for TABLE 'processed_WAR_pitchers'

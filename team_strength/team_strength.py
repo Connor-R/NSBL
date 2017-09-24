@@ -55,21 +55,21 @@ def get_optimal_lineups(year):
 
         mascot_name = helper.get_mascot_names(team_abb.upper())
 
-        team_name, rep_WAR, oWAR, dWAR, FIP_WAR, W, L, py_W, py_L = get_standing_metrics(year, mascot_name)
+        team_name, games_played, rep_WAR, oWAR, dWAR, FIP_WAR, W, L, py_W, py_L = get_standing_metrics(year, mascot_name)
 
-        current_g = float(W+L)
+        games_played = float(games_played)
         w_pct = float(W)/float(W+L)
 
         py_pct = float(py_W)/float(py_W+py_L)
 
-        # current_g = 162
-        ros_g = 162-current_g
+        # games_played = 162
+        ros_g = 162-games_played
         # weighted geometric mean (regressed towards roster strength)
         # (roster%^(remaining_games+80) * pythag%^((played_games+4)/2) * win%^((played_games+4)/2))^(1/250)
-        ros_pct = ( (roster_pct**(ros_g+80)) * (max(py_pct,0.001)**(float(current_g+4.0)/2.0)) * (max(w_pct,0.001)**(float(current_g+4.0)/2.0)) ) ** (1.0/250.0)
+        ros_pct = ( (roster_pct**(ros_g+80)) * (max(py_pct,0.001)**(float(games_played+4.0)/2.0)) * (max(w_pct,0.001)**(float(games_played+4.0)/2.0)) ) ** (1.0/250.0)
 
         # weighted arithmetic mean
-        # ros_pct = (roster_pct + (current_g/162.0)*w_pct)/(1 + (current_g/162.0))
+        # ros_pct = (roster_pct + (games_played/162.0)*w_pct)/(1 + (games_played/162.0))
 
         ros_W = ros_pct*ros_g
 
@@ -79,7 +79,7 @@ def get_optimal_lineups(year):
         entry['team_abb'] = team_abb
         entry['team_name'] = team_name
         entry['year'] = year
-        entry['games_played'] = current_g
+        entry['games_played'] = games_played
         entry['starter_val'] = starter_val
         entry['bullpen_val'] = bullpen_val
         entry['vsR_val'] = lu_vsR
@@ -110,12 +110,14 @@ def get_optimal_lineups(year):
 
 def get_standing_metrics(year, mascot_name):
     qry = """SELECT 
-team_name, repWAR, oWAR, dWAR, FIP_WAR, W, L, py_Wins, py_Losses
-FROM processed_team_standings_advanced
-WHERE year = %s
-AND team_name LIKE '%%%s%%'"""
+    team_name, games_played, repWAR, oWAR, dWAR, FIP_WAR, W, L, py_Wins, py_Losses
+    FROM processed_team_standings_advanced
+    WHERE year = %s
+    AND team_name LIKE '%%%s%%'
+    AND games_played = (SELECT MAX(games_played) FROM processed_team_standings_advanced WHERE year = %s AND team_name LIKE '%%%s%%');"""
 
-    query = qry % (year, mascot_name)
+    query = qry % (year, mascot_name, year, mascot_name)
+    # raw_input(query)
 
     return db.query(query)[0]
 

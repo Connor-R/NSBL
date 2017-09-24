@@ -21,7 +21,6 @@ def calculate_war(year):
 team_abb,
 player_name,
 position,
-bats,
 age,
 pa,
 oWAR
@@ -35,12 +34,11 @@ WHERE year = %s
     for row in player_data:
         entry = {}
         entry['year'] = year
-        team_abb, player_name, position, bats, age, pa, oWAR = row
+        team_abb, player_name, position, age, pa, oWAR = row
 
         entry['team_abb'] = team_abb
         entry['player_name'] = player_name
         entry['position'] = position
-        entry['bats'] = bats
         entry['age'] = age
         entry['pa'] = pa
         entry['oWAR'] = oWAR

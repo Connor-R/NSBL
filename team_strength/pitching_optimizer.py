@@ -78,7 +78,7 @@ def get_pitchers(team_abb):
         sp_name, zips_ip, WAR_per_ip = row
         sp_WAR = float(WAR_per_ip)*float(sp_ip)
         # fip_std formula from the sigma_research.py script
-        fip_std = -0.00042*float(zips_ip) + 0.4823
+        fip_std = -0.0000997898*float(zips_ip) + 0.3549314251
         # scaling the fip variance to a run value and then to a war value
         run_std = (sp_ip/9.0)*fip_std
         sp_std = run_std/10.0
@@ -131,7 +131,7 @@ def get_pitchers(team_abb):
         rp_name, zips_ip, WAR_per_ip = row
         rp_WAR = float(WAR_per_ip)*float(rp_ip)
         # fip_std formula from the sigma_research.py script
-        fip_std = -0.00319*float(zips_ip) + 0.84659
+        fip_std = -0.0003887675*float(zips_ip) + 0.5332422101
         # scaling the fip variance to a run value and then to a war value
         run_std = (rp_ip/9.0)*fip_std
         rp_std = run_std/10.0

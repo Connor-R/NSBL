@@ -103,13 +103,18 @@ def input_data(ratings, sql_table, cats, year):
                 else:
                     entry[cat] = val
 
+
+
         if (entry.get("player_name") not in ('Total', None, '', 'Other') and entry.get("team_abb") not in ('Total', None, '', 'Other')):
             entries.append(entry)
         elif entry.get("team_name") not in ('Total', None, '', 'Other'):
 
             full_name = helper.get_team_name(entry.get("team_name"))
             entry['team_name'] = full_name
+            if sql_table == 'team_standings':
+                entry['games_played'] = int(entry.get('w')) + int(entry.get('l'))
             entries.append(entry)
+
 
     # used for debugging
     # if entries != []:

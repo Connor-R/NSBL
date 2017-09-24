@@ -42,6 +42,7 @@ FROM processed_WAR_team
             record_q = """SELECT
 year,
 team_name, 
+games_played, 
 w,
 l,
 rf,
@@ -49,35 +50,36 @@ ra
 FROM team_standings
 WHERE team_name LIKE '%%%s%%'
 AND year = %s
+AND games_played = (SELECT MAX(games_played) FROM team_standings WHERE team_name LIKE '%%%s%%' AND year = %s)
 """
-            record_qry = record_q % (mascot_name, year)
+            record_qry = record_q % (mascot_name, year, mascot_name, year)
+            # raw_input(record_qry)
 
             record = db.query(record_qry)[0]
 
-            year, team_name, w, l, rf, ra = record
+            year, team_name, games_played, w, l, rf, ra = record
 
-            games = w+l
 
             # http://www.had2know.com/sports/pythagorean-expectation-win-percentage-baseball.html
             pythag_x = ((float(rf)+float(ra))/(float(w)+float(l)))**(float(0.285))
             pythag_win_pct = (float(rf)**pythag_x)/((float(rf)**pythag_x) + (float(ra)**pythag_x))
             pythag_wins = (w+l)*pythag_win_pct
-            pythag_losses = games - (pythag_wins)
+            pythag_losses = games_played - (pythag_wins)
 
             rep_team_win_pct = 0.333
-            rep_team_wins = rep_team_win_pct*games
+            rep_team_wins = rep_team_win_pct*games_played
 
             # f_wins = (pos_WAR/repWAR)*17.0 + float(FIP_WAR) + rep_team_wins
-            # f_losses = games - (f_wins)
+            # f_losses = games_played - (f_wins)
             # r_wins = (pos_WAR/repWAR)*17.0 + float(ERA_WAR) + rep_team_wins
-            # r_losses = games - (r_wins)
+            # r_losses = games_played - (r_wins)
 
             f_wins = fWAR + rep_team_wins
-            f_losses = games - (f_wins)
+            f_losses = games_played - (f_wins)
             r_wins = rWAR + rep_team_wins
-            r_losses = games - (r_wins)
+            r_losses = games_played - (r_wins)
 
-            entry = {"year":year, "team_name":team_name, "repWAR":repWAR, "oWAR":oWAR, "dWAR":dWAR, "FIP_WAR":FIP_WAR, "ERA_WAR":ERA_WAR, "RF":rf, "RA":ra, "f_Wins":f_wins, "f_Losses":f_losses, "r_Wins":r_wins, "r_Losses":r_losses, "py_Wins":pythag_wins, "py_Losses":pythag_losses, "W":w, "L":l}
+            entry = {"year":year, "team_name":team_name, "games_played":games_played, "repWAR":repWAR, "oWAR":oWAR, "dWAR":dWAR, "FIP_WAR":FIP_WAR, "ERA_WAR":ERA_WAR, "RF":rf, "RA":ra, "f_Wins":f_wins, "f_Losses":f_losses, "r_Wins":r_wins, "r_Losses":r_losses, "py_Wins":pythag_wins, "py_Losses":pythag_losses, "W":w, "L":l}
 
             entries.append(entry)
 

@@ -152,7 +152,7 @@ def get_player_matrix(team_abb):
                     war_val = 100.0-matrix[v][i]
                     zips_pa = player_map.get(v)[1]
                     # woba_std formula from the sigma_research.py script
-                    woba_std = -0.00001*zips_pa + 0.03278
+                    woba_std = -0.0000083789*float(zips_pa) + 0.0280165048
                     # each point of woba variance is worth 0.52 runs of variance
                     war_std = (650.0*woba_std/1.25)/10.0
                     total_val += war_val
