@@ -228,7 +228,7 @@ ORDER BY year, day;
     csv_title = path + ta + '_free_agency.csv'
     fa_csv = open(csv_title, 'wb')
     append_fa_csv = csv.writer(fa_csv)
-    fa_header = ['year','day','signing_team','rights','player_name','contract_years','option','aav'] 
+    fa_header = ['year','day','signing_team','rights','player_name','contract_years','opt','aav'] 
     append_fa_csv.writerow(fa_header)
 
     for row in fa_list:

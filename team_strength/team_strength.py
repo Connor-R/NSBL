@@ -47,7 +47,7 @@ def get_optimal_lineups(year):
         entry = {}
         team_abb, starter_val, bullpen_val, lu_vsL, lu_vsR, roster_WAR, starter_std, bullpen_std, vsL_std, vsR_std, roster_std = row
 
-        roster_std = math.sqrt(roster_std)
+        true_talent_roster_std = math.sqrt(roster_std)
 
         rep_team_win_pct = 0.25
         roster_W = float(roster_WAR) + rep_team_win_pct*162
@@ -73,6 +73,9 @@ def get_optimal_lineups(year):
 
         ros_W = ros_pct*ros_g
 
+        # for the total amount of std deviation for the team, we have to add a measure of variance based on the difference between true talent record (pythagorean record) and observed record
+        add_variance_roster_std = true_talent_roster_std + -0.0101659185*(ros_pct*162) + 3.8408451793
+
         projected_W = W + ros_W
         projected_pct = projected_W/162.0
 
@@ -89,7 +92,8 @@ def get_optimal_lineups(year):
         entry['bullpen_std'] = bullpen_std
         entry['vsR_std'] = vsR_std
         entry['vsL_std'] = vsL_std
-        entry['roster_std'] = roster_std    
+        entry['roster_std'] = true_talent_roster_std
+        entry['overall_std'] = add_variance_roster_std    
         entry['roster_W'] = roster_W
         entry['roster_L'] = 162.0 - roster_W
         entry['roster_pct'] = roster_pct

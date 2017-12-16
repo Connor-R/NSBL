@@ -1,7 +1,9 @@
 # RESULTS
+# 
 # hitters (wOBA) - sigma = -0.0000083789(zips_pa) + 0.0280165048
 # SP (FIP) - sigma = -0.0000997898(zips_ip) + 0.3549314251
 # RP (FIP) - sigma = -0.0003887675(zips_ip) + 0.5332422101
+# team (variance in wins) - expected variance = -0.0101659185(expected_wins) + 3.8408451793
 
 from py_db import db
 import numpy as np
@@ -22,37 +24,36 @@ def initiate():
 
     hit_x_list = []
     hit_y_list = []
-
     process_hitters(hit_x_list, hit_y_list)
-
     hit_title = 'Full Season Hitter Sigma research'
     hit_x_title = 'zips_projected PA' 
     hit_y_title = 'wOBA diff'
-
     plot(hit_x_list, hit_y_list, path, hit_x_title, hit_y_title, hit_title)
 
     sp_x_list = []
     sp_y_list = []
-
     process_pitchers(sp_x_list, sp_y_list, 'sp')
-
     sp_title = 'Full Season SP Sigma research'
     sp_x_title = 'zips_projected IP' 
     sp_y_title = 'FIP diff'
-
     plot(sp_x_list, sp_y_list, path, sp_x_title, sp_y_title, sp_title)
 
     rp_x_list = []
     rp_y_list = []
-
     process_pitchers(rp_x_list, rp_y_list, 'rp')
-
     rp_title = 'Full Season RP Sigma research'
     rp_x_title = 'zips_projected IP' 
     rp_y_title = 'FIP diff'
-
     plot(rp_x_list, rp_y_list, path, rp_x_title, rp_y_title, rp_title)
 
+
+    pythag_x_list = []
+    pythag_y_list = []
+    process_pythag(pythag_x_list, pythag_y_list)
+    pythag_title = 'Full Season Pythag Standings Sigma research'
+    pythag_x_title = 'pythagorean wins'
+    pythag_y_title = 'Wins diff'
+    plot(pythag_x_list, pythag_y_list, path, pythag_x_title, pythag_y_title, pythag_title)
 
 def process_hitters(x_list, y_list):
     qry = """SELECT YEAR, player_name, 
@@ -112,6 +113,20 @@ def process_pitchers(x_list, y_list, role):
         x_list.append(float(zips_ip))
         y_list.append(float(FIP_diff_stddev))
 
+def process_pythag(x_list, y_list):
+    qry = """SELECT YEAR, team_name, w, py_wins, ABS(w-py_wins) AS pythag_diff
+    FROM processed_team_standings_advanced
+    JOIN (SELECT YEAR, team_name, MAX(games_played) AS games_played FROM processed_team_standings_advanced GROUP BY YEAR, team_name) a USING (YEAR, team_name, games_played)
+    WHERE games_played >= 150;"""
+
+    res = db.query(qry)
+
+    for row in res:
+        foo, foo, foo, py_wins, pythag_diff = row
+
+        x_list.append(float(py_wins))
+        y_list.append(float(pythag_diff))
+
 def plot(x_list, y_list, path, x_name='x_title', y_name='y_title', figname = 'fig_name'):
     size = len(x_list)
 
@@ -137,7 +152,8 @@ def plot(x_list, y_list, path, x_name='x_title', y_name='y_title', figname = 'fi
 
     fit = linregress(x_list,y_list)
     label = '$y = ' + str(round(fit.slope,10))+"x + " + str(round(fit.intercept,10)) + '$'
-    print(label)
+    print '\n',figname
+    print '\t', label, '\n'
     # label = '$r^2 = ' + str(fit.rvalue) + '$'
 
     data = pd.DataFrame(

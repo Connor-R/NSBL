@@ -51,12 +51,12 @@ def process():
                 salary = team_sheet.cell(row, 3).value
                 year = team_sheet.cell(row, 2).value
                 expires = team_sheet.cell(row, 4).value
-                option = team_sheet.cell(row, 5).value
+                opt = team_sheet.cell(row, 5).value
                 NTC = team_sheet.cell(row, 8).value
                 salary_counted = team_sheet.cell(row, 9).value
 
 
-                entry = {'player_name':player_name, "team_abb":primary_abb, "position":position, "salary":salary, "year":year, "expires":expires, "option":option, "NTC":NTC, "salary_counted":salary_counted}
+                entry = {'player_name':player_name, "team_abb":primary_abb, "position":position, "salary":salary, "year":year, "expires":expires, "opt":opt, "NTC":NTC, "salary_counted":salary_counted}
                 entries.append(entry)
 
 

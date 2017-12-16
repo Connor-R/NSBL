@@ -41,7 +41,7 @@ def process_basic():
         basic_query = """SELECT
         team_abb, team_name,
         year, games_played,
-        roster_std,
+        overall_std,
         roster_W, roster_L, roster_pct,
         ros_W, ros_L, ros_pct,
         projected_W, projected_L, projected_pct
@@ -52,13 +52,13 @@ def process_basic():
 
         for basic_row in basic_res:
             entry = {}
-            team_abb, team_name, year, games_played, roster_std, roster_W, roster_L, roster_pct, ros_W, ros_L, ros_pct, projected_W, projected_L, projected_pct = basic_row
+            team_abb, team_name, year, games_played, overall_std, roster_W, roster_L, roster_pct, ros_W, ros_L, ros_pct, projected_W, projected_L, projected_pct = basic_row
 
             games_remaining = float(ros_W) + float(ros_L)
             games_played = 162.0 - games_remaining
             # scaled quadradtic function mapping for std left in season:
-            # std_left = roster_std*((x+162)(x-162)/162^2), where x is games_played
-            projected_std = -float(roster_std)*(((float(games_played)+162.0)*(float(games_played)-162.0))/(162.0**2))
+            # std_left = overall_std*((x+162)(x-162)/162^2), where x is games_played
+            projected_std = max(-float(overall_std)*(((float(games_played)+162.0)*(float(games_played)-162.0))/(162.0**2)), 0.001)
 
             division, div_teams, conf_teams, non_conf_teams = helper.get_division(team_name)
 
@@ -70,7 +70,7 @@ def process_basic():
                 entry['division'] = division
                 entry['strength_type'] = _type
                 entry['strength_pct'] = roster_pct
-                entry['std'] = roster_std
+                entry['std'] = overall_std
                 entry['mean_W'] = roster_W
                 entry['mean_L'] = roster_L
 
@@ -362,9 +362,21 @@ def process_win_wc():
 
                 wc_prob = 0.0
                 for oppn_row in oppn_res:
-                    oppn_abb, oppn_name, oppn_wc_1, oppn_wc2 = oppn_row
+                    oppn_abb, oppn_name, oppn_wc1, oppn_wc2 = oppn_row
 
-                    matchup_prob = float(wc1_prob*oppn_wc2 + wc2_prob*oppn_wc_1)
+                    # probability of wc1 * (oppn_wc2 | not wc2)
+                    if (1.0-float(wc2_prob)) == 0:
+                        matchup1_prob = 0.0
+                    else:
+                        matchup1_prob = float(wc1_prob*oppn_wc2)/(1.0-float(wc2_prob))
+
+                    # probability of wc2 * (oppn_wc1 | not wc1)
+                    if (1.0-float(wc1_prob)) == 0:
+                        matchup2_prob = 0.0
+                    else:
+                        matchup2_prob = float(wc2_prob*oppn_wc1)/(1.0-float(wc1_prob))
+
+                    matchup_prob = matchup1_prob + matchup2_prob
 
                     win_game_query = "SELECT odds_ratio FROM __matchup_matrix JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __matchup_matrix GROUP BY team_abb) t2 USING (team_abb, year, games_played) WHERE team_abb = '%s' AND opponent = '%s' AND strength_type = '%s'" % (team_abb, oppn_abb, _type)
                     win_game_prob = float(db.query(win_game_query)[0][0])
@@ -403,6 +415,7 @@ def process_cs():
         for conf in ('AL', 'NL'):
 
             team_query = "SELECT team_abb, team_name, division, top_seed, win_division, win_wc, year, games_played FROM __playoff_probabilities JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb) t2 USING (team_abb, year, games_played) WHERE strength_type = '%s' AND LEFT(division,2) = '%s'" % (_type, conf)
+            # raw_input(team_query)
             team_res = db.query(team_query)
 
             cs_dict = {}
@@ -427,7 +440,22 @@ def process_cs():
                 for oppn_row in oppn_res:
                     oppn_abb, oppn_name, oppn_top, oppn_div, oppn_wc, oppn_2_3_seed = oppn_row
 
-                    matchup_prob = float(top_seed)*float(oppn_wc) + float(win_wc)*float(oppn_top) + (float(win_2_3_seed)*float(oppn_2_3_seed))
+
+                    # probability of top_seed * (oppn_wc | not wc)
+                    if (1.0-float(win_wc)) == 0:
+                        matchup1_prob = 0.0
+                    else:
+                        matchup1_prob = float(top_seed*oppn_wc)/(1.0-float(win_wc))
+
+                    # probability of wc * (oppn_top_seed | not top_seed)
+                    if (1.0-float(top_seed)) == 0:
+                        matchup2_prob = 0.0
+                    else:
+                        matchup2_prob = float(win_wc*oppn_top)/(1.0-float(top_seed))
+
+                    matchup3_prob = float(win_2_3_seed)*float(oppn_2_3_seed)
+
+                    matchup_prob = matchup1_prob + matchup2_prob + matchup3_prob
 
                     win_game_query = "SELECT odds_ratio FROM __matchup_matrix JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __matchup_matrix GROUP BY team_abb) t2 USING (team_abb, year, games_played) WHERE team_abb = '%s' AND opponent = '%s' AND strength_type = '%s'" % (team_abb, oppn_abb, _type)
                     win_game_prob = float(db.query(win_game_query)[0][0])
@@ -566,7 +594,10 @@ def adjust_probabilities(prob_dict, col_name, sum_to, _type):
         for tm, values in prob_dict.items():
             curr_prob, max_prob, tm_bool, year, games_played = values
 
-            adj_val = curr_prob/prob_factor
+            if prob_factor == 0:
+                adj_val = curr_prob
+            else:
+                adj_val = curr_prob/prob_factor
 
             if (adj_val > max_prob and tm_bool is False):
                 sum_to = sum_to - max_prob
