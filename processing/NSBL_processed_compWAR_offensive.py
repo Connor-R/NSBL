@@ -11,7 +11,7 @@ db = db('NSBL')
 def process(year):
     offensive_war(year)
 
-    # for year in range (2006, 2018):
+    # for year in range (2006, 2019):
     #     offensive_war(year)
 
 
@@ -87,7 +87,7 @@ WHERE year = %s
 
 if __name__ == "__main__":        
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',default=2017)
+    parser.add_argument('--year',default=2018)
     args = parser.parse_args()
     
     process(args.year)

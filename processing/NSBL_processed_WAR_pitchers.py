@@ -12,7 +12,7 @@ db = db('NSBL')
 def process(year):
     pitching_war(year)
 
-    # for year in range (2006, 2018):
+    # for year in range (2006, 2019):
     #     pitching_war(year)
 
 def pitching_war(year):
@@ -115,7 +115,7 @@ WHERE year = %s
 
 if __name__ == "__main__":        
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',default=2017)
+    parser.add_argument('--year',default=2018)
     args = parser.parse_args()
     
     process(args.year)

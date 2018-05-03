@@ -9,14 +9,20 @@ import NSBL_helpers as helper
 
 db = db('NSBL')
 
-yr = 2017
+yr = 2018
 current = True
 
 invalid_names = {
     'Cincinatti Reds':'Cincinnati Reds',
     'World Champion Cardinals':'St. Louis Cardinals',
     'Los Angeles Angels of Anaheim':'Los Angeles Angels',
+    'World Series Champion Washington Nationals':'Washington Nationals',
     }
+
+player_mapper = {
+    'Jyung Ho Kang':'Jung Ho Kang',
+    'Michael Al Taylor':'Michael A. Taylor',
+}
 
 def initiate():
     if current == True:
@@ -38,7 +44,7 @@ def initiate():
             initiate_names(team_name, team_id, year, current, url_base)
 
     else:
-        for year in range(2011, 2017):
+        for year in range(2011, 2018):
             for team_id in range(1,31):
                 url_base = "http://thensbl.com/%s/" % year
                 url_ext = "tmindex%s.htm" % team_id
@@ -146,7 +152,10 @@ def input_data(ratings, year, sql_table, cats):
             if cat != 'foo':
                 # entry[cat] = val #####
                 if cat == 'player_name' and val is not None:
-                    entry[cat] = val.replace('*','').replace('#','')
+                    p_name = val.replace('*','').replace('#','')
+                    if p_name in player_mapper:
+                        p_name = player_mapper.get(p_name)
+                    entry[cat] = p_name
                 else:
                     entry[cat] = val
         if entry.get("player_name") not in ('Total', None, '', 'Other'):

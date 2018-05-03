@@ -21,7 +21,7 @@ def process():
     i = 0 
 
     team_q = """SELECT DISTINCT team_abb FROM teams 
-    WHERE year = 2017
+    WHERE year = 2018
     ORDER BY team_abb ASC
     """
     team_qry = team_q
@@ -51,9 +51,11 @@ def get_pitchers(team_abb):
     LEFT JOIN zips_WAR_pitchers z USING (YEAR, player_name, team_abb)
     LEFT JOIN current_rosters c USING (YEAR, player_name)
     LEFT JOIN teams t USING (YEAR, team_id)
-    WHERE z.year = 2017
+    LEFT JOIN current_rosters_excel cre USING (player_name)
+    WHERE z.year = 2018
     AND t.team_abb = '%s'
     AND (gs/g) > 0.5
+    # AND (salary_counted IS NULL OR salary_counted != 'N')
     ORDER BY WAR_per_ip DESC
     LIMIT 6;"""
 
@@ -108,9 +110,11 @@ def get_pitchers(team_abb):
     LEFT JOIN zips_WAR_pitchers z USING (YEAR, player_name, team_abb)
     LEFT JOIN current_rosters c USING (YEAR, player_name)
     LEFT JOIN teams t USING (YEAR, team_id)
-    WHERE z.year = 2017
+    LEFT JOIN current_rosters_excel cre USING (player_name)
+    WHERE z.year = 2018
     AND t.team_abb = '%s'
     AND player_name NOT IN %s
+    # AND (salary_counted IS NULL OR salary_counted != 'N')
     ORDER BY WAR_per_ip DESC
     LIMIT 7;"""
 
@@ -171,7 +175,7 @@ def get_pitchers(team_abb):
 
 if __name__ == "__main__":  
     parser = argparse.ArgumentParser()
-    # parser.add_argument('--year',default=2017)
+    # parser.add_argument('--year',default=2018)
     args = parser.parse_args()
     
     process()

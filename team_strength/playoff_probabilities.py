@@ -1,4 +1,5 @@
 from py_db import db
+import argparse
 from decimal import Decimal
 import NSBL_helpers as helper
 from time import time
@@ -12,20 +13,20 @@ from scipy.stats import norm as NormDist, binom as BinomDist
 db = db('NSBL')
 
 
-def process():
+def process(year):
     start_time = time()
 
-    process_basic()
-    process_matrix()
-    process_division()
-    process_top_seed()
-    process_wc1()
-    process_wc2()
-    process_win_wc()
-    process_ds()
-    process_cs()
-    process_ws()
-    process_champion()
+    process_basic(year)
+    process_matrix(year)
+    process_division(year)
+    process_top_seed(year)
+    process_wc1(year)
+    process_wc2(year)
+    process_win_wc(year)
+    process_ds(year)
+    process_cs(year)
+    process_ws(year)
+    process_champion(year)
 
     end_time = time()
 
@@ -34,7 +35,7 @@ def process():
     print "time elapsed (in seconds): " + str(elapsed_time)
     print "time elapsed (in minutes): " + str(elapsed_time/60.0)
 
-def process_basic():
+def process_basic(year):
     print 'initial table setup'
     for _type in ('roster', 'projected'):
 
@@ -46,7 +47,10 @@ def process_basic():
         ros_W, ros_L, ros_pct,
         projected_W, projected_L, projected_pct
         FROM __team_strength t1
-        JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __team_strength GROUP BY team_abb) t2 USING (team_abb, year, games_played);"""
+        JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __team_strength GROUP BY team_abb, year) t2 USING (team_abb, year, games_played)
+        WHERE year = %s;"""
+
+        basic_query = basic_query % (year)
 
         basic_res = db.query(basic_query)
 
@@ -89,17 +93,20 @@ def process_basic():
             db.insertRowDict(entry, '__playoff_probabilities', insertMany=False, replace=True, rid=0,debug=1)
             db.conn.commit()
 
-def process_matrix():
+def process_matrix(year):
     print 'matchup matrix'
     entries = []
     for _type in ('roster', 'projected'):
         qry = """SELECT
         team_abb, strength_pct, year, games_played
         FROM __playoff_probabilities
-        JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb) t2 USING (team_abb, year, games_played)
-        WHERE strength_type = '%s'"""
-        query = qry % (_type)
+        JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb, year) t2 USING (team_abb, year, games_played)
+        WHERE strength_type = '%s'
+        AND year = %s;"""
 
+        query = qry % (_type, year)
+
+        # raw_input(query)
         res = db.query(query)
 
         for row in res:
@@ -109,12 +116,14 @@ def process_matrix():
             oppn_qry = """SELECT
             team_abb, strength_pct, year, games_played
             FROM __playoff_probabilities
-            JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb) t2 USING (team_abb, year, games_played)
+            JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb, year) t2 USING (team_abb, year, games_played)
             WHERE strength_type = '%s'
-            AND team_abb != '%s';"""
+            AND team_abb != '%s'
+            AND year = %s;"""
 
-            oppn_query = oppn_qry % (_type, team_abb)
+            oppn_query = oppn_qry % (_type, team_abb, year)
 
+            # print oppn_query
             oppn_res = db.query(oppn_query)
 
             for row in oppn_res:
@@ -137,7 +146,7 @@ def process_matrix():
     db.insertRowDict(entries, '__matchup_matrix', insertMany=True, replace=True, rid=0,debug=1)
     db.conn.commit()
 
-def process_division():
+def process_division(year):
     print 'division'
     for _type in ('roster', 'projected'):
         # print '\t', _type
@@ -147,10 +156,11 @@ def process_division():
             team_abb, team_name, 
             mean_W/162.0, std, year, games_played
             FROM __playoff_probabilities
-            JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb) t2 USING (team_abb, year, games_played)
+            JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb, year) t2 USING (team_abb, year, games_played)
             WHERE strength_type = '%s'
-            AND division = '%s';"""
-            query = qry % (_type, div)
+            AND division = '%s'
+            AND year = %s;"""
+            query = qry % (_type, div, year)
 
             # raw_input(query)
 
@@ -163,14 +173,14 @@ def process_division():
 
                 division, div_teams, conf_teams, non_conf_teams = helper.get_division(team_name)
 
-                win_division_prob = np.prod(get_probabilities(team_name, div_teams, float(strength_pct), float(std), _type)[0])
+                win_division_prob = np.prod(get_probabilities(team_name, div_teams, float(strength_pct), float(std), _type, year)[0])
 
                 div_dict[team_name] = [win_division_prob, 1.0, False, year, games_played]
 
             col_name = 'win_division'
             adjust_probabilities(div_dict, col_name, 1.0, _type)
 
-def process_top_seed():
+def process_top_seed(year):
     print "top seed"
 
     for _type in ('roster', 'projected'):
@@ -180,10 +190,11 @@ def process_top_seed():
             team_abb, team_name, win_division,
             mean_W/162.0, std, year, games_played
             FROM __playoff_probabilities
-            JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb) t2 USING (team_abb, year, games_played)
+            JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb, year) t2 USING (team_abb, year, games_played)
             WHERE strength_type = '%s' 
-            AND LEFT(division,2) = '%s';"""
-            team_query = team_qry % (_type, conf)
+            AND LEFT(division,2) = '%s'
+            AND year = %s;"""
+            team_query = team_qry % (_type, conf, year)
             # raw_input(team_query)
             team_res = db.query(team_query)
 
@@ -195,20 +206,20 @@ def process_top_seed():
 
                 division, div_teams, conf_teams, non_conf_teams = helper.get_division(team_name)
 
-                top_seed_prob = np.prod(get_probabilities(team_name, conf_teams, float(strength_pct), float(std), _type)[0])
+                top_seed_prob = np.prod(get_probabilities(team_name, conf_teams, float(strength_pct), float(std), _type, year)[0])
 
                 top_dict[team_name] = [top_seed_prob, max_prob, False, year, games_played]
 
             col_name = 'top_seed'
             adjust_probabilities(top_dict, col_name, 1.0, _type)
 
-def process_wc1():
+def process_wc1(year):
     print 'wc1'
     for _type in ('roster', 'projected'):
         print '\t', _type
         for conf in ('AL', 'NL'):
 
-            team_query = "SELECT team_abb, team_name, win_division, mean_W/162.0, std, year, games_played FROM __playoff_probabilities JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb) t2 USING (team_abb, year, games_played) WHERE strength_type = '%s' AND LEFT(division,2) = '%s'" % (_type, conf)
+            team_query = "SELECT team_abb, team_name, win_division, mean_W/162.0, std, year, games_played FROM __playoff_probabilities JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb, year) t2 USING (team_abb, year, games_played) WHERE strength_type = '%s' AND LEFT(division,2) = '%s' AND year = %s" % (_type, conf, year)
 
             # raw_input(team_query)
 
@@ -229,9 +240,9 @@ def process_wc1():
                 FROM __playoff_probabilities p1
                 JOIN __playoff_probabilities p2
                 JOIN __playoff_probabilities p3
-                JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb) t1 ON (p1.team_abb=t1.team_abb AND p1.year=t1.year AND  p1.games_played=t1.games_played)
-                JOIN (SELECT team_abb, MAX(YEAR) AS YEAR, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb) t2 ON (p2.team_abb=t2.team_abb AND p2.year=t2.year AND  p2.games_played=t2.games_played)
-                JOIN (SELECT team_abb, MAX(YEAR) AS YEAR, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb) t3 ON (p3.team_abb=t3.team_abb AND p3.year=t3.year AND  p3.games_played=t3.games_played)
+                JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb, year) t1 ON (p1.team_abb=t1.team_abb AND p1.year=t1.year AND  p1.games_played=t1.games_played)
+                JOIN (SELECT team_abb, MAX(YEAR) AS YEAR, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb, year) t2 ON (p2.team_abb=t2.team_abb AND p2.year=t2.year AND  p2.games_played=t2.games_played)
+                JOIN (SELECT team_abb, MAX(YEAR) AS YEAR, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb, year) t3 ON (p3.team_abb=t3.team_abb AND p3.year=t3.year AND  p3.games_played=t3.games_played)
                 WHERE 1
                 AND p1.strength_type = '%s'
                 AND p2.strength_type = '%s'
@@ -241,9 +252,12 @@ def process_wc1():
                 AND p3.division = '%s East'
                 AND p1.team_name != '%s'
                 AND p2.team_name != '%s'
-                AND p3.team_name != '%s';"""
+                AND p3.team_name != '%s'
+                AND p1.year = %s
+                AND p2.year = %s
+                AND p3.year = %s;"""
 
-                div_winners_query = div_winners_qry % (_type, _type, _type, conf, conf, conf, team_name, team_name, team_name)
+                div_winners_query = div_winners_qry % (_type, _type, _type, conf, conf, conf, team_name, team_name, team_name, year, year, year)
                 # raw_input(div_winners_query)
                 div_winners_res = db.query(div_winners_query)
 
@@ -256,7 +270,7 @@ def process_wc1():
                         if tm not in (div1_team, div2_team, div3_team):
                             set_teams.append(tm)
 
-                    win_wc_prob = np.prod(get_probabilities(team_name, set_teams, float(strength_pct), float(std), _type)[0])
+                    win_wc_prob = np.prod(get_probabilities(team_name, set_teams, float(strength_pct), float(std), _type, year)[0])
 
                     wc_pre_prob += (float(situation_prob)*float(win_wc_prob))
 
@@ -266,13 +280,13 @@ def process_wc1():
             col_name = 'wc_1'
             adjust_probabilities(wc_dict, col_name, 1.0, _type)
 
-def process_wc2():
+def process_wc2(year):
     print "wc2"
     for _type in ('roster', 'projected'):
         print '\t', _type
         for conf in ('AL', 'NL'):
 
-            team_query = "SELECT team_abb, team_name, (win_division+wc_1), mean_W/162.0, std, year, games_played FROM __playoff_probabilities JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb) t2 USING (team_abb, year, games_played) WHERE strength_type = '%s' AND LEFT(division,2) = '%s'" % (_type, conf)
+            team_query = "SELECT team_abb, team_name, (win_division+wc_1), mean_W/162.0, std, year, games_played FROM __playoff_probabilities JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb, year) t2 USING (team_abb, year, games_played) WHERE strength_type = '%s' AND LEFT(division,2) = '%s'AND year = %s" % (_type, conf, year)
 
             team_res = db.query(team_query)
 
@@ -293,10 +307,10 @@ def process_wc2():
                 JOIN __playoff_probabilities p2
                 JOIN __playoff_probabilities p3
                 JOIN __playoff_probabilities p4
-                JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb) t1 ON (p1.team_abb=t1.team_abb AND p1.year=t1.year AND  p1.games_played=t1.games_played)
-                JOIN (SELECT team_abb, MAX(YEAR) AS YEAR, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb) t2 ON (p2.team_abb=t2.team_abb AND p2.year=t2.year AND  p2.games_played=t2.games_played)
-                JOIN (SELECT team_abb, MAX(YEAR) AS YEAR, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb) t3 ON (p3.team_abb=t3.team_abb AND p3.year=t3.year AND  p3.games_played=t3.games_played)
-                JOIN (SELECT team_abb, MAX(YEAR) AS YEAR, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb) t4 ON (p4.team_abb=t4.team_abb AND p4.year=t4.year AND  p4.games_played=t4.games_played)
+                JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb, year) t1 ON (p1.team_abb=t1.team_abb AND p1.year=t1.year AND  p1.games_played=t1.games_played)
+                JOIN (SELECT team_abb, MAX(YEAR) AS YEAR, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb, year) t2 ON (p2.team_abb=t2.team_abb AND p2.year=t2.year AND  p2.games_played=t2.games_played)
+                JOIN (SELECT team_abb, MAX(YEAR) AS YEAR, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb, year) t3 ON (p3.team_abb=t3.team_abb AND p3.year=t3.year AND  p3.games_played=t3.games_played)
+                JOIN (SELECT team_abb, MAX(YEAR) AS YEAR, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb, year) t4 ON (p4.team_abb=t4.team_abb AND p4.year=t4.year AND  p4.games_played=t4.games_played)
                 WHERE 1
                 AND p1.strength_type = '%s'
                 AND p2.strength_type = '%s'
@@ -312,9 +326,13 @@ def process_wc2():
                 AND p4.team_name != '%s'
                 AND p1.team_name != p4.team_name
                 AND p2.team_name != p4.team_name
-                AND p3.team_name != p4.team_name ;"""
+                AND p3.team_name != p4.team_name
+                AND p1.year = %s
+                AND p2.year = %s
+                AND p3.year = %s
+                AND p4.year = %s;"""
 
-                div_winners_query = div_winners_qry % (_type, _type, _type, _type, conf, conf, conf, conf, team_name, team_name, team_name, team_name)
+                div_winners_query = div_winners_qry % (_type, _type, _type, _type, conf, conf, conf, conf, team_name, team_name, team_name, team_name, year, year, year, year)
                 div_winners_res = db.query(div_winners_query)
 
                 wc2_pre_prob = float(0.0)
@@ -326,7 +344,7 @@ def process_wc2():
                         if tm not in (div1_team, div2_team, div3_team, div4_team):
                             set_teams.append(tm)
 
-                    win_wc2_prob = np.prod(get_probabilities(team_name, set_teams, float(strength_pct), float(std), _type)[0])
+                    win_wc2_prob = np.prod(get_probabilities(team_name, set_teams, float(strength_pct), float(std), _type, year)[0])
 
                     wc2_pre_prob += (float(situation_prob)*float(win_wc2_prob))
 
@@ -336,14 +354,14 @@ def process_wc2():
             col_name = 'wc_2'
             adjust_probabilities(wc2_dict, col_name, 1.0, _type)
 
-def process_win_wc():
+def process_win_wc(year):
     print "win wild card"
     
     for _type in ('roster', 'projected'):
         # print '\t', _type
         for conf in ('AL', 'NL'):
 
-            team_query = "SELECT team_abb, team_name, win_division, wc_1, wc_2, year, games_played FROM __playoff_probabilities JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb) t2 USING (team_abb, year, games_played) WHERE strength_type = '%s' AND LEFT(division,2) = '%s'" % (_type, conf)
+            team_query = "SELECT team_abb, team_name, win_division, wc_1, wc_2, year, games_played FROM __playoff_probabilities JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb, year) t2 USING (team_abb, year, games_played) WHERE strength_type = '%s' AND LEFT(division,2) = '%s' AND year = %s" % (_type, conf, year)
             team_res = db.query(team_query)
 
             adv_dict = {}
@@ -353,11 +371,12 @@ def process_win_wc():
 
                 oppn_qry = """SELECT team_abb, team_name, wc_1, wc_2
                 FROM __playoff_probabilities
-                JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb) t2 USING (team_abb, year, games_played)
+                JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb, year) t2 USING (team_abb, year, games_played)
                 WHERE strength_type = '%s' 
                 AND LEFT(division,2) = '%s'
-                AND team_name != '%s';"""
-                oppn_query = oppn_qry % (_type, conf, team_name)
+                AND team_name != '%s'
+                AND year = %s;"""
+                oppn_query = oppn_qry % (_type, conf, team_name, year)
                 oppn_res = db.query(oppn_query)
 
                 wc_prob = 0.0
@@ -378,7 +397,7 @@ def process_win_wc():
 
                     matchup_prob = matchup1_prob + matchup2_prob
 
-                    win_game_query = "SELECT odds_ratio FROM __matchup_matrix JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __matchup_matrix GROUP BY team_abb) t2 USING (team_abb, year, games_played) WHERE team_abb = '%s' AND opponent = '%s' AND strength_type = '%s'" % (team_abb, oppn_abb, _type)
+                    win_game_query = "SELECT odds_ratio FROM __matchup_matrix JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __matchup_matrix GROUP BY team_abb, year) t2 USING (team_abb, year, games_played) WHERE team_abb = '%s' AND opponent = '%s' AND strength_type = '%s' AND year = %s" % (team_abb, oppn_abb, _type, year)
                     win_game_prob = float(db.query(win_game_query)[0][0])
 
                     wc_overall_prob = matchup_prob*win_game_prob
@@ -391,13 +410,13 @@ def process_win_wc():
             col_name = 'win_wc'
             adjust_probabilities(adv_dict, col_name, 1.0, _type)
 
-def process_ds():
+def process_ds(year):
     print "make division series"
 
     for _type in ('roster', 'projected'):
         # print '\t', _type
 
-        query = "SELECT team_abb, team_name, win_division+win_wc, year, games_played FROM __playoff_probabilities JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb) t2 USING (team_abb, year, games_played) WHERE strength_type = '%s';" % (_type)
+        query = "SELECT team_abb, team_name, win_division+win_wc, year, games_played FROM __playoff_probabilities JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb, year) t2 USING (team_abb, year, games_played) WHERE strength_type = '%s' AND year = %s;" % (_type, year)
         res = db.query(query)
 
         col_name = 'make_ds'
@@ -407,14 +426,14 @@ def process_ds():
             "games_played"),(team_name,_type,year,games_played),operators=['=','=','=','='])
             db.conn.commit()
 
-def process_cs():
+def process_cs(year):
     print "make championship series"
     
     for _type in ('roster', 'projected'):
         # print '\t', _type
         for conf in ('AL', 'NL'):
 
-            team_query = "SELECT team_abb, team_name, division, top_seed, win_division, win_wc, year, games_played FROM __playoff_probabilities JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb) t2 USING (team_abb, year, games_played) WHERE strength_type = '%s' AND LEFT(division,2) = '%s'" % (_type, conf)
+            team_query = "SELECT team_abb, team_name, division, top_seed, win_division, win_wc, year, games_played FROM __playoff_probabilities JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb, year) t2 USING (team_abb, year, games_played) WHERE strength_type = '%s' AND LEFT(division,2) = '%s' AND year = %s" % (_type, conf, year)
             # raw_input(team_query)
             team_res = db.query(team_query)
 
@@ -428,11 +447,12 @@ def process_cs():
 
                 oppn_qry = """SELECT team_abb, team_name, top_seed, win_division, win_wc, IF(division != '%s', win_division-top_seed, 0) AS 'middle_seed'
                 FROM __playoff_probabilities
-                JOIN (SELECT team_abb, MAX(YEAR) AS 'year', MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb) a USING (team_abb, YEAR, games_played)
+                JOIN (SELECT team_abb, MAX(YEAR) AS 'year', MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb, year) a USING (team_abb, YEAR, games_played)
                 WHERE strength_type = '%s' 
                 AND LEFT(division,2) = '%s'
-                AND team_name != '%s';"""
-                oppn_query = oppn_qry % (team_division, _type, conf, team_name)
+                AND team_name != '%s'
+                AND year = %s;"""
+                oppn_query = oppn_qry % (team_division, _type, conf, team_name, year)
                 # raw_input(oppn_query)
                 oppn_res = db.query(oppn_query)
 
@@ -457,7 +477,7 @@ def process_cs():
 
                     matchup_prob = matchup1_prob + matchup2_prob + matchup3_prob
 
-                    win_game_query = "SELECT odds_ratio FROM __matchup_matrix JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __matchup_matrix GROUP BY team_abb) t2 USING (team_abb, year, games_played) WHERE team_abb = '%s' AND opponent = '%s' AND strength_type = '%s'" % (team_abb, oppn_abb, _type)
+                    win_game_query = "SELECT odds_ratio FROM __matchup_matrix JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __matchup_matrix GROUP BY team_abb, year) t2 USING (team_abb, year, games_played) WHERE team_abb = '%s' AND opponent = '%s' AND strength_type = '%s' AND year = %s" % (team_abb, oppn_abb, _type, year)
                     win_game_prob = float(db.query(win_game_query)[0][0])
 
                     win_in_3 = BinomDist.pmf(n=3, k=3, p=win_game_prob)
@@ -475,14 +495,14 @@ def process_cs():
             col_name = 'make_cs'
             adjust_probabilities(cs_dict, col_name, 2.0, _type)
 
-def process_ws():
+def process_ws(year):
     print "make world series"
     
     for _type in ('roster', 'projected'):
         # print '\t', _type
         for conf in ('AL', 'NL'):
 
-            team_query = "SELECT team_abb, team_name, make_cs, year, games_played FROM __playoff_probabilities JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb) t2 USING (team_abb, year, games_played) WHERE strength_type = '%s' AND LEFT(division,2) = '%s'" % (_type, conf)
+            team_query = "SELECT team_abb, team_name, make_cs, year, games_played FROM __playoff_probabilities JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb, year) t2 USING (team_abb, year, games_played) WHERE strength_type = '%s' AND LEFT(division,2) = '%s' AND year = %s" % (_type, conf, year)
             team_res = db.query(team_query)
 
             ws_dict = {}
@@ -493,11 +513,12 @@ def process_ws():
 
                 oppn_qry = """SELECT team_abb, team_name, make_cs
                 FROM __playoff_probabilities
-                JOIN (SELECT team_abb, MAX(YEAR) AS 'year', MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb) a USING (team_abb, YEAR, games_played)
+                JOIN (SELECT team_abb, MAX(YEAR) AS 'year', MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb, year) a USING (team_abb, YEAR, games_played)
                 WHERE strength_type = '%s'
                 AND LEFT(division,2) = '%s'
-                AND team_name != '%s';"""
-                oppn_query = oppn_qry % (_type, conf, team_name)
+                AND team_name != '%s'
+                AND year = %s;"""
+                oppn_query = oppn_qry % (_type, conf, team_name, year)
                 oppn_res = db.query(oppn_query)
 
                 ws_prob = 0.0
@@ -506,7 +527,7 @@ def process_ws():
 
                     matchup_prob = float(make_cs)*float(oppn_cs)
 
-                    win_game_query = "SELECT odds_ratio FROM __matchup_matrix JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __matchup_matrix GROUP BY team_abb) t2 USING (team_abb, year, games_played) WHERE team_abb = '%s' AND opponent = '%s' AND strength_type = '%s'" % (team_abb, oppn_abb, _type)
+                    win_game_query = "SELECT odds_ratio FROM __matchup_matrix JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __matchup_matrix GROUP BY team_abb, year) t2 USING (team_abb, year, games_played) WHERE team_abb = '%s' AND opponent = '%s' AND strength_type = '%s' AND year = %s" % (team_abb, oppn_abb, _type, year)
                     win_game_prob = float(db.query(win_game_query)[0][0])
 
                     win_in_4 = BinomDist.pmf(n=4, k=4, p=win_game_prob)
@@ -526,7 +547,7 @@ def process_ws():
             col_name = 'make_ws'
             adjust_probabilities(ws_dict, col_name, 1.0, _type)
 
-def process_champion():
+def process_champion(year):
     print "win world series"
     
     for _type in ('roster', 'projected'):
@@ -534,7 +555,7 @@ def process_champion():
         champ_dict = {}
         for conf in ('AL', 'NL'):
 
-            team_query = "SELECT team_abb, team_name, make_ws, year, games_played FROM __playoff_probabilities JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb) t2 USING (team_abb, year, games_played) WHERE strength_type = '%s' AND LEFT(division,2) = '%s'" % (_type, conf)
+            team_query = "SELECT team_abb, team_name, make_ws, year, games_played FROM __playoff_probabilities JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb, year) t2 USING (team_abb, year, games_played) WHERE strength_type = '%s' AND LEFT(division,2) = '%s' AND year = %s" % (_type, conf, year)
             team_res = db.query(team_query)
 
             for team_row in team_res:
@@ -544,10 +565,11 @@ def process_champion():
 
                 oppn_qry = """SELECT team_abb, team_name, make_ws
                 FROM __playoff_probabilities
-                JOIN (SELECT team_abb, MAX(YEAR) AS 'year', MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb) a USING (team_abb, YEAR, games_played)
+                JOIN (SELECT team_abb, MAX(YEAR) AS 'year', MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb, year) a USING (team_abb, YEAR, games_played)
                 WHERE strength_type = '%s'
-                AND LEFT(division,2) != '%s';"""
-                oppn_query = oppn_qry % (_type, conf)
+                AND LEFT(division,2) != '%s'
+                AND year = %s;"""
+                oppn_query = oppn_qry % (_type, conf, year)
 
                 # raw_input(oppn_query)
                 oppn_res = db.query(oppn_query)
@@ -558,7 +580,7 @@ def process_champion():
 
                     matchup_prob = float(make_ws)*float(oppn_ws)
 
-                    win_game_query = "SELECT odds_ratio FROM __matchup_matrix JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __matchup_matrix GROUP BY team_abb) t2 USING (team_abb, year, games_played) WHERE team_abb = '%s' AND opponent = '%s' AND strength_type = '%s'" % (team_abb, oppn_abb, _type)
+                    win_game_query = "SELECT odds_ratio FROM __matchup_matrix JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __matchup_matrix GROUP BY team_abb, year) t2 USING (team_abb, year, games_played) WHERE team_abb = '%s' AND opponent = '%s' AND strength_type = '%s' AND year = %s" % (team_abb, oppn_abb, _type, year)
                     win_game_prob = float(db.query(win_game_query)[0][0])
 
                     win_in_4 = BinomDist.pmf(n=4, k=4, p=win_game_prob)
@@ -616,7 +638,7 @@ def adjust_probabilities(prob_dict, col_name, sum_to, _type):
         db.updateRow({col_name:val},"__playoff_probabilities",("team_name","strength_type","year","games_played"),(tm,_type,year,games_played),operators=['=','=','=','='])
         db.conn.commit()
 
-def get_probabilities(team_name, oppn_teams, strength_pct, projected_std, _type):
+def get_probabilities(team_name, oppn_teams, strength_pct, projected_std, _type, year):
     prob_list = []
     prob_name_list = []
     for opponent in oppn_teams:
@@ -624,10 +646,11 @@ def get_probabilities(team_name, oppn_teams, strength_pct, projected_std, _type)
         qry = """SELECT p.mean_W/162, p.std, ros_W+ros_L, year, games_played
         FROM __team_strength
         JOIN __playoff_probabilities p USING (team_abb, team_name, year, games_played)
-        JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb) t2 USING (team_abb, year, games_played)
+        JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb, year) t2 USING (team_abb, year, games_played)
         WHERE strength_type = '%s'
-        AND team_name = '%s';"""
-        query = qry % (_type, opponent)
+        AND team_name = '%s'
+        AND year = %s;"""
+        query = qry % (_type, opponent, year)
         # raw_input(query)
         res = db.query(query)
 
@@ -657,6 +680,9 @@ def get_probabilities(team_name, oppn_teams, strength_pct, projected_std, _type)
 
 
 if __name__ == "__main__":  
-
-    process()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--year',default=2018)
+    args = parser.parse_args()
+    
+    process(args.year)
     

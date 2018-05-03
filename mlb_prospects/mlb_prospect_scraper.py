@@ -4,13 +4,13 @@ import csv
 import os
 import sys
 import datetime
+import codecs
 from time import time, sleep
 
 
-sys.path.append('/Users/connordog/Dropbox/Desktop_Files/Work_Things/CodeBase/Python_Scripts/Python_Projects/packages')
-
 from py_data_getter import data_getter
 from py_db import db
+
 
 db = db('NSBL')
 getter = data_getter()
@@ -24,9 +24,10 @@ player2_base_url = "http://mlb.com/lookup/json/named.player_info.bam?sport_code=
 def initiate():
     start_time = time()
 
-    for year in range(2017,2018):
+    for year in range(2018,2019):
 
         url = base_url % year
+        # raw_input(url)
         json = getter.get_url_data(url, "json")
         prospect_lists = json["prospect_players"]
 
@@ -45,7 +46,7 @@ def scrape_prospects(year, prospect_lists):
     for list_type in (prospect_lists):
         entries = []
         if list_type not in ('rule5', 'prospects', 'pdp', 'rhp', 'lhp', 'c', '1b', '2b', '3b', 'ss', 'of'):
-        # if list_type in ('draft'):
+        # if list_type in ('atl'):
             list_cnt += 1
             print '\n', list_cnt, year, list_type
             ind_list = prospect_lists[list_type]
@@ -57,6 +58,7 @@ def scrape_prospects(year, prospect_lists):
                 sleep(sleep_time) # be nice
                 player_id = player['player_id']
                 player_url = player_base_url % (year, player_id)
+                # raw_input(player_url)
                 
                 print str(player_id) + '\t',
                 sys.stdout.flush()
@@ -108,18 +110,21 @@ def scrape_prospects(year, prospect_lists):
                 else:
                     info_url = player2_base_url % player_id
                     # print '\t\t'+info_url
+
+                    sleep(sleep_time)
+                    info_json = getter.get_url_data(info_url, "json", json_unicode_convert=True)
+                    # raw_input(info_json)
+                    info_info = info_json["player_info"]["queryResults"]["row"]
+                    dob = info_info["birth_date"]
+                    byear = dob.split("-")[0]
+                    bmonth = dob.split("-")[1]
+                    bday = dob.split("-")[2].split("T")[0]
+
                     try:
-                        sleep(sleep_time)
-                        info_json = getter.get_url_data(info_url, "json")
-                        info_info = info_json["player_info"]["queryResults"]["row"]
                         bats = info_info["bats"]
                         throws = info_info["throws"]
                         height = int(info_info["height_feet"])*12+int(info_info["height_inches"])
-                        weight = int(info_info["weight"])
-                        dob = info_info["birth_date"]
-                        byear = dob.split("-")[0]
-                        bmonth = dob.split("-")[1]
-                        bday = dob.split("-")[2].split("T")[0]                      
+                        weight = int(info_info["weight"])                  
 
                     except UnicodeDecodeError:
                         bats, throws, height, weight = (None, None, None, None)
@@ -134,8 +139,7 @@ def scrape_prospects(year, prospect_lists):
                 entry["birth_day"] = bday
 
                 entry["team"] = player['team_file_code']
-                drafted = player_info["drafted"]
-                
+                drafted = player_info["drafted"]                
 
                 if list_type == 'int':
                     drafted = None

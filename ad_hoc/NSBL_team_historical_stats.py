@@ -244,7 +244,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--team',default='white sox' )
     parser.add_argument('--start_year',default=2004 )
-    parser.add_argument('--end_year',default=2017 )
+    parser.add_argument('--end_year',default=2018 )
     parser.add_argument('--path',default='/Users/connordog/Desktop/')    
     args = parser.parse_args()
     

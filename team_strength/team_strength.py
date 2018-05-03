@@ -41,6 +41,21 @@ def get_optimal_lineups(year):
     AND r.dh_name IS NOT NULL
     ORDER BY team_abb ASC;"""
 
+    total_roster_war_query = """SELECT
+    SUM(p.total_val + 0.25*(l.lineup_val) + 0.75*(r.lineup_val)) AS roster_WAR
+    FROM __optimal_pitching p
+    JOIN __optimal_lineups l USING (team_abb)
+    JOIN __optimal_lineups r USING (team_abb)
+    WHERE l.vs_hand = 'l'
+    AND r.vs_hand = 'r'
+    AND l.dh_name IS NOT NULL
+    AND r.dh_name IS NOT NULL;"""
+
+    total_roster_war = db.query(total_roster_war_query)[0][0]
+
+    replacement_team_wins = (2430-float(total_roster_war))/30
+    rep_team_win_pct = float(replacement_team_wins)/162
+
     optimal_res = db.query(optimal_query)
 
     for row in optimal_res:
@@ -49,7 +64,6 @@ def get_optimal_lineups(year):
 
         true_talent_roster_std = math.sqrt(roster_std)
 
-        rep_team_win_pct = 0.25
         roster_W = float(roster_WAR) + rep_team_win_pct*162
         roster_pct = roster_W/162.0
 
@@ -58,9 +72,13 @@ def get_optimal_lineups(year):
         team_name, games_played, rep_WAR, oWAR, dWAR, FIP_WAR, W, L, py_W, py_L = get_standing_metrics(year, mascot_name)
 
         games_played = float(games_played)
-        w_pct = float(W)/float(W+L)
+        try:
+            w_pct = float(W)/float(W+L)
+            py_pct = float(py_W)/float(py_W+py_L)
+        except ZeroDivisionError:
+            w_pct = 0.5
+            py_pct = 0.5
 
-        py_pct = float(py_W)/float(py_W+py_L)
 
         # games_played = 162
         ros_g = 162-games_played
@@ -125,10 +143,12 @@ def get_standing_metrics(year, mascot_name):
 
     return db.query(query)[0]
 
+    # return db.query(query)[0][0], 0,0,0,0,0,0,0,0,0
+
 
 if __name__ == "__main__":  
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',default=2017)
+    parser.add_argument('--year',default=2018)
     args = parser.parse_args()
     
     process(args.year)

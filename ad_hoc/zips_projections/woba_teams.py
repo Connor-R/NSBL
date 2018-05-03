@@ -25,7 +25,7 @@ def initiate():
         header = ['year', 'team', 'pf', 'n_pa', 'n_woba', 'z_woba', 'diff']
         append_woba_comp.writerow(header)
 
-        for year in range (2011, 2017):
+        for year in range (2011, 2018):
             process(year, append_woba_comp, team_type)
 
 def process(year, append_woba_comp, team_type):

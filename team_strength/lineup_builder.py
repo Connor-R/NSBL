@@ -31,7 +31,7 @@ def process():
 
         team_q = """SELECT DISTINCT team_abb FROM teams 
         WHERE team_abb in %s
-        AND year = 2017
+        AND year = 2018
         ORDER BY team_abb ASC
         """
         team_qry = team_q % (str(team_tup))
@@ -70,7 +70,7 @@ def process_lineups(team_abb, min_war):
     FROM zips_WAR_hitters z
     LEFT JOIN current_rosters USING (player_name, year)
     LEFT JOIN teams t USING (team_id, year)
-    WHERE z.year = 2017
+    WHERE z.year = 2018
     %s
     AND (vsL_WAR > %s OR vsR_WAR > %s OR (z.position = '1b' AND WAR > 1.0) OR (z.position = 'c' AND WAR > 1.0) OR (z.position = 'dh' AND WAR > -0.5))
     ORDER BY position DESC, WAR DESC
@@ -209,7 +209,7 @@ def enter_lineup(team_abb, vs_hand, lu, player_vals):
 
 if __name__ == "__main__":  
     parser = argparse.ArgumentParser()
-    # parser.add_argument('--year',default=2017)
+    # parser.add_argument('--year',default=2018)
     args = parser.parse_args()
     
     process()

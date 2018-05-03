@@ -3,8 +3,6 @@ import argparse
 from decimal import Decimal
 from time import time
 
-sys.path.append('/Users/connordog/Dropbox/Desktop_Files/Work_Things/CodeBase/Python_Scripts/Python_Projects/packages')
-
 from py_db import db
 db = db('NSBL')
 
@@ -29,7 +27,7 @@ def process_pitchers():
         UNION ALL SELECT * FROM _draft_prospects
         UNION ALL SELECT * FROM _international_prospects
     ) prospects
-    WHERE LEFT(position,3) IN ('RHP','LHP')
+    WHERE LEFT(position,3) IN ('RHP','LHP','P')
     """
     res = db.query(query)    
 
@@ -175,7 +173,7 @@ def process_hitters():
         UNION ALL SELECT * FROM _draft_prospects
         UNION ALL SELECT * FROM _international_prospects
     ) prospects
-    WHERE LEFT(position,3) NOT IN ('RHP','LHP')
+    WHERE LEFT(position,3) NOT IN ('RHP','LHP','P')
     """
     res = db.query(query)
 

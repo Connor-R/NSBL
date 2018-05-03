@@ -8,7 +8,7 @@ db = db('NSBL')
 
 def process():
     db.query("TRUNCATE TABLE `processed_team_defense`")
-    for year in range(2006, 2018):
+    for year in range(2006, 2019):
             print str(year) + "\tdefense"
             table = 'processed_team_defense'
 

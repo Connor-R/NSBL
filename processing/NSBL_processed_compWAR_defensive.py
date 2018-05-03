@@ -13,16 +13,16 @@ db = db('NSBL')
 
 
 def process(year):
-    # if year <= 2016:
-    #     register_war(year)
-    # else:
-    #     statistics_war(year)
-
-    for year in range(2006,2011):
+    if year <= 2016:
         register_war(year)
-
-    for year in range(2011,2018):
+    else:
         statistics_war(year)
+
+    # for year in range(2006,2011):
+    #     register_war(year)
+
+    # for year in range(2011,2019):
+    #     statistics_war(year)
 
 def register_war(year):
     player_q = """SELECT
@@ -168,7 +168,7 @@ WHERE year = %s
 
 if __name__ == "__main__":  
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',default=2017)
+    parser.add_argument('--year',default=2018)
     args = parser.parse_args()
     
     process(args.year)

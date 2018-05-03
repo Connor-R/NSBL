@@ -12,7 +12,7 @@ db = db('NSBL')
 def initiate(year):
     process(year)
 
-    # for year in range(2006,2018):
+    # for year in range(2006,2019):
     #     process(year)
 
 def process(year):
@@ -105,7 +105,7 @@ AND team_abb = '%s'
 
 if __name__ == "__main__":        
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',default=2017)
+    parser.add_argument('--year',default=2018)
     args = parser.parse_args()
     
     initiate(args.year)

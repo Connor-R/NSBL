@@ -12,7 +12,7 @@ db = db('NSBL')
 def process(year):
     calculate_war(year)
 
-    # for year in range(2006,2018):
+    # for year in range(2006,2019):
     #     calculate_war(year)
 
 
@@ -44,7 +44,7 @@ WHERE year = %s
         entry['oWAR'] = oWAR
 
         team_q = "AND team_abb = '%s'" % team_abb
-        if year >= 2017:
+        if year > 2016:
             if team_abb == '':
                 team_q = ''
             if player_name[len(player_name)-1:] == "*":
@@ -130,7 +130,7 @@ AND year = %s
 
 if __name__ == "__main__":        
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',default=2017)
+    parser.add_argument('--year',default=2018)
     args = parser.parse_args()
     
     process(args.year)

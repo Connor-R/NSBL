@@ -29,7 +29,7 @@ def initiate():
 
     z_woba_list = []
     n_woba_list = []
-    for year in range (2011, 2017):
+    for year in range (2011, 2018):
         process(year, append_woba_comp, z_woba_list, n_woba_list)
 
     plot(z_woba_list, n_woba_list, path)

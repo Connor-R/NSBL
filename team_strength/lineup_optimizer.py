@@ -24,7 +24,7 @@ def process():
     i = 0 
 
     team_q = """SELECT DISTINCT team_abb FROM teams 
-    WHERE year = 2017
+    WHERE year = 2018
     ORDER BY team_abb ASC
     """
     team_qry = team_q
@@ -45,10 +45,8 @@ def process():
     print "time elapsed (in minutes): " + str(elapsed_time/60.0)
 
 def get_player_matrix(team_abb):
-    if team_abb == 'ChN':
-        tq_add = "AND (t.team_abb = 'ChN' OR z.player_name = 'Jackie Bradley Jr.')"
-    else:
-        tq_add = "AND t.team_abb = '%s'" % team_abb
+
+    tq_add = "AND t.team_abb = '%s'" % team_abb
 
     for lu_type in ('all', 'r', 'l'):
         for dh_type in ('with', 'without'):
@@ -68,7 +66,10 @@ def get_player_matrix(team_abb):
     JOIN zips_offense USING (player_name, year, team_abb)
     LEFT JOIN current_rosters c USING (player_name, year)
     LEFT JOIN teams t USING (team_id, year)
-    WHERE z.year = 2017
+    LEFT JOIN current_rosters_excel cre USING (player_name)
+    WHERE z.year = 2018
+    AND player_name NOT IN ('Gleyber Torres', 'Ronald Acuna', 'Victor Robles')
+    # AND (salary_counted IS NULL OR salary_counted != 'N')
     %s
     ) base"""
 
@@ -84,7 +85,7 @@ def get_player_matrix(team_abb):
                 q_add = """\nLEFT JOIN (
     SELECT player_name, %s AS '%s_WAR'
     FROM zips_WAR_hitters z
-    WHERE z.year = 2017
+    WHERE z.year = 2018
     AND z.position = '%s'
     ) _%s USING (player_name)"""
 
@@ -99,7 +100,7 @@ def get_player_matrix(team_abb):
     FROM zips_WAR_hitters z
     LEFT JOIN current_rosters c USING (player_name, YEAR)
     LEFT JOIN teams t USING (team_id, YEAR)
-    WHERE z.year = 2017
+    WHERE z.year = 2018
     %s"""
 
             cnt_qry = cnt_q % (tq_add)
@@ -189,7 +190,7 @@ def get_player_matrix(team_abb):
 
 if __name__ == "__main__":  
     parser = argparse.ArgumentParser()
-    # parser.add_argument('--year',default=2017)
+    # parser.add_argument('--year',default=2018)
     args = parser.parse_args()
     
     process()

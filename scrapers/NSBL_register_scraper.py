@@ -12,7 +12,7 @@ import NSBL_helpers as helper
 db = db('NSBL')
 
 base_url = "http://thensbl.com/"
-end_year = 2017
+end_year = 2018
 current = True
 
 

@@ -149,7 +149,7 @@ AND make_ds > 0;"""
 if __name__ == "__main__":  
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--yr',default=2017)
+    parser.add_argument('--yr',default=2018)
     parser.add_argument('--_type',default='projected')
 
     args = parser.parse_args()

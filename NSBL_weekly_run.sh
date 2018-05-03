@@ -1,6 +1,8 @@
 # Shell script to run after each weekly sim (updates registers, statistics, and historical statistics)
 # Remember to first download the new rosters/zip file before running
 
+SHELL=/bin/bash
+source "/Users/connordog/.bash_profile"
 
 python scrapers/NSBL_register_scraper.py
 python scrapers/NSBL_scraper.py
