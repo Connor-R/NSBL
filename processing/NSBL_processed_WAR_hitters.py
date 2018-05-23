@@ -130,7 +130,7 @@ AND year = %s
 
 if __name__ == "__main__":        
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',default=2018)
+    parser.add_argument('--year',type=int,default=2018)
     args = parser.parse_args()
     
     process(args.year)

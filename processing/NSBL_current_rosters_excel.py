@@ -1,13 +1,12 @@
 import xlrd
 from py_db import db
+import argparse
 import NSBL_helpers as helper
 
 db = db('NSBL')
 
-def process():
+def process(curr_year):
     rosters_link = '/Users/connordog/Dropbox/Desktop_Files/Baseball/Rosters.xls'
-
-    curr_year = 2018
 
     #Each time we run this, we clear the pre-existing table
     db.query("TRUNCATE TABLE `current_rosters_excel`")
@@ -136,4 +135,9 @@ def name_parser(reverse_name):
     return player_name
 
 if __name__ == "__main__":     
-    process()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--year',type=int,default=2018)
+
+    args = parser.parse_args()
+    
+    process(args.year)

@@ -12,13 +12,12 @@ import NSBL_helpers as helper
 db = db('NSBL')
 
 base_url = "http://thensbl.com/"
-end_year = 2018
-current = True
 
 
 # We want to make sure that the season is valid before trying to grab the data
-def initiate():
-    if current == False:
+def initiate(end_year, scrape_length):
+
+    if current == 'All':
         for year in range (2006, end_year):
             url_index = "http://thensbl.com/%sseason.htm" % year
             try:
@@ -30,8 +29,7 @@ def initiate():
                 continue
 
             process(year, current)
-
-    if current == True:
+    else:
         year = end_year
         print year
         process(year,current)
@@ -225,6 +223,10 @@ def scrape_standings(year, current):
 
 
 if __name__ == "__main__":     
-    initiate()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--end_year',type=int,default=2018)
+    parser.add_argument('--scrape_length',type=str,default='All')
 
-
+    args = parser.parse_args()
+    
+    initiate(args.end_year, args.current)

@@ -81,7 +81,10 @@ WHERE year = %s
         entry['hr_9'] = hr_9
 
         fip_const = float(helper.get_league_average_pitchers(year, 'fip_const'))
-        FIP = ((((13*float(hr))+(3*float(bb))-(2*float(k)))/float(ip))+fip_const)
+        if ip == 0:
+            FIP = 99.99
+        else:
+            FIP = ((((13*float(hr))+(3*float(bb))-(2*float(k)))/float(ip))+fip_const)
         entry['FIP'] = FIP
 
         park_FIP, FIP_min, FIP_WAR = helper.get_pitching_metrics(FIP, ip, year, pf, g, gs, 'fip')
@@ -115,7 +118,7 @@ WHERE year = %s
 
 if __name__ == "__main__":        
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',default=2018)
+    parser.add_argument('--year',type=int,default=2018)
     args = parser.parse_args()
     
     process(args.year)

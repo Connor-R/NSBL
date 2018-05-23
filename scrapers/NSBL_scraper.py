@@ -3,14 +3,12 @@ from py_db import db
 from bs4 import BeautifulSoup
 from time import sleep # be nice
 import re
+import argparse
 import NSBL_helpers as helper
 
 # Scrapes the various statistics from each team home page and writes the data to a MySQL db
 
 db = db('NSBL')
-
-yr = 2018
-current = True
 
 invalid_names = {
     'Cincinatti Reds':'Cincinnati Reds',
@@ -24,9 +22,23 @@ player_mapper = {
     'Michael Al Taylor':'Michael A. Taylor',
 }
 
-def initiate():
-    if current == True:
-        year = yr
+def initiate(end_year, scrape_length):
+    if scrape_length == "All":
+        for year in range(2011, end_year):
+            for team_id in range(1,31):
+                url_base = "http://thensbl.com/%s/" % year
+                url_ext = "tmindex%s.htm" % team_id
+                url_index = url_base + url_ext
+
+                print url_index
+                html_ind = urllib2.urlopen(url_index)
+                soup_ind = BeautifulSoup(html_ind,"lxml")
+                team_name = (' '.join(soup_ind.find_all('h2')[1].get_text().split(" ")[1:]).split("\n")
+                )[0].split("\r")[0]
+
+                initiate_names(team_name, team_id, year, current, url_base)
+    else:
+        year = end_year
 
         #Each week we truncate the current_rosters and re-fill. That's how we keep it current!
         db.query("TRUNCATE TABLE `current_rosters`")
@@ -43,20 +55,6 @@ def initiate():
 
             initiate_names(team_name, team_id, year, current, url_base)
 
-    else:
-        for year in range(2011, 2018):
-            for team_id in range(1,31):
-                url_base = "http://thensbl.com/%s/" % year
-                url_ext = "tmindex%s.htm" % team_id
-                url_index = url_base + url_ext
-
-                print url_index
-                html_ind = urllib2.urlopen(url_index)
-                soup_ind = BeautifulSoup(html_ind,"lxml")
-                team_name = (' '.join(soup_ind.find_all('h2')[1].get_text().split(" ")[1:]).split("\n")
-                )[0].split("\r")[0]
-
-                initiate_names(team_name, team_id, year, current, url_base)
 
 def initiate_names(team_name, team_id, year, current, url_base):
 
@@ -334,5 +332,10 @@ def scrape_current_rosters(team_id, url_base, year, rating_type):
 
 
 if __name__ == "__main__":     
-    initiate()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--end_year',type=int,default=2018)
+    parser.add_argument('--scrape_length',type=str,default="All")
 
+    args = parser.parse_args()
+    
+    initiate(args.end_year, args.current)
