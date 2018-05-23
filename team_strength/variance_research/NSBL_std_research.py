@@ -1,9 +1,9 @@
 # RESULTS
 # 
-# hitters (wOBA) - sigma = -0.0000083789(zips_pa) + 0.0280165048
-# SP (FIP) - sigma = -0.0000997898(zips_ip) + 0.3549314251
-# RP (FIP) - sigma = -0.0003887675(zips_ip) + 0.5332422101
-# team (variance in wins) - expected variance = -0.0101659185(expected_wins) + 3.8408451793
+# hitters (wOBA) - std = -0.0000083283(zips_pa) + 0.0277557512
+# SP (FIP) - std = -0.000169247(zips_ip) + 0.3625156228
+# RP (FIP) - std = -0.0005925607(zips_ip) + 0.5332422101
+# team (std in wins) - expected std = -0.0052542947(expected_wins) + 3.4279721907
 
 from py_db import db
 import numpy as np
@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from time import time
 
+# Recall, std = sqrt(E[(X-µ)^2]), or abs(E(X-µ))
 
 db = db("NSBL")
 
@@ -25,7 +26,7 @@ def initiate():
     hit_x_list = []
     hit_y_list = []
     process_hitters(hit_x_list, hit_y_list)
-    hit_title = 'Full Season Hitter Sigma research'
+    hit_title = 'Full Season Hitter std research'
     hit_x_title = 'zips_projected PA' 
     hit_y_title = 'wOBA diff'
     plot(hit_x_list, hit_y_list, path, hit_x_title, hit_y_title, hit_title)
@@ -33,7 +34,7 @@ def initiate():
     sp_x_list = []
     sp_y_list = []
     process_pitchers(sp_x_list, sp_y_list, 'sp')
-    sp_title = 'Full Season SP Sigma research'
+    sp_title = 'Full Season SP std research'
     sp_x_title = 'zips_projected IP' 
     sp_y_title = 'FIP diff'
     plot(sp_x_list, sp_y_list, path, sp_x_title, sp_y_title, sp_title)
@@ -41,7 +42,7 @@ def initiate():
     rp_x_list = []
     rp_y_list = []
     process_pitchers(rp_x_list, rp_y_list, 'rp')
-    rp_title = 'Full Season RP Sigma research'
+    rp_title = 'Full Season RP std research'
     rp_x_title = 'zips_projected IP' 
     rp_y_title = 'FIP diff'
     plot(rp_x_list, rp_y_list, path, rp_x_title, rp_y_title, rp_title)
@@ -50,7 +51,7 @@ def initiate():
     pythag_x_list = []
     pythag_y_list = []
     process_pythag(pythag_x_list, pythag_y_list)
-    pythag_title = 'Full Season Pythag Standings Sigma research'
+    pythag_title = 'Full Season Pythag Standings std research'
     pythag_x_title = 'pythagorean wins'
     pythag_y_title = 'Wins diff'
     plot(pythag_x_list, pythag_y_list, path, pythag_x_title, pythag_y_title, pythag_title)
@@ -58,10 +59,11 @@ def initiate():
 def process_hitters(x_list, y_list):
     qry = """SELECT YEAR, player_name, 
     n.pa AS sim_pa, z.pa AS zips_pa,
-    ABS(n.park_wOBA-z.park_wOBA) AS wOBA_sigma
+    ABS(n.park_wOBA-z.park_wOBA) AS wOBA_std
     FROM processed_compWAR_offensive n
     JOIN zips_WAR_hitters_comp z USING (YEAR, player_name)
     WHERE YEAR >= 2011
+    AND YEAR < 2018
     AND n.pa > 400;"""
 
     res = db.query(qry)
@@ -83,7 +85,7 @@ def process_pitchers(x_list, y_list, role):
     proj_role, sim_role,
     sim_ip, zips_ip,
     sim_FIP, zips_FIP,
-    ABS(FIP_diff) AS FIP_sigma
+    ABS(FIP_diff) AS FIP_std
     FROM(
         SELECT YEAR, player_name, 
         IF(z_bas.gs/z_bas.g > 0.75, 'sp', 'rp') AS proj_role,
@@ -96,6 +98,7 @@ def process_pitchers(x_list, y_list, role):
         JOIN zips_pitching z_bas USING (YEAR, player_name)
         JOIN register_pitching_primary n_bas USING (YEAR, player_name)
         WHERE YEAR >= 2011
+        AND YEAR < 2018
     ) a
     WHERE proj_role = '%s'
     AND sim_role = '%s'

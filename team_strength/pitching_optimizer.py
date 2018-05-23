@@ -55,7 +55,7 @@ def get_pitchers(team_abb):
     WHERE z.year = 2018
     AND t.team_abb = '%s'
     AND (gs/g) > 0.5
-    # AND (salary_counted IS NULL OR salary_counted != 'N')
+    AND (salary_counted IS NULL OR salary_counted != 'N')
     ORDER BY WAR_per_ip DESC
     LIMIT 6;"""
 
@@ -69,8 +69,8 @@ def get_pitchers(team_abb):
 
     starter_val = 0
     total_val = 0
-    starter_std = 0
-    total_std = 0
+    starter_var = 0
+    total_var = 0
     pitching_id = ""
     for row in starters:
 
@@ -79,31 +79,31 @@ def get_pitchers(team_abb):
 
         sp_name, zips_ip, WAR_per_ip = row
         sp_WAR = float(WAR_per_ip)*float(sp_ip)
-        # fip_std formula from the sigma_research.py script
-        fip_std = -0.0000997898*float(zips_ip) + 0.3549314251
+        # fip_std formula from the NSBL_std_research.py script
+        fip_std = -0.000169247*float(zips_ip) + 0.3625156228
         # scaling the fip variance to a run value and then to a war value
         run_std = (sp_ip/9.0)*fip_std
         sp_std = run_std/10.0
+        sp_var = sp_std**2
 
         s_name = "SP%s_name" % sp_cnt
         s_war = "SP%s_WAR" % sp_cnt
-        s_std = "SP%s_std" % sp_cnt
+        s_var = "SP%s_var" % sp_cnt
 
         entry[s_name] = sp_name
         entry[s_war] = sp_WAR
-        entry[s_std] = sp_std
+        entry[s_var] = sp_var
 
         starter_names.append(sp_name)
         total_val += sp_WAR
         starter_val += sp_WAR
-        total_std += sp_std ** 2
-        starter_std += sp_std ** 2
+        total_var += sp_var
+        starter_var += sp_var
         pitching_id += sp_name + "_"
 
     entry["starter_val"] = starter_val
 
-    starter_std = math.sqrt(starter_std)
-    entry['starter_std'] = starter_std
+    entry['starter_var'] = starter_var
 
     reliever_qry = """SELECT player_name, p.ip as zips_ip, (FIP_WAR/p.ip) AS WAR_per_ip
     FROM zips_pitching p
@@ -114,7 +114,7 @@ def get_pitchers(team_abb):
     WHERE z.year = 2018
     AND t.team_abb = '%s'
     AND player_name NOT IN %s
-    # AND (salary_counted IS NULL OR salary_counted != 'N')
+    AND (salary_counted IS NULL OR salary_counted != 'N')
     ORDER BY WAR_per_ip DESC
     LIMIT 7;"""
 
@@ -126,7 +126,7 @@ def get_pitchers(team_abb):
     rp_cnt = 0
 
     bullpen_val = 0
-    bullpen_std = 0
+    bullpen_var = 0
     for row in relievers:
 
         rp_cnt += 1
@@ -134,40 +134,38 @@ def get_pitchers(team_abb):
 
         rp_name, zips_ip, WAR_per_ip = row
         rp_WAR = float(WAR_per_ip)*float(rp_ip)
-        # fip_std formula from the sigma_research.py script
-        fip_std = -0.0003887675*float(zips_ip) + 0.5332422101
+        # fip_std formula from the NSBL_std_research.py script
+        fip_std = -0.0005925607*float(zips_ip) + 0.5332422101
         # scaling the fip variance to a run value and then to a war value
         run_std = (rp_ip/9.0)*fip_std
         rp_std = run_std/10.0
+        rp_var = rp_std**2
 
         r_name = "RP%s_name" % rp_cnt
         r_war = "RP%s_WAR" % rp_cnt
-        r_std = "RP%s_std" % rp_cnt
+        r_var = "RP%s_var" % rp_cnt
 
         entry[r_name] = rp_name
         entry[r_war] = rp_WAR
-        entry[r_std] = rp_std
+        entry[r_var] = rp_var
 
         starter_names.append(rp_name)
         total_val += rp_WAR
         bullpen_val += rp_WAR
-        total_std += rp_std ** 2
-        bullpen_std += rp_std ** 2
+        total_var += rp_var
+        bullpen_var += rp_var
         pitching_id += rp_name + "_"
 
 
     entry['bullpen_val'] = bullpen_val
 
-    bullpen_std = math.sqrt(bullpen_std)
-    entry['bullpen_std'] = bullpen_std
+    entry['bullpen_var'] = bullpen_var
 
     pitching_id = pitching_id[:-1].replace(' ','')
 
-    total_std = math.sqrt(bullpen_std**2 + starter_std**2)
-
     entry['pitching_id'] = pitching_id
     entry['total_val'] = total_val
-    entry['total_std'] = total_std
+    entry['total_var'] = total_var
 
     db.insertRowDict(entry, '__optimal_pitching', insertMany=False, replace=True, rid=0,debug=1)
     db.conn.commit()
