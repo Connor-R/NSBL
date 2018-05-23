@@ -4,7 +4,7 @@ from decimal import Decimal
 from time import time
 
 from py_db import db
-db = db('NSBL')
+db = db('mlb_prospects')
 
 def initiate():
     start_time = time()
@@ -21,11 +21,11 @@ def initiate():
 
 def process_pitchers():
     entries = []
-    query = """SELECT year, player_id, blurb 
+    query = """SELECT YEAR, prospect_id, _type, blurb 
     FROM(
-        SELECT * FROM _professional_prospects
-        UNION ALL SELECT * FROM _draft_prospects
-        UNION ALL SELECT * FROM _international_prospects
+        SELECT *, 'professional' AS '_type' FROM mlb_prospects_professional
+        UNION ALL SELECT *, 'draft' AS '_type' FROM mlb_prospects_draft
+        UNION ALL SELECT *, 'international' AS '_type' FROM mlb_prospects_international
     ) prospects
     WHERE LEFT(position,3) IN ('RHP','LHP','P')
     """
@@ -33,38 +33,20 @@ def process_pitchers():
 
     for row in res:
         entry = {}
-        year, player_id, blurb = row
+        year, prospect_id, p_type, blurb = row
 
-        print str(player_id) + ' (' + str(year) + ')',
+        print str(prospect_id) + ' (' + str(year) + ')',
         sys.stdout.flush()
 
         entry["year"] = year
-        entry["player_id"] = player_id
+        entry["prospect_id"] = prospect_id
+        entry["prospect_type"] = p_type
 
-        if player_id in (None, 0):
+        if prospect_id in (None, 0):
             continue
 
         if blurb[:4] == '\nPDP':
             continue
-
-        try:
-            overall_text = blurb.split("Overall")[1].split('\n')[0].replace(':','').replace(' ','')[:8]
-            if overall_text[0] not in (' ',':','0','1','2','3','4','5','6','7','8','9'):
-                raise IndexError
-
-            try:
-                text2 = overall_text.split('/')[1]
-            except IndexError:
-                text2 = overall_text.split('/')[-1]
-
-            overall = int(filter(str.isdigit, text2[:2]))
-        except IndexError:
-            overall = 0
-
-        if overall < 20 and overall is not None:
-            overall = overall*10
-        entry["overall"] = overall
-
 
         try:
             try:
@@ -161,17 +143,17 @@ def process_pitchers():
 
     if entries != []:
         for i in range(0, len(entries), 1000):
-            db.insertRowDict(entries[i: i + 1000], '_prospect_pitcher_grades', insertMany=True, replace=True, rid=0,debug=1)
+            db.insertRowDict(entries[i: i + 1000], 'mlb_grades_pitchers', insertMany=True, replace=True, rid=0,debug=1)
             db.conn.commit()
 
 
 def process_hitters():
     entries = []
-    query = """SELECT year, player_id, blurb 
+    query = """SELECT year, prospect_id, _type, blurb 
     FROM(
-        SELECT * FROM _professional_prospects
-        UNION ALL SELECT * FROM _draft_prospects
-        UNION ALL SELECT * FROM _international_prospects
+        SELECT *, 'professional' AS '_type' FROM mlb_prospects_professional
+        UNION ALL SELECT *, 'draft' AS '_type' FROM mlb_prospects_draft
+        UNION ALL SELECT *, 'international' AS '_type' FROM mlb_prospects_international
     ) prospects
     WHERE LEFT(position,3) NOT IN ('RHP','LHP','P')
     """
@@ -179,15 +161,16 @@ def process_hitters():
 
     for row in res:
         entry = {}
-        year, player_id, blurb = row
+        year, prospect_id, p_type, blurb = row
 
-        print str(player_id) + ' (' + str(year) + ')',
+        print str(prospect_id) + ' (' + str(year) + ')',
         sys.stdout.flush()
 
         entry["year"] = year
-        entry["player_id"] = player_id
+        entry["prospect_id"] = prospect_id
+        entry["prospect_type"] = p_type
 
-        if player_id in (None, 0):
+        if prospect_id in (None, 0):
             continue
 
         if blurb[:4] == '\nPDP':
@@ -225,30 +208,11 @@ def process_hitters():
         entry["arm"] = arm
         entry["field"] = field
 
-        try:
-            overall_text = blurb.split("Overall")[1].split('\n')[0].replace(':','').replace(' ','')[:8]
-            if overall_text[0] not in (' ',':','0','1','2','3','4','5','6','7','8','9'):
-                raise IndexError
-
-            try:
-                text2 = overall_text.split('/')[1]
-            except IndexError:
-                text2 = overall_text.split('/')[-1]
-
-            overall = int(filter(str.isdigit, text2[:2]))
-        except IndexError:
-            overall = 0
-
-        if overall < 20:
-            overall = overall*10
-
-        entry["overall"] = overall
-
         entries.append(entry)
 
     if entries != []:
         for i in range(0, len(entries), 1000):
-            db.insertRowDict(entries[i: i + 1000], '_prospect_hitter_grades', insertMany=True, replace=True, rid=0,debug=1)
+            db.insertRowDict(entries[i: i + 1000], 'mlb_grades_hitters', insertMany=True, replace=True, rid=0,debug=1)
             db.conn.commit()
 
 
