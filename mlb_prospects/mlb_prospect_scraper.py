@@ -8,9 +8,9 @@ import codecs
 import argparse
 from time import time, sleep
 
-
 from py_data_getter import data_getter
 from py_db import db
+import prospect_helper as helper
 
 
 db = db("mlb_prospects")
@@ -22,6 +22,7 @@ base_url = "http://m.mlb.com/gen/players/prospects/%s/playerProspects.json"
 player_base_url = "http://m.mlb.com/gen/players/prospects/%s/%s.json"
 player2_base_url = "http://mlb.com/lookup/json/named.player_info.bam?sport_code='mlb'&player_id=%s"
 
+
 def initiate(end_year, scrape_length):
     start_time = time()
 
@@ -31,7 +32,6 @@ def initiate(end_year, scrape_length):
     else:
         year = end_year
         process(year)
-
 
     end_time = time()
     elapsed_time = float(end_time - start_time)
@@ -80,10 +80,10 @@ def scrape_prospects(year, prospect_lists):
 
                 fname = player_info["player_first_name"]
                 lname = player_info["player_last_name"]
-                fname, lname = adjust_names(mlb_id, fname, lname)
+                fname, lname = helper.adjust_mlb_names(mlb_id, fname, lname)
 
                 position = player_info["positions"]
-                position = adjust_positions(mlb_id, position)
+                position = helper.adjust_mlb_positions(mlb_id, position)
 
                 entry["year"] = year
                 entry["rank"] = i
@@ -91,7 +91,6 @@ def scrape_prospects(year, prospect_lists):
                 entry["fname"] = fname
                 entry["lname"] = lname
                 entry["position"] = position
-
 
                 if list_type in ("int","draft"):
                     bats = player_info["bats"]
@@ -111,9 +110,9 @@ def scrape_prospects(year, prospect_lists):
                         print '\n\nNO BIRTHDAY', fname, lname, mlb_id, "\n\n"
                         continue
 
-                    byear, bmonth, bday = adjust_birthdays(mlb_id, byear, bmonth, bday)
+                    byear, bmonth, bday = helper.adjust_mlb_birthdays(mlb_id, byear, bmonth, bday)
 
-                    prospect_id = add_prospect(mlb_id, fname, lname, byear, bmonth, bday, p_type=list_type)
+                    prospect_id = helper.add_prospect(mlb_id, fname, lname, byear, bmonth, bday, p_type=list_type)
 
                 else:
                     info_url = player2_base_url % mlb_id
@@ -132,7 +131,7 @@ def scrape_prospects(year, prospect_lists):
                     bmonth = dob.split("-")[1]
                     bday = dob.split("-")[2].split("T")[0]
 
-                    prospect_id = add_prospect(mlb_id, fname, lname, byear, bmonth, bday, p_type="professional")
+                    prospect_id = helper.add_prospect(mlb_id, fname, lname, byear, bmonth, bday, p_type="professional")
 
                     try:
                         bats = info_info["bats"]
@@ -211,9 +210,7 @@ def scrape_prospects(year, prospect_lists):
                 entry["pre_top100"] = pre_top100
                 entry["eta"] = eta
 
-
                 entry["twitter"] = player_info["twitter"]
-
 
                 blurb = player_info["content"]["default"].replace("<b>","").replace("</b>","").replace("<br />","").replace("<p>","").replace("</p>","").replace("*","")
                 entry["blurb"] = blurb
@@ -238,7 +235,6 @@ def scrape_prospects(year, prospect_lists):
 
                 entries.append(entry)
 
-
         if list_type == "draft":
             table = "mlb_prospects_draft"
         elif list_type == "int":
@@ -252,221 +248,6 @@ def scrape_prospects(year, prospect_lists):
                 db.conn.commit()
 
 
-def add_prospect(site_id, fname, lname, byear, bmonth, bday, p_type):
-
-    check_qry = """SELECT prospect_id
-    FROM professional_prospects
-    WHERE(
-        (mlb_id = "%s" AND mlb_id != 0)
-        OR (mlb_draft_id = "%s" AND mlb_draft_id IS NOT NULL)
-        OR (mlb_international_id = "%s" AND mlb_international_id IS NOT NULL)
-        OR (fg_id = "%s" AND fg_id IS NOT NULL)
-    );
-    """
-
-    check_query = check_qry % (site_id, site_id, site_id, site_id)
-    check_val = db.query(check_query)
-
-    if check_val != ():
-        prospect_id = check_val[0][0]
-        return prospect_id
-    else:
-        check_other_qry = """SELECT prospect_id
-        FROM professional_prospects 
-        WHERE birth_year = %s
-        AND birth_month = %s
-        AND birth_day = %s
-        AND ((mlb_lname LIKE "%%%s%%") OR ("%s" LIKE CONCAT("%%",mlb_lname,"%%")) OR (fg_lname LIKE "%%%s%%") OR ("%s" LIKE CONCAT("%%",fg_lname,"%%")))
-        AND ((mlb_fname LIKE "%%%s%%") OR ("%s" LIKE CONCAT("%%",mlb_fname,"%%")) OR (fg_fname LIKE "%%%s%%") OR ("%s" LIKE CONCAT("%%",fg_fname,"%%")))
-        ;"""
-
-        check_other_query = check_other_qry % (byear, bmonth, bday, lname, lname, lname, lname, fname, fname, fname, fname)
-        check_other_val = db.query(check_other_query)
-
-        if check_other_val != ():
-            prospect_id = check_other_val[0][0]
-
-            f_name = "mlb_fname"
-            l_name = "mlb_lname"
-            if p_type == "professional":
-                id_column = "mlb_id"
-            elif p_type == "draft":
-                id_column = "mlb_draft_id"
-            elif p_type == "int":
-                id_column = "mlb_international_id"
-            elif p_type == "fg":
-                id_column = "fg_id"
-                f_name = "fg_fname"
-                l_name = "fg_lname"
-
-            for col, val in {f_name:fname, l_name:lname, id_column:site_id}.items():
-
-                if col in ("mlb_id",):
-                    set_str = "SET %s = %s" % (col,val)
-                    set_str2 = "AND %s = 0" % (col)
-                else:
-                    set_str = 'SET %s = "%s"' % (col,val)
-                    set_str2 = "AND %s IS NULL" % (col)
-
-                update_qry = """UPDATE professional_prospects 
-                %s
-                WHERE prospect_id = %s 
-                %s;"""
-
-                update_query = update_qry % (set_str, prospect_id, set_str2)
-                db.query(update_query)
-                db.conn.commit()
-
-            return prospect_id
-
-        else:
-            entry = {"birth_year":int(byear), "birth_month":int(bmonth), "birth_day":int(bday)}
-
-            if p_type == "fg":
-                entry["fg_id"] = site_id
-                entry["fg_fname"] = fname
-                entry["fg_lname"] = lname
-            else:
-                entry["mlb_fname"] = fname
-                entry["mlb_lname"] = lname
-                if p_type == "professional":
-                    entry["mlb_id"] = site_id
-                elif p_type == "draft":
-                    entry["mlb_draft_id"] = site_id
-                elif p_type == "int":
-                    entry["mlb_international_id"] = site_id
-
-            db.insertRowDict(entry, "professional_prospects", debug=1)
-            db.conn.commit()
-
-            recheck_val = db.query(check_query)
-            prospect_id = recheck_val[0][0]
-            return prospect_id
-
-
-def adjust_names(mlb_id, fname, lname):
-    names_dict = {
-    "clark_trenton": ["Trent", "Grisham"],
-    "deleon_juan": ["Juan", "De Leon"],
-    "deleon_michael": ["Michael", "De Leon"],
-    "eshelman_thomas": ["Tom", "Eshelman"],
-    "gatewood_jacob": ["Jake", "Gatewood"],
-    "groome_jason": ["Jay", "Groome"],
-    "hall_dl": ["DL", "Hall"],
-    "harrison_kj": ["KJ", "Harrison"],
-    "machado_jonathan": ["Jonatan", "Machado"],
-    "martinez_eddie": ["Eddy", "Martinez"],
-    "pablo_martinez_julio": ["Julio Pablo", "Martinez"],
-    "samuel_franco_wander": ["Wander", "Franco"],
-    "sanchez_hudson": ["Hudson", "Potts"],
-    "santillan_antonio": ["Tony", "Santillan"],
-    "stewart_dj": ["DJ", "Stewart"],
-    "yamamoto_jordan": ["Jordan", "Yamamoto"],
-    "zapata_micker_adolfo": ["Micker", "Adolfo"],
-    593423: ["Frankie", "Montas"],
-    595222: ["Mike", "Gerber"],
-    596001: ["Jakob", "Junis"],
-    607188: ["Jake", "Faria"],
-    621072: ["Nick", "Travieso"],
-    621466: ["DJ", "Stewart"],
-    645277: ["Ozzie", "Albies"],
-    650520: ["Micker", "Adolfo"],
-    650958: ["Michael", "De Leon"],
-    656449: ["Jake", "Gatewood"],
-    657141: ["Jordan", "Yamamoto"],
-    660665: ["Juan", "De Leon"],
-    663574: ["Tony", "Santillan"],
-    663757: ["Trent", "Grisham"],
-    664045: ["Tom", "Eshelman"],
-    668888: ["Hudson", "Potts"],
-    671054: ["Jonatan", "Machado"],
-    677551: ["Wander", "Franco"],
-    679881: ["Julio Pablo", "Martinez"],
-
-    }
-
-    if mlb_id in names_dict:
-        fname, lname = names_dict.get(mlb_id)
-        return fname, lname
-    else:
-        return fname, lname
-
-
-def adjust_positions(mlb_id, positions):
-    positions_dict = {
-    "ryan_ryder": "RHP",
-    669160: "RHP",
-    "taylor_blake": "LHP",
-    642130: "LHP",
-    }
-
-    if mlb_id in positions_dict:
-        positions = positions_dict.get(mlb_id)
-        return positions
-    else:
-        return positions
-
-
-def adjust_birthdays(mlb_id, byear, bmonth, bday):
-    birthday_dict = {
-    "allen_logan":[1997,5,23],
-    "aracena_ricky":[1997,10,2],
-    "bradley_bobby":[1996,5,29],
-    "burdi_zack":[1995,3,9],
-    "burr_ryan":[1994,5,28],
-    "castillo_diego":[1994,1,18],
-    "cody_kyle":[1994,8,9],
-    "deetz_dean":[1993,11,29],
-    "diaz_lewin":[1996,11,19],
-    "dietz_matthias":[1995,9,20],
-    "ervin_phillip":[1992,7,15],
-    "farmer_buck":[1991,2,20],
-    "garcia_victor":[1999,9,16],
-    "green_hunter":[1995,7,12],
-    "hayes_kebryan":[1997,1,28],
-    "hays_austin":[1995,7,5],
-    "hill_brigham":[1995,7,8],
-    "hudson_dakota":[1994,9,15],
-    "jewell_jake":[1993,5,16],
-    "justus_connor":[1994,11,2],
-    "kirby_nathan":[1993,11,23],
-    "knebel_corey":[1991,11,26],
-    "lee_nick":[1991,1,13],
-    "lopez_jose":[1993,9,1],
-    "mathias_mark":[1994,8,2],
-    "mitchell_calvin":[1999,3,8],
-    "molina_leonardo":[1997,7,31],
-    "murphy_brendan":[1999,1,2],
-    "murphy_sean":[1994,10,10],
-    "perez_joe":[1999,8,12],
-    "quantrill_cal":[1995,2,10],
-    "rainey_tanner":[1992,12,25],
-    "riley_austin":[1997,4,2],
-    "rodriguez_jose":[1995,8,29],
-    "rosario_jeisson":[1999,10,22],
-    "shipley_braden":[1992,2,22],
-    "torres_gleyber":[1996,12,13],
-    "tyler_robert":[1995,6,18],
-    "uelmen_erich":[1996,5,19],
-    "varsho_daulton":[1996,7,2],
-    "wakamatsu_luke":[1996,10,10],
-    "ward_taylor":[1993,12,14],
-    "weigel_patrick":[1994,7,8],
-    "whitley_forrest":[1997,9,15],
-    "wise_carl":[1994,5,25],
-    "woodford_jake":[1996,10,28],
-    "zagunis_mark":[1993,2,5],
-
-    }
-
-    if mlb_id in birthday_dict:
-        byear, bmonth, bday = birthday_dict.get(mlb_id)
-        return byear, bmonth, bday
-    else:
-        return byear, bmonth, bday
-
-
-
 if __name__ == "__main__":     
     parser = argparse.ArgumentParser()
     parser.add_argument("--end_year",type=int,default=2018)
@@ -475,6 +256,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     initiate(args.end_year, args.scrape_length)
-
-
 

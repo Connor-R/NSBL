@@ -21,7 +21,7 @@ def initiate():
 
 def process_pitchers():
     entries = []
-    query = """SELECT YEAR, prospect_id, _type, blurb 
+    query = """SELECT YEAR, mlb_id, _type, blurb 
     FROM(
         SELECT *, 'professional' AS '_type' FROM mlb_prospects_professional
         UNION ALL SELECT *, 'draft' AS '_type' FROM mlb_prospects_draft
@@ -33,16 +33,16 @@ def process_pitchers():
 
     for row in res:
         entry = {}
-        year, prospect_id, p_type, blurb = row
+        year, mlb_id, p_type, blurb = row
 
-        print str(prospect_id) + ' (' + str(year) + ')',
+        print str(mlb_id) + ' (' + str(year) + ')',
         sys.stdout.flush()
 
         entry["year"] = year
-        entry["prospect_id"] = prospect_id
+        entry["mlb_id"] = mlb_id
         entry["prospect_type"] = p_type
 
-        if prospect_id in (None, 0):
+        if mlb_id in (None, 0):
             continue
 
         if blurb[:4] == '\nPDP':
@@ -149,7 +149,7 @@ def process_pitchers():
 
 def process_hitters():
     entries = []
-    query = """SELECT year, prospect_id, _type, blurb 
+    query = """SELECT year, mlb_id, _type, blurb 
     FROM(
         SELECT *, 'professional' AS '_type' FROM mlb_prospects_professional
         UNION ALL SELECT *, 'draft' AS '_type' FROM mlb_prospects_draft
@@ -161,16 +161,16 @@ def process_hitters():
 
     for row in res:
         entry = {}
-        year, prospect_id, p_type, blurb = row
+        year, mlb_id, p_type, blurb = row
 
-        print str(prospect_id) + ' (' + str(year) + ')',
+        print str(mlb_id) + ' (' + str(year) + ')',
         sys.stdout.flush()
 
         entry["year"] = year
-        entry["prospect_id"] = prospect_id
+        entry["mlb_id"] = mlb_id
         entry["prospect_type"] = p_type
 
-        if prospect_id in (None, 0):
+        if mlb_id in (None, 0):
             continue
 
         if blurb[:4] == '\nPDP':

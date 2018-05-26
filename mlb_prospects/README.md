@@ -1,2 +1,2 @@
 # NSBL/mlb_prospects
-This repo contains scripts used for scraping and processing the mlb.com prospect lists. Copies of the derived tables can be found as part of the full backup of the database ([http://bit.ly/NSBL_db_backups](http://bit.ly/NSBL_db_backups).)
+This repo contains scripts used for scraping and processing prospect lists from mlb.com, fangraphs, and minorleagueball.com
