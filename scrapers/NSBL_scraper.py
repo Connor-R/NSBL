@@ -24,6 +24,7 @@ player_mapper = {
 
 def initiate(end_year, scrape_length):
     if scrape_length == "All":
+        current = False
         for year in range(2011, end_year):
             for team_id in range(1,31):
                 url_base = "http://thensbl.com/%s/" % year
@@ -39,6 +40,7 @@ def initiate(end_year, scrape_length):
                 initiate_names(team_name, team_id, year, current, url_base)
     else:
         year = end_year
+        current = True
 
         #Each week we truncate the current_rosters and re-fill. That's how we keep it current!
         db.query("TRUNCATE TABLE `current_rosters`")
@@ -338,4 +340,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     
-    initiate(args.end_year, args.current)
+    initiate(args.end_year, args.scrape_length)

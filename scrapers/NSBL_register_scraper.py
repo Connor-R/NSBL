@@ -17,7 +17,8 @@ base_url = "http://thensbl.com/"
 # We want to make sure that the season is valid before trying to grab the data
 def initiate(end_year, scrape_length):
 
-    if current == 'All':
+    if scrape_length == 'All':
+        current = False
         for year in range (2006, end_year):
             url_index = "http://thensbl.com/%sseason.htm" % year
             try:
@@ -30,6 +31,7 @@ def initiate(end_year, scrape_length):
 
             process(year, current)
     else:
+        current = True
         year = end_year
         print year
         process(year,current)
@@ -229,4 +231,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     
-    initiate(args.end_year, args.current)
+    initiate(args.end_year, args.scrape_length)
