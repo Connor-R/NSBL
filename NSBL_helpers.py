@@ -632,6 +632,9 @@ def get_team_abbs(team_name):
     return team_abbs, primary_abb
 
 def get_park_factors(team_abb):
+    """"
+    Scaled park factors (by a factor of 1/3) from fangraphs
+    """
     park_factors_dict = {
     "ANA":98.33,
     "LAA":98.33,
@@ -715,6 +718,10 @@ def get_pos_adj(position):
     return pos_adj
 
 def get_pos_formula(position):
+    """
+    Returns coefficients for error/range/arm/passed ball values according to http://www.ontonova.com/floodstudy/4647-5.html.
+    This should possibly be scaled down?
+    """
     # [range, error, arm, passed ball]
     pos_formula_dict = {
     "P":[0.0,0.0,0.0,0.0],
@@ -768,6 +775,9 @@ def get_zips_average_hitters(year, category):
     return avgs.get(category)
 
 def get_offensive_metrics(year, pf, pa, ab, bb, hbp, _1b, _2b, _3b, hr, sb, cs):
+    """
+    Converts a players offensive boxscore stats in a given year to more advanced stats (ops, wOBA, park_adjusted wOBA, OPS+, wRC, wRC/27, wRC+, RAA, and offensive WAR)
+    """
     wOBA = ((0.691*bb + 0.722*hbp + 0.884*_1b + 1.257*_2b + 1.593*_3b + 2.058*hr + 0.2*sb - 0.398*cs)/(pa))
     
     park_wOBA = wOBA/pf
@@ -806,6 +816,9 @@ def get_offensive_metrics(year, pf, pa, ab, bb, hbp, _1b, _2b, _3b, hr, sb, cs):
     return ops, wOBA, park_wOBA, OPS_plus, wrc, wrc27, wRC_plus, raa, oWAR
 
 def get_zips_offensive_metrics(year, pf, pa, ab, bb, hbp, _1b, _2b, _3b, hr, sb, cs):
+    """
+    Converts a players offensive zips boxscore stats in a given year to more advanced stats (ops, wOBA, park_adjusted wOBA, OPS+, wRC, wRC/27, wRC+, RAA, and offensive WAR)
+    """
     wOBA = ((0.691*bb + 0.722*hbp + 0.884*_1b + 1.257*_2b + 1.593*_3b + 2.058*hr + 0.2*sb - 0.398*cs)/(pa))
     
     park_wOBA = wOBA/pf
@@ -878,6 +891,9 @@ def get_zips_average_pitchers(year, category):
     return avgs.get(category)
 
 def get_pitching_metrics(metric_9, ip, year, pf,  g, gs, _type):
+    """
+    Converts a players pitching boxscore stats in a given year to either parkadjusted FIP/ERA, FIP-/ERA-, fWAR/rWAR.
+    """
     park_metric = metric_9/pf
 
     search_metric = 'lg_' + _type
@@ -936,6 +952,9 @@ def get_hand(player_name):
     return hand
 
 def get_def_values(search_name, position, year):
+    """
+    Gets the baseline defensive ratings for a player given the desired position and year.
+    """
     p = position.lower()
     pos = position.upper()
     rn = '%s_range' % p

@@ -8,6 +8,7 @@ from scipy import optimize
 import math
 import numpy as np
 
+
 # script that determines the best possible lineup for all teams.
 # it uses the hungarian algorithm (and some hacky tricks) to solve this assignment problem. 
 
@@ -43,6 +44,7 @@ def process():
     print "lineup_optimizer.py"
     print "time elapsed (in seconds): " + str(elapsed_time)
     print "time elapsed (in minutes): " + str(elapsed_time/60.0)
+
 
 def get_player_matrix(team_abb):
 
@@ -195,3 +197,4 @@ if __name__ == "__main__":
     
     process()
     
+

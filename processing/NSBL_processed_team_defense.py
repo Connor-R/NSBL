@@ -1,7 +1,9 @@
 from py_db import db
 import NSBL_helpers as helper
 
+
 # Re-computes the team defense tables
+
 
 db = db('NSBL')
 
@@ -23,12 +25,12 @@ def process():
 def process_defense(year):
     entries = []
     qry = """SELECT 
-r.team_abb, SUM(defense), SUM(position_adj), SUM(dWAR)
-FROM register_batting_primary r
-JOIN processed_compWAR_offensive o USING (player_name, team_abb, YEAR)
-JOIN processed_WAR_hitters w USING (player_name, team_abb, YEAR)
-WHERE r.year = %s
-GROUP BY r.team_abb"""
+    r.team_abb, SUM(defense), SUM(position_adj), SUM(dWAR)
+    FROM register_batting_primary r
+    JOIN processed_compWAR_offensive o USING (player_name, team_abb, YEAR)
+    JOIN processed_WAR_hitters w USING (player_name, team_abb, YEAR)
+    WHERE r.year = %s
+    GROUP BY r.team_abb;"""
 
     query = qry % (year)
     res = db.query(query)
@@ -46,7 +48,6 @@ GROUP BY r.team_abb"""
         entries.append(entry)
 
     return entries
-
 
 
 if __name__ == "__main__":     

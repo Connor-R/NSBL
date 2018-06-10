@@ -8,7 +8,7 @@ import math
 from scipy.stats import norm as NormDist, binom as BinomDist
 
 
-# INCOMPLETED
+# INCOMPLETE
 # script that produces in-playoffs probability charts
 
 

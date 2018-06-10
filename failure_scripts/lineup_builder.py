@@ -6,6 +6,7 @@ import itertools
 from time import time
 
 
+# OUTDATED (no longer needed)
 # script that determines the value for most reasonable lineups for all teams. 
 # it uses some heuristics to limit the player list and then brute force finds the value of each lineup
 

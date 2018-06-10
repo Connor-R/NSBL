@@ -1,7 +1,9 @@
 from py_db import db
 import NSBL_helpers as helper
 
+
 # Re-computes the team hitting tables
+
 
 db = db('NSBL')
 
@@ -28,11 +30,11 @@ def process():
 def process_basic(year):
     entries = []
     qry = """SELECT 
-r.team_abb, SUM(w), SUM(l), SUM(sv), SUM(g), SUM(gs), SUM(cg), SUM(sho), ROUND(SUM(ROUND(r.ip) + (10 * (r.ip - ROUND(r.ip)) / 3)),1) AS ip, SUM(h), SUM(r), SUM(er), SUM(bb), SUM(k), SUM(hr), SUM(gdp)
-FROM register_pitching_primary r
-JOIN processed_WAR_pitchers p USING (player_name, team_abb, YEAR)
-WHERE r.year = %s
-GROUP BY r.team_abb"""
+    r.team_abb, SUM(w), SUM(l), SUM(sv), SUM(g), SUM(gs), SUM(cg), SUM(sho), ROUND(SUM(ROUND(r.ip) + (10 * (r.ip - ROUND(r.ip)) / 3)),1) AS ip, SUM(h), SUM(r), SUM(er), SUM(bb), SUM(k), SUM(hr), SUM(gdp)
+    FROM register_pitching_primary r
+    JOIN processed_WAR_pitchers p USING (player_name, team_abb, YEAR)
+    WHERE r.year = %s
+    GROUP BY r.team_abb"""
 
     query = qry % (year)
     res = db.query(query)
@@ -71,11 +73,11 @@ GROUP BY r.team_abb"""
 def process_advanced(year):
     entries = []
     qry = """SELECT 
-r.team_abb, ROUND(SUM(ROUND(r.ip) + (10 * (r.ip - ROUND(r.ip)) / 3)),1) AS ip, SUM(pf*p.ip)/SUM(p.ip), SUM(k_9*p.ip)/SUM(p.ip), SUM(bb_9*p.ip)/SUM(p.ip), SUM(hr_9*p.ip)/SUM(p.ip), SUM(FIP*p.ip)/SUM(p.ip), SUM(park_FIP*p.ip)/SUM(p.ip), SUM(FIP_minus*p.ip)/SUM(p.ip), SUM(FIP_WAR), SUM(p.ERA*p.ip)/SUM(p.ip), SUM(park_ERA*p.ip)/SUM(p.ip), SUM(ERA_minus*p.ip)/SUM(p.ip), SUM(ERA_WAR)
-FROM register_pitching_primary r
-JOIN processed_WAR_pitchers p USING (player_name, team_abb, YEAR)
-WHERE r.year = %s
-GROUP BY r.team_abb"""
+    r.team_abb, ROUND(SUM(ROUND(r.ip) + (10 * (r.ip - ROUND(r.ip)) / 3)),1) AS ip, SUM(pf*p.ip)/SUM(p.ip), SUM(k_9*p.ip)/SUM(p.ip), SUM(bb_9*p.ip)/SUM(p.ip), SUM(hr_9*p.ip)/SUM(p.ip), SUM(FIP*p.ip)/SUM(p.ip), SUM(park_FIP*p.ip)/SUM(p.ip), SUM(FIP_minus*p.ip)/SUM(p.ip), SUM(FIP_WAR), SUM(p.ERA*p.ip)/SUM(p.ip), SUM(park_ERA*p.ip)/SUM(p.ip), SUM(ERA_minus*p.ip)/SUM(p.ip), SUM(ERA_WAR)
+    FROM register_pitching_primary r
+    JOIN processed_WAR_pitchers p USING (player_name, team_abb, YEAR)
+    WHERE r.year = %s
+    GROUP BY r.team_abb"""
 
     query = qry % (year)
     res = db.query(query)
@@ -107,7 +109,6 @@ GROUP BY r.team_abb"""
         entries.append(entry)
 
     return entries
-
 
 
 if __name__ == "__main__":     

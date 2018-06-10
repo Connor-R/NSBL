@@ -7,6 +7,7 @@ import numpy as np
 import math
 from scipy.stats import norm as NormDist, binom as BinomDist
 
+
 # script that estimates playoff probabilities based on both optimized and projected roster strength and variance. it then bootstraps to estimate probabilities of round advancements using the log5 odds ratio and binomial probability mass function to find the odds of winning a 5/7 game series
 
 
@@ -34,6 +35,7 @@ def process(year):
     print "playoff_probabilities.py"
     print "time elapsed (in seconds): " + str(elapsed_time)
     print "time elapsed (in minutes): " + str(elapsed_time/60.0)
+
 
 def process_basic(year):
     print 'initial table setup'
@@ -115,6 +117,7 @@ def process_basic(year):
             db.insertRowDict(entry, '__playoff_probabilities', insertMany=False, replace=True, rid=0,debug=1)
             db.conn.commit()
 
+
 def process_matrix(year):
     print 'matchup matrix'
     entries = []
@@ -168,6 +171,7 @@ def process_matrix(year):
     db.insertRowDict(entries, '__matchup_matrix', insertMany=True, replace=True, rid=0,debug=1)
     db.conn.commit()
 
+
 def process_division(year):
     print 'division'
     for _type in ('roster', 'projected'):
@@ -202,6 +206,7 @@ def process_division(year):
             col_name = 'win_division'
             adjust_probabilities(div_dict, col_name, 1.0, _type)
 
+
 def process_top_seed(year):
     print "top seed"
 
@@ -234,6 +239,7 @@ def process_top_seed(year):
 
             col_name = 'top_seed'
             adjust_probabilities(top_dict, col_name, 1.0, _type)
+
 
 def process_wc1(year):
     print 'wc1'
@@ -301,6 +307,7 @@ def process_wc1(year):
 
             col_name = 'wc_1'
             adjust_probabilities(wc_dict, col_name, 1.0, _type)
+
 
 def process_wc2(year):
     print "wc2"
@@ -376,6 +383,7 @@ def process_wc2(year):
             col_name = 'wc_2'
             adjust_probabilities(wc2_dict, col_name, 1.0, _type)
 
+
 def process_win_wc(year):
     print "win wild card"
     
@@ -432,6 +440,7 @@ def process_win_wc(year):
             col_name = 'win_wc'
             adjust_probabilities(adv_dict, col_name, 1.0, _type)
 
+
 def process_ds(year):
     print "make division series"
 
@@ -447,6 +456,7 @@ def process_ds(year):
             db.updateRow({col_name:div_prob},"__playoff_probabilities",("team_name","strength_type","year",
             "games_played"),(team_name,_type,year,games_played),operators=['=','=','=','='])
             db.conn.commit()
+
 
 def process_cs(year):
     print "make championship series"
@@ -517,6 +527,7 @@ def process_cs(year):
             col_name = 'make_cs'
             adjust_probabilities(cs_dict, col_name, 2.0, _type)
 
+
 def process_ws(year):
     print "make world series"
     
@@ -568,6 +579,7 @@ def process_ws(year):
 
             col_name = 'make_ws'
             adjust_probabilities(ws_dict, col_name, 1.0, _type)
+
 
 def process_champion(year):
     print "win world series"
@@ -621,6 +633,7 @@ def process_champion(year):
         col_name = 'win_ws'
         adjust_probabilities(champ_dict, col_name, 1.0, _type)
 
+
 def adjust_probabilities(prob_dict, col_name, sum_to, _type):
     bool_temp = False
     final_vals = {}
@@ -659,6 +672,7 @@ def adjust_probabilities(prob_dict, col_name, sum_to, _type):
         val, year, games_played = vals
         db.updateRow({col_name:val},"__playoff_probabilities",("team_name","strength_type","year","games_played"),(tm,_type,year,games_played),operators=['=','=','=','='])
         db.conn.commit()
+
 
 def get_probabilities(team_name, oppn_teams, strength_pct, games_played, projected_var, _type, year):
     prob_list = []
@@ -703,3 +717,4 @@ if __name__ == "__main__":
     
     process(args.year)
     
+

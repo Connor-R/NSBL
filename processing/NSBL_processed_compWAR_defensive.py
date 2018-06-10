@@ -24,18 +24,19 @@ def process(year):
     # for year in range(2011,2019):
     #     statistics_war(year)
 
+
 def register_war(year):
     player_q = """SELECT
-player_name,
-team_abb,
-position,
-age,
-pa
-FROM register_batting_primary
-JOIN register_batting_secondary USING (year, player_name, team_abb, position, age)
-JOIN register_batting_analytical USING (year, player_name, team_abb, position, age)
-WHERE year = %s
-"""
+    player_name,
+    team_abb,
+    position,
+    age,
+    pa
+    FROM register_batting_primary
+    JOIN register_batting_secondary USING (year, player_name, team_abb, position, age)
+    JOIN register_batting_analytical USING (year, player_name, team_abb, position, age)
+    WHERE year = %s;
+    """
     player_qry = player_q % (year)
     player_data = db.query(player_qry)
 
@@ -104,13 +105,13 @@ WHERE year = %s
 
 def statistics_war(year):
     player_q = """SELECT
-player_name,
-team_id,
-pos,
-inn
-FROM statistics_fielding
-WHERE year = %s
-"""
+    player_name,
+    team_id,
+    pos,
+    inn
+    FROM statistics_fielding
+    WHERE year = %s;
+    """
     player_qry = player_q % (year)
     player_data = db.query(player_qry)
 
@@ -172,4 +173,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     process(args.year)
-    
+
+

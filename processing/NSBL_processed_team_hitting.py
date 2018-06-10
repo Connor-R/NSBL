@@ -1,7 +1,9 @@
 from py_db import db
 import NSBL_helpers as helper
 
+
 # Re-computes the team hitting tables
+
 
 db = db('NSBL')
 
@@ -28,13 +30,13 @@ def process():
 def process_basic(year):
     entries = []
     qry = """SELECT 
-r.team_abb, 
-SUM(pa), SUM(ab), SUM(h), SUM(2B), SUM(3b), SUM(Hr), SUM(r), SUM(rbi), SUM(hbp), SUM(bb), SUM(k), SUM(sb), SUM(cs)
-FROM register_batting_primary r
-JOIN processed_compWAR_offensive o USING (player_name, team_abb, YEAR)
-JOIN processed_WAR_hitters w USING (pa, player_name, team_abb, YEAR)
-WHERE r.year = %s
-GROUP BY r.team_abb"""
+    r.team_abb, 
+    SUM(pa), SUM(ab), SUM(h), SUM(2B), SUM(3b), SUM(Hr), SUM(r), SUM(rbi), SUM(hbp), SUM(bb), SUM(k), SUM(sb), SUM(cs)
+    FROM register_batting_primary r
+    JOIN processed_compWAR_offensive o USING (player_name, team_abb, YEAR)
+    JOIN processed_WAR_hitters w USING (pa, player_name, team_abb, YEAR)
+    WHERE r.year = %s
+    GROUP BY r.team_abb;"""
 
     query = qry % (year)
     res = db.query(query)
@@ -76,12 +78,12 @@ GROUP BY r.team_abb"""
 def process_advanced(year):
     entries = []
     qry = """SELECT 
-r.team_abb, SUM(pa), SUM(pf*pa)/SUM(pa), SUM(wOBA*pa)/SUM(pa), SUM(park_wOBA*pa)/SUM(pa), SUM(OPS*pa)/SUM(pa), SUM(OPS_plus*pa)/SUM(pa), SUM(babip*pa)/SUM(pa), SUM(wRC), SUM(wRC_27*pa)/SUM(pa), SUM(wRC_plus*pa)/SUM(pa), SUM(rAA), SUM(w.oWAR)
-FROM register_batting_primary r
-JOIN processed_compWAR_offensive o USING (player_name, team_abb, YEAR)
-JOIN processed_WAR_hitters w USING (pa, player_name, team_abb, YEAR)
-WHERE r.year = %s
-GROUP BY r.team_abb"""
+    r.team_abb, SUM(pa), SUM(pf*pa)/SUM(pa), SUM(wOBA*pa)/SUM(pa), SUM(park_wOBA*pa)/SUM(pa), SUM(OPS*pa)/SUM(pa), SUM(OPS_plus*pa)/SUM(pa), SUM(babip*pa)/SUM(pa), SUM(wRC), SUM(wRC_27*pa)/SUM(pa), SUM(wRC_plus*pa)/SUM(pa), SUM(rAA), SUM(w.oWAR)
+    FROM register_batting_primary r
+    JOIN processed_compWAR_offensive o USING (player_name, team_abb, YEAR)
+    JOIN processed_WAR_hitters w USING (pa, player_name, team_abb, YEAR)
+    WHERE r.year = %s
+    GROUP BY r.team_abb;"""
 
     query = qry % (year)
     res = db.query(query)
@@ -109,7 +111,6 @@ GROUP BY r.team_abb"""
         entries.append(entry)
 
     return entries
-
 
 
 if __name__ == "__main__":     

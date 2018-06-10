@@ -6,6 +6,7 @@ from time import time
 import math
 import numpy as np
 
+
 # script that estiamtes overall team strength by comparing in-season performance to optimized roster strength (lineup vsL, lineup vsR, starting rotation, bullpen) <-- need to add in bench strength
 
 
@@ -23,6 +24,7 @@ def process(year):
     print "team_strength.py"
     print "time elapsed (in seconds): " + str(elapsed_time)
     print "time elapsed (in minutes): " + str(elapsed_time/60.0)
+
 
 def get_optimal_lineups(year):
     optimal_query = """SELECT team_abb, 
@@ -158,3 +160,4 @@ if __name__ == "__main__":
     
     process(args.year)
     
+

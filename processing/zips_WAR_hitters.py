@@ -4,10 +4,12 @@ from decimal import Decimal
 import NSBL_helpers as helper
 from time import time
 
+
 # Goes through the list of projected offensive players, and cycles through all 9 positions (including DH). if the position exists, it writes a row. if not, it doesn't.
 
 
 db = db('NSBL')
+
 
 def process():
     start_time = time()
@@ -254,7 +256,6 @@ def get_zips_def_ratings(search_name, position, year):
     return rn_val, err_val, arm_val, pb_val, _range, error, _arm, passed_ball
 
 
-
 if __name__ == "__main__":        
     parser = argparse.ArgumentParser()
     # parser.add_argument('--year',default=2018)
@@ -262,3 +263,4 @@ if __name__ == "__main__":
     
     process()
     
+

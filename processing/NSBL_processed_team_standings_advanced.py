@@ -1,7 +1,9 @@
 from py_db import db
 import NSBL_helpers as helper
 
+
 # Re-computes the advanced standings metrics and writes it to the db
+
 
 db = db('NSBL')
 
@@ -12,15 +14,15 @@ def process():
 
     entries = []
     teamWAR_qry = """SELECT
-year,
-team_abb,
-dWAR,
-oWAR,
-(replacement/10) as repWAR,
-FIP_WAR,
-ERA_WAR
-FROM processed_WAR_team
-"""
+    year,
+    team_abb,
+    dWAR,
+    oWAR,
+    (replacement/10) as repWAR,
+    FIP_WAR,
+    ERA_WAR
+    FROM processed_WAR_team
+    """
 
     team_WAR_list = db.query(teamWAR_qry)
 
@@ -40,18 +42,18 @@ FROM processed_WAR_team
             continue
         else:
             record_q = """SELECT
-year,
-team_name, 
-games_played, 
-w,
-l,
-rf,
-ra
-FROM team_standings
-WHERE team_name LIKE '%%%s%%'
-AND year = %s
-AND games_played = (SELECT MAX(games_played) FROM team_standings WHERE team_name LIKE '%%%s%%' AND year = %s)
-"""
+    year,
+    team_name, 
+    games_played, 
+    w,
+    l,
+    rf,
+    ra
+    FROM team_standings
+    WHERE team_name LIKE '%%%s%%'
+    AND year = %s
+    AND games_played = (SELECT MAX(games_played) FROM team_standings WHERE team_name LIKE '%%%s%%' AND year = %s)
+    """
             record_qry = record_q % (mascot_name, year, mascot_name, year)
             # raw_input(record_qry)
 
@@ -86,6 +88,7 @@ AND games_played = (SELECT MAX(games_played) FROM team_standings WHERE team_name
     if entries != []: 
         db.insertRowDict(entries, table, replace=True, insertMany=True, rid=0)
     db.conn.commit()
+
 
 if __name__ == "__main__":     
     process()

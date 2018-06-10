@@ -16,9 +16,12 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from time import time
 
+
 # Recall, std = sqrt(E[(X-µ)^2]), or abs(E(X-µ))
 
+
 db = db("NSBL")
+
 
 def initiate():
     path = os.getcwd()
@@ -56,6 +59,7 @@ def initiate():
     pythag_y_title = 'Wins diff'
     plot(pythag_x_list, pythag_y_list, path, pythag_x_title, pythag_y_title, pythag_title)
 
+
 def process_hitters(x_list, y_list):
     qry = """SELECT YEAR, player_name, 
     n.pa AS sim_pa, z.pa AS zips_pa,
@@ -73,6 +77,7 @@ def process_hitters(x_list, y_list):
 
         x_list.append(float(zips_pa))
         y_list.append(float(wOBA_diff_stddev))
+
 
 def process_pitchers(x_list, y_list, role):
     if role == 'sp':
@@ -116,6 +121,7 @@ def process_pitchers(x_list, y_list, role):
         x_list.append(float(zips_ip))
         y_list.append(float(FIP_diff_stddev))
 
+
 def process_pythag(x_list, y_list):
     qry = """SELECT YEAR, team_name, w, py_wins, ABS(w-py_wins) AS pythag_diff
     FROM processed_team_standings_advanced
@@ -129,6 +135,7 @@ def process_pythag(x_list, y_list):
 
         x_list.append(float(py_wins))
         y_list.append(float(pythag_diff))
+
 
 def plot(x_list, y_list, path, x_name='x_title', y_name='y_title', figname = 'fig_name'):
     size = len(x_list)

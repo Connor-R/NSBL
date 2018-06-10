@@ -9,7 +9,9 @@ import NSBL_helpers as helper
 
 # Scrapes the yearly registers from the home page and writes the data to a MySQL db
 
+
 db = db('NSBL')
+
 
 base_url = "http://thensbl.com/"
 
@@ -35,6 +37,7 @@ def initiate(end_year, scrape_length):
         year = end_year
         print year
         process(year,current)
+
 
 def process(year, current):
     scrape_standings(year, current)
@@ -78,6 +81,7 @@ def get_row_data(table, field=False, hand=""):
     # raw_input("")
 
     return players
+
 
 def get_tables(table_url):
     sleep(0.5)
@@ -232,3 +236,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     initiate(args.end_year, args.scrape_length)
+
+

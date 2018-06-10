@@ -3,6 +3,7 @@ import argparse
 from decimal import Decimal
 import NSBL_helpers as helper
 
+
 # Calculates the pitching portion of WAR for every player in a years pitching register.
 
 
@@ -15,20 +16,21 @@ def process(year):
     # for year in range (2006, 2019):
     #     pitching_war(year)
 
+
 def pitching_war(year):
     player_q = """SELECT
-player_name,
-team_abb,
-position,
-age, 
-g, 
-gs,
-era,
-ROUND(ip) + (10 * (ip - ROUND(ip)) / 3) as ip,
-h, r, er, bb, k, hr
-FROM register_pitching_primary
-WHERE year = %s
-"""
+    player_name,
+    team_abb,
+    position,
+    age, 
+    g, 
+    gs,
+    era,
+    ROUND(ip) + (10 * (ip - ROUND(ip)) / 3) as ip,
+    h, r, er, bb, k, hr
+    FROM register_pitching_primary
+    WHERE year = %s;
+    """
 
     player_qry = player_q % (year)
     player_data = db.query(player_qry)
@@ -122,3 +124,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     process(args.year)
+
+

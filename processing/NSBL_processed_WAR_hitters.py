@@ -18,15 +18,15 @@ def process(year):
 
 def calculate_war(year):
     player_q = """SELECT
-team_abb,
-player_name,
-position,
-age,
-pa,
-oWAR
-FROM processed_compWAR_offensive
-WHERE year = %s
-"""
+    team_abb,
+    player_name,
+    position,
+    age,
+    pa,
+    oWAR
+    FROM processed_compWAR_offensive
+    WHERE year = %s;
+    """
     player_qry = player_q % (year)
     player_data = db.query(player_qry)
 
@@ -60,16 +60,16 @@ WHERE year = %s
         search_name = s_name.replace("'","''")
 
         def_q = """SELECT
-SUM(defense), 
-SUM(inn) AS inn,
-SUM(pa),
-SUM(position_adj),
-SUM(dWAR)
-FROM processed_compWAR_defensive
-WHERE player_name = '%s'
-AND year = %s
-%s
-"""
+    SUM(defense), 
+    SUM(inn) AS inn,
+    SUM(pa),
+    SUM(position_adj),
+    SUM(dWAR)
+    FROM processed_compWAR_defensive
+    WHERE player_name = '%s'
+    AND year = %s
+    %s;
+    """
         def_qry = def_q % (search_name, year, team_q)
         def_query = db.query(def_qry)
 
@@ -127,7 +127,6 @@ AND year = %s
     #     raw_input("")
 
 
-
 if __name__ == "__main__":        
     parser = argparse.ArgumentParser()
     parser.add_argument('--year',type=int,default=2018)
@@ -135,3 +134,4 @@ if __name__ == "__main__":
     
     process(args.year)
     
+

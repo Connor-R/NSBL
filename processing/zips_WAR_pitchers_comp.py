@@ -4,6 +4,7 @@ from decimal import Decimal
 import NSBL_helpers as helper
 from time import time
 
+
 # Goes through the list of projected pitchers and projects their split pitching WAR components
 
 
@@ -84,3 +85,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     process()
+
+

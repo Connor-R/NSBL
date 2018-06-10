@@ -6,7 +6,8 @@ from time import time
 import math
 import numpy as np
 
-# script that estiamtes value for each teams best projected 13 man pitching staff
+
+# script that estimates value for each teams best projected 13 man pitching staff
 
 
 db = db('NSBL')
@@ -40,6 +41,7 @@ def process():
     print "pitching_optimizer.py"
     print "time elapsed (in seconds): " + str(elapsed_time)
     print "time elapsed (in minutes): " + str(elapsed_time/60.0)
+
 
 def get_pitchers(team_abb):
     entry = {}
@@ -178,3 +180,4 @@ if __name__ == "__main__":
     
     process()
     
+

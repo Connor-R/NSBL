@@ -6,9 +6,12 @@ import re
 import argparse
 import NSBL_helpers as helper
 
+
 # Scrapes the various statistics from each team home page and writes the data to a MySQL db
 
+
 db = db('NSBL')
+
 
 invalid_names = {
     'Cincinatti Reds':'Cincinnati Reds',
@@ -17,10 +20,12 @@ invalid_names = {
     'World Series Champion Washington Nationals':'Washington Nationals',
     }
 
+
 player_mapper = {
     'Jyung Ho Kang':'Jung Ho Kang',
     'Michael Al Taylor':'Michael A. Taylor',
 }
+
 
 def initiate(end_year, scrape_length):
     if scrape_length == "All":
@@ -341,3 +346,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     initiate(args.end_year, args.scrape_length)
+

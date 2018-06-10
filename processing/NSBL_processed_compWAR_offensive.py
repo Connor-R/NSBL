@@ -6,7 +6,9 @@ import NSBL_helpers as helper
 
 # Calculates the offense only portion of WAR for every player in a years hitting register.
 
+
 db = db('NSBL')
+
 
 def process(year):
     offensive_war(year)
@@ -15,21 +17,20 @@ def process(year):
     #     offensive_war(year)
 
 
-
 def offensive_war(year):
     player_q = """SELECT
-player_name,
-team_abb,
-position,
-age,
-pa,
-ab,
-(h-2b-3b-hr) as 1b, 2b, 3b, hr, r, rbi, bb, k, hbp, sb, cs, ops, babip
-FROM register_batting_primary
-JOIN register_batting_secondary USING (year, player_name, team_abb, position, age)
-JOIN register_batting_analytical USING (year, player_name, team_abb, position, age)
-WHERE year = %s
-"""
+    player_name,
+    team_abb,
+    position,
+    age,
+    pa,
+    ab,
+    (h-2b-3b-hr) as 1b, 2b, 3b, hr, r, rbi, bb, k, hbp, sb, cs, ops, babip
+    FROM register_batting_primary
+    JOIN register_batting_secondary USING (year, player_name, team_abb, position, age)
+    JOIN register_batting_analytical USING (year, player_name, team_abb, position, age)
+    WHERE year = %s;
+    """
     player_qry = player_q % (year)
     player_data = db.query(player_qry)
 
@@ -91,4 +92,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     process(args.year)
+    
+
     

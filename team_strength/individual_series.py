@@ -2,6 +2,7 @@ from py_db import db
 import argparse
 import math
 
+
 db = db('NSBL')
 
 
