@@ -61,4 +61,4 @@ python team_strength/playoff_probabilities.py --year "$year"
 wait
 
 cd weekly_leaderboards
-bash leaderboard_run.sh
+bash post_leaderboards_run.sh

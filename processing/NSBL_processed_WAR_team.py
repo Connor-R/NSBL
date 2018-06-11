@@ -26,25 +26,25 @@ def process(year):
     WHERE team_abb != ''
     GROUP BY team_abb;
     """
-        team_list_qry = team_list_q % (year, year)
-        team_list = db.query(team_list_qry)
+    team_list_qry = team_list_q % (year, year)
+    team_list = db.query(team_list_qry)
 
-        entries = []
-        for team in team_list:
-            team_abb = team[0]
+    entries = []
+    for team in team_list:
+        team_abb = team[0]
 
-            entry = team_war(team_abb, year)
-            entries.append(entry)
+        entry = team_war(team_abb, year)
+        entries.append(entry)
 
 
-        if entries != []: 
-            db.insertRowDict(entries, 'processed_WAR_team', replace=True, insertMany=True, rid=0)
-        db.conn.commit()
+    if entries != []: 
+        db.insertRowDict(entries, 'processed_WAR_team', replace=True, insertMany=True, rid=0)
+    db.conn.commit()
 
-        # # used for debugging
-        # for e in entries:
-        #     print e
-        #     raw_input("")
+    # # used for debugging
+    # for e in entries:
+    #     print e
+    #     raw_input("")
 
 
 def team_war(team_abb, year):
