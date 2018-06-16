@@ -63,15 +63,16 @@ def get_player_matrix(team_abb):
 
             q = """SELECT *
     FROM (
-    SELECT DISTINCT player_name, t.team_abb, (ab+bb+hbp+sh+sf) as 'zips_pa'
+    SELECT DISTINCT player_name, t.team_abb, (zo.ab+zo.bb+zo.hbp+zo.sh+zo.sf) as 'zips_pa'
     FROM zips_WAR_hitters z
-    JOIN zips_offense USING (player_name, year, team_abb)
+    JOIN zips_offense zo USING (player_name, year, team_abb)
     LEFT JOIN current_rosters c USING (player_name, year)
+    LEFT JOIN processed_WAR_hitters w USING (YEAR, player_name, age)
     LEFT JOIN teams t USING (team_id, year)
     LEFT JOIN current_rosters_excel cre USING (player_name)
     WHERE z.year = 2018
     AND player_name NOT IN ('Gleyber Torres', 'Ronald Acuna', 'Victor Robles')
-    AND (salary_counted IS NULL OR salary_counted != 'N')
+    AND (cre.salary_counted IS NULL OR cre.salary_counted != 'N' OR w.player_name IS NOT NULL)
     %s
     ) base"""
 

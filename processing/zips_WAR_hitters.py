@@ -25,7 +25,7 @@ def process():
 
 def calculate_war():
     player_q = """SELECT
-    year, player_name, team_abb, bats, 
+    year, player_name, team_abb, age, bats, 
     ab, h, 2b, 3b, hr, bb, so, hbp, ibb, sh, sf, sb, cs
     FROM zips_offense
     """
@@ -34,7 +34,8 @@ def calculate_war():
 
     entries = []
     for row in player_list:
-        year, player_name, team_abb, bats, ab, h, _2, _3, hr, bb, so, hbp, ibb, sh, sf, sb, cs = row
+        year, player_name, team_abb, age, bats, ab, h, _2, _3, hr, bb, so, hbp, ibb, sh, sf, sb, cs = row
+        print year, player_name
 
         _1 = h-_2-_3-hr
         pa = ab+bb+hbp+ibb+sh+sf
@@ -98,6 +99,7 @@ def calculate_war():
                 entry['year'] = year
                 entry['player_name'] = player_name
                 entry['team_abb'] = team_abb
+                entry['age'] = age
                 entry['position'] = pos
                 entry['bats'] = bats
                 entry['pf'] = pf

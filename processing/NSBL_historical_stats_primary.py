@@ -17,7 +17,7 @@ def process():
     hit_q = """
 SELECT 
 player_name,
-GROUP_CONCAT(DISTINCT team_abb ORDER BY YEAR ASC SEPARATOR '/') AS teams,
+GROUP_CONCAT(DISTINCT team_abb ORDER BY YEAR DESC SEPARATOR '/') AS teams,
 MAX(YEAR) AS end_year,
 MIN(YEAR) AS start_year,
 COUNT(*) AS years,
@@ -61,6 +61,9 @@ GROUP BY player_name
     pitch_q = """
 SELECT 
 player_name,
+GROUP_CONCAT(DISTINCT team_abb ORDER BY YEAR DESC SEPARATOR '/') AS teams,
+MAX(YEAR) AS end_year,
+MIN(YEAR) AS start_year,
 COUNT(*) AS years,
 9*SUM(er)/SUM(ROUND(ip) + (10 * (ip - ROUND(ip)) / 3)) as era,
 SUM(w) AS w,

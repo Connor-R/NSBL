@@ -48,16 +48,17 @@ def get_pitchers(team_abb):
 
     entry['team_abb'] = team_abb
 
-    starter_qry = """SELECT player_name, p.ip as zips_ip, (FIP_WAR/p.ip) AS WAR_per_ip
+    starter_qry = """SELECT player_name, p.ip as zips_ip, (z.FIP_WAR/p.ip) AS WAR_per_ip
     FROM zips_pitching p
     LEFT JOIN zips_WAR_pitchers z USING (YEAR, player_name, team_abb)
     LEFT JOIN current_rosters c USING (YEAR, player_name)
+    LEFT JOIN processed_WAR_pitchers w USING (YEAR, player_name, team_abb)
     LEFT JOIN teams t USING (YEAR, team_id)
     LEFT JOIN current_rosters_excel cre USING (player_name)
     WHERE z.year = 2018
     AND t.team_abb = '%s'
-    AND (gs/g) > 0.5
-    AND (salary_counted IS NULL OR salary_counted != 'N')
+    AND (gs/g) > 0.25
+    # AND (cre.salary_counted IS NULL OR cre.salary_counted != 'N' OR w.player_name IS NOT NULL)
     ORDER BY WAR_per_ip DESC
     LIMIT 6;"""
 
@@ -107,16 +108,17 @@ def get_pitchers(team_abb):
 
     entry['starter_var'] = starter_var
 
-    reliever_qry = """SELECT player_name, p.ip as zips_ip, (FIP_WAR/p.ip) AS WAR_per_ip
+    reliever_qry = """SELECT player_name, p.ip as zips_ip, (z.FIP_WAR/p.ip) AS WAR_per_ip
     FROM zips_pitching p
     LEFT JOIN zips_WAR_pitchers z USING (YEAR, player_name, team_abb)
     LEFT JOIN current_rosters c USING (YEAR, player_name)
+    LEFT JOIN processed_WAR_pitchers w USING (YEAR, player_name, team_abb)
     LEFT JOIN teams t USING (YEAR, team_id)
     LEFT JOIN current_rosters_excel cre USING (player_name)
     WHERE z.year = 2018
     AND t.team_abb = '%s'
     AND player_name NOT IN %s
-    AND (salary_counted IS NULL OR salary_counted != 'N')
+    # AND (cre.salary_counted IS NULL OR cre.salary_counted != 'N' OR w.player_name IS NOT NULL)
     ORDER BY WAR_per_ip DESC
     LIMIT 7;"""
 

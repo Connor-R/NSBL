@@ -28,6 +28,7 @@ def calculate_war():
     year,
     player_name,
     team_abb,
+    age,
     g, 
     gs,
     era,
@@ -41,7 +42,8 @@ def calculate_war():
     entries = []
     for row in player_data:
         entry = {}
-        year, player_name, team_abb, g, gs, era, ip, h, r, er, bb, k, hr = row
+        year, player_name, team_abb, age, g, gs, era, ip, h, r, er, bb, k, hr = row
+        print year, player_name
 
 
         team_abb = team_abb.upper()
@@ -82,6 +84,7 @@ def calculate_war():
         entry['year'] = year
         entry['player_name'] = player_name
         entry['team_abb'] = team_abb
+        entry['age'] = age
         entry['pf'] = pf
         entry['ip'] = ip
         entry['k_9'] = k_9

@@ -31,9 +31,10 @@ def process(player_mapper):
 def initiate(yr, _type, player_mapper):
     path = '/Users/connordog/Dropbox/Desktop_Files/Work_Things/CodeBase/Python_Scripts/Python_Projects/NSBL/ad_hoc/historical_csv_files/'
 
-    csv_file = path+'%s_zips_%s.csv'  % (yr, _type)
+    csv_file_ext = '%s_zips_%s.csv'  % (yr, _type)
+    csv_file = path+csv_file_ext
 
-    print yr, _type
+    print yr, _type, csv_file_ext
 
     entries = []
     with open(csv_file, 'rb') as f:
@@ -47,17 +48,17 @@ def initiate(yr, _type, player_mapper):
             else:
                 i += 1
                 if _type == 'offense':
-                    year, player_name, team_abb, bats, g, ab, r, h, _2b, _3b, hr, rbi , bb, so , hbp, sb, cs, sh, sf, ibb, war = row 
+                    year, player_name, team_abb, age, bats, g, ab, r, h, _2b, _3b, hr, rbi , bb, so , hbp, sb, cs, sh, sf, ibb, war = row 
                     if player_name in player_mapper:
                         player_name = player_mapper.get(player_name)
-                    entry = {"year":yr, "player_name":player_name, "team_abb":team_abb, "bats":bats, "g":g, "ab":ab, "r":r, "h":h, "2b":_2b, "3b":_3b, "hr":hr, "rbi":rbi, "bb":bb, "so":so, "hbp":hbp, "sb":sb, "cs":cs, "sh":sh, "sf":sf, "ibb":ibb, "zWAR":war}
+                    entry = {"year":yr, "player_name":player_name, "team_abb":team_abb, "age":age, "bats":bats, "g":g, "ab":ab, "r":r, "h":h, "2b":_2b, "3b":_3b, "hr":hr, "rbi":rbi, "bb":bb, "so":so, "hbp":hbp, "sb":sb, "cs":cs, "sh":sh, "sf":sf, "ibb":ibb, "zWAR":war}
                     entries.append(entry)
 
                 elif _type == 'pitching':
-                    year, player_name, team_abb, throws, w, l, era, g, gs, ip, h, r, er, hr, bb, so, war = row 
+                    year, player_name, team_abb, age, throws, w, l, era, g, gs, ip, h, r, er, hr, bb, so, war = row 
                     if player_name in player_mapper:
                         player_name = player_mapper.get(player_name)
-                    entry = {"year":yr, "player_name":player_name, "team_abb":team_abb, "throws":throws, "w":w, "l":l, "era":era, "g":g, "gs":gs, "ip":ip, "h":h, "r":r, "er":er, "hr":hr, "bb":bb, "so":so, "zWAR":war}
+                    entry = {"year":yr, "player_name":player_name, "team_abb":team_abb, "age":age, "throws":throws, "w":w, "l":l, "era":era, "g":g, "gs":gs, "ip":ip, "h":h, "r":r, "er":er, "hr":hr, "bb":bb, "so":so, "zWAR":war}
                     entries.append(entry)
 
                 elif _type == 'defense':

@@ -11,7 +11,7 @@ def process():
     hit_q = """
 SELECT 
 player_name,
-GROUP_CONCAT(DISTINCT team_abb ORDER BY YEAR ASC SEPARATOR '/') AS teams,
+GROUP_CONCAT(DISTINCT team_abb ORDER BY YEAR DESC SEPARATOR '/') AS teams,
 MAX(YEAR) AS end_year,
 MIN(YEAR) AS start_year,
 COUNT(*) AS years,
@@ -25,6 +25,7 @@ SUM(o.wRC_plus*o.pa)/SUM(o.pa) AS wRC_plus,
 SUM(o.rAA) as rAA,
 SUM(w.oWAR) as oWAR,
 SUM(w.replacement) as replacement,
+SUM(w.WAR-w.defense/10) as "noD_WAR",
 SUM(w.WAR) as WAR
 FROM processed_compWAR_offensive o
 JOIN processed_WAR_hitters w USING (year, team_abb, player_name)
@@ -33,7 +34,7 @@ GROUP BY player_name
 
     hit_vals = db.query(hit_q)
     hit_table = "historical_stats_hitters_advanced"
-    hit_keys = ['player_name','teams','end_year','start_year','years','pa','defense','position_adj','dWAR','park_wOBA','OPS_plus','wRC_plus','rAA','oWAR','replacement','WAR']
+    hit_keys = ['player_name','teams','end_year','start_year','years','pa','defense','position_adj','dWAR','park_wOBA','OPS_plus','wRC_plus','rAA','oWAR','replacement','noD_WAR', 'WAR']
 
     hit_entries = []
     for row in hit_vals:
@@ -50,7 +51,7 @@ GROUP BY player_name
     pitch_q = """
 SELECT 
 player_name,
-GROUP_CONCAT(DISTINCT team_abb ORDER BY YEAR ASC SEPARATOR '/') AS teams,
+GROUP_CONCAT(DISTINCT team_abb ORDER BY YEAR DESC SEPARATOR '/') AS teams,
 MAX(YEAR) AS end_year,
 MIN(YEAR) AS start_year,
 COUNT(*) AS years,

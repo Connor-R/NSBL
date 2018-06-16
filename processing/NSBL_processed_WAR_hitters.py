@@ -104,8 +104,8 @@ def calculate_war(year):
             entry['defense'] = 0.0
             position_adj = (float(pa)/700)*(-17.5)
             entry['position_adj'] = position_adj
-            dWAR = float(position_adj)/10.0
-            entry['dWAR'] = dWAR
+            dWAR_adj = float(position_adj)/10.0
+            entry['dWAR'] = dWAR_adj
             replacement = 20.0*(float(pa)/700)
             entry['replacement'] = replacement 
 
