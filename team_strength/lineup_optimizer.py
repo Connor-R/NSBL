@@ -65,9 +65,9 @@ def get_player_matrix(team_abb):
     FROM (
     SELECT DISTINCT player_name, t.team_abb, (zo.ab+zo.bb+zo.hbp+zo.sh+zo.sf) as 'zips_pa'
     FROM zips_WAR_hitters z
-    JOIN zips_offense zo USING (player_name, year, team_abb)
-    LEFT JOIN current_rosters c USING (player_name, year)
+    JOIN zips_offense zo USING (player_name, year, team_abb, age)
     LEFT JOIN processed_WAR_hitters w USING (YEAR, player_name, age)
+    LEFT JOIN current_rosters c USING (player_name, year)
     LEFT JOIN teams t USING (team_id, year)
     LEFT JOIN current_rosters_excel cre USING (player_name)
     WHERE z.year = 2018
