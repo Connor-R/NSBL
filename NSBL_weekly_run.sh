@@ -8,8 +8,8 @@ year=2018
 
 
 
-# python scrapers/NSBL_register_scraper.py --end_year "$year" --scrape_length "Current"
-# python scrapers/NSBL_scraper.py --end_year "$year" --scrape_length "Current"
+python scrapers/NSBL_register_scraper.py --end_year "$year" --scrape_length "Current"
+python scrapers/NSBL_scraper.py --end_year "$year" --scrape_length "Current"
 
 wait
 
