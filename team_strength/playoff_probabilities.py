@@ -448,8 +448,7 @@ def process_win_wc(year):
 
                     matchup_prob = matchup1_prob + matchup2_prob
 
-                    win_game_query = "SELECT odds_ratio FROM __matchup_matrix JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __matchup_matrix GROUP BY team_abb, year) t2 USING (team_abb, year, games_played) WHERE team_abb = '%s' AND opponent = '%s' AND strength_type = '%s' AND year = %s" % (team_abb, oppn_abb, _type, year)
-                    win_game_prob = float(db.query(win_game_query)[0][0])
+                    win_game_prob = get_single_game_win_prob(team_abb, oppn_abb, _type, year)
 
                     wc_overall_prob = matchup_prob*win_game_prob
 
@@ -530,14 +529,10 @@ def process_cs(year):
 
                     matchup_prob = matchup1_prob + matchup2_prob + matchup3_prob
 
-                    win_game_query = "SELECT odds_ratio FROM __matchup_matrix JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __matchup_matrix GROUP BY team_abb, year) t2 USING (team_abb, year, games_played) WHERE team_abb = '%s' AND opponent = '%s' AND strength_type = '%s' AND year = %s" % (team_abb, oppn_abb, _type, year)
-                    win_game_prob = float(db.query(win_game_query)[0][0])
+                    win_game_prob = get_single_game_win_prob(team_abb, oppn_abb, _type, year)
+                    series_games = 5
+                    win_series = get_series_prob(series_games=series_games, series_wins=0, series_losses=0, team_winProb=win_game_prob)
 
-                    win_in_3 = BinomDist.pmf(n=3, k=3, p=win_game_prob)
-                    win_in_4 = BinomDist.pmf(n=3, k=2, p=win_game_prob)*win_game_prob
-                    win_in_5 = BinomDist.pmf(n=4, k=2, p=win_game_prob)*win_game_prob
-
-                    win_series = float(win_in_3) + float(win_in_4) + float(win_in_5)
                     cs_overall_prob = matchup_prob*win_series
 
                     cs_prob += cs_overall_prob
@@ -581,16 +576,10 @@ def process_ws(year):
 
                     matchup_prob = float(make_cs)*float(oppn_cs)
 
-                    win_game_query = "SELECT odds_ratio FROM __matchup_matrix JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __matchup_matrix GROUP BY team_abb, year) t2 USING (team_abb, year, games_played) WHERE team_abb = '%s' AND opponent = '%s' AND strength_type = '%s' AND year = %s" % (team_abb, oppn_abb, _type, year)
-                    win_game_prob = float(db.query(win_game_query)[0][0])
+                    win_game_prob = get_single_game_win_prob(team_abb, oppn_abb, _type, year)
+                    series_games = 7
+                    win_series = get_series_prob(series_games=series_games, series_wins=0, series_losses=0, team_winProb=win_game_prob)
 
-                    win_in_4 = BinomDist.pmf(n=4, k=4, p=win_game_prob)
-                    win_in_5 = BinomDist.pmf(n=4, k=3, p=win_game_prob)*win_game_prob
-                    win_in_6 = BinomDist.pmf(n=5, k=3, p=win_game_prob)*win_game_prob
-                    win_in_7 = BinomDist.pmf(n=6, k=3, p=win_game_prob)*win_game_prob
-
-
-                    win_series = float(win_in_4) + float(win_in_5) + float(win_in_6) + float(win_in_7)
                     ws_overall_prob = matchup_prob*win_series
 
                     ws_prob += ws_overall_prob
@@ -635,15 +624,10 @@ def process_champion(year):
 
                     matchup_prob = float(make_ws)*float(oppn_ws)
 
-                    win_game_query = "SELECT odds_ratio FROM __matchup_matrix JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __matchup_matrix GROUP BY team_abb, year) t2 USING (team_abb, year, games_played) WHERE team_abb = '%s' AND opponent = '%s' AND strength_type = '%s' AND year = %s" % (team_abb, oppn_abb, _type, year)
-                    win_game_prob = float(db.query(win_game_query)[0][0])
+                    win_game_prob = get_single_game_win_prob(team_abb, oppn_abb, _type, year)
+                    series_games = 7
+                    win_series = get_series_prob(series_games=series_games, series_wins=0, series_losses=0, team_winProb=win_game_prob)
 
-                    win_in_4 = BinomDist.pmf(n=4, k=4, p=win_game_prob)
-                    win_in_5 = BinomDist.pmf(n=4, k=3, p=win_game_prob)*win_game_prob
-                    win_in_6 = BinomDist.pmf(n=5, k=3, p=win_game_prob)*win_game_prob
-                    win_in_7 = BinomDist.pmf(n=6, k=3, p=win_game_prob)*win_game_prob
-
-                    win_series = float(win_in_4) + float(win_in_5) + float(win_in_6) + float(win_in_7)
                     champ_overall_prob = matchup_prob*win_series
 
                     champ_prob += champ_overall_prob
@@ -653,6 +637,31 @@ def process_champion(year):
 
         col_name = 'win_ws'
         adjust_probabilities(champ_dict, col_name, 1.0, _type)
+
+
+def get_series_prob(series_games, series_wins, series_losses, team_winProb):
+    team_probs = []
+
+    if series_wins == series_games/2+1:
+        team_probs.append(1)
+        total_games = series_wins+series_losses
+
+    if series_losses == series_games/2+1:
+        team_probs.append(0)
+
+    if (series_wins != series_games/2+1 and series_losses != series_games/2+1):
+        for end_game in range(series_games/2+1, series_games+1-series_losses):
+            team_in_N = BinomDist.pmf(n=end_game-1-series_wins, k=(series_games/2-series_wins), p=team_winProb) * team_winProb
+
+            team_probs.append(team_in_N)
+
+    return float(sum(team_probs))
+
+
+def get_single_game_win_prob(team1_abb, team2_abb, strength_type, year):
+    team1_win_game_query = "SELECT odds_ratio FROM __matchup_matrix JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __matchup_matrix GROUP BY team_abb, year) t2 USING (team_abb, year, games_played) WHERE team_abb = '%s' AND opponent = '%s' AND strength_type = '%s' AND year = %s" % (team1_abb, team2_abb, strength_type, year)
+
+    return float(db.query(team1_win_game_query)[0][0])
 
 
 def adjust_probabilities(prob_dict, col_name, sum_to, _type):
