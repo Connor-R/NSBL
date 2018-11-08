@@ -64,14 +64,21 @@ def get_optimal_lineups(year):
         entry = {}
         team_abb, starter_val, bullpen_val, lu_vsL, lu_vsR, roster_WAR, starter_var, bullpen_var, vsL_var, vsR_var, roster_var = row
 
-        roster_W = float(roster_WAR) + rep_team_win_pct*162
-        roster_pct = roster_W/162.0
-
         mascot_name = helper.get_mascot_names(team_abb.upper())
 
         team_name, games_played, rep_WAR, oWAR, dWAR, FIP_WAR, W, L, py_W, py_L = get_standing_metrics(year, mascot_name)
 
         games_played = float(games_played)
+
+        if games_played > 162.0:
+            roster_W = float(roster_WAR) + rep_team_win_pct*games_played
+            roster_pct = roster_W/games_played
+            ros_g = 0
+        else:
+            roster_W = float(roster_WAR) + rep_team_win_pct*162
+            roster_pct = roster_W/162.0
+            ros_g = 162-games_played
+
         try:
             w_pct = float(W)/float(W+L)
             py_pct = float(py_W)/float(py_W+py_L)
@@ -80,8 +87,7 @@ def get_optimal_lineups(year):
             py_pct = 0.5
 
 
-        # games_played = 162
-        ros_g = 162-games_played
+
         # weighted geometric mean (regressed towards roster strength)
         # (roster%^(remaining_games+80) * pythag%^((played_games+4)/2) * win%^((played_games+4)/2))^(1/250)
         ros_pct = ( (roster_pct**(ros_g+80)) * (max(py_pct,0.001)**(float(games_played+4.0)/2.0)) * (max(w_pct,0.001)**(float(games_played+4.0)/2.0)) ) ** (1.0/250.0)
@@ -102,7 +108,16 @@ def get_optimal_lineups(year):
 
 
         projected_W = W + ros_W
-        projected_pct = projected_W/162.0
+        
+
+        if games_played > 162.0:
+            roster_L = games_played - roster_W
+            projected_L = games_played - projected_W
+            projected_pct = projected_W/games_played
+        else:
+            roster_L = 162.0 - roster_W
+            projected_L = 162.0 - projected_W
+            projected_pct = projected_W/162.0
 
         entry['team_abb'] = team_abb
         entry['team_name'] = team_name
@@ -120,7 +135,7 @@ def get_optimal_lineups(year):
         entry['roster_var'] = roster_var
         entry['overall_var'] = total_roster_var    
         entry['roster_W'] = roster_W
-        entry['roster_L'] = 162.0 - roster_W
+        entry['roster_L'] = roster_L
         entry['roster_pct'] = roster_pct
         entry['current_W'] = W
         entry['current_L'] = L
@@ -129,7 +144,7 @@ def get_optimal_lineups(year):
         entry['ros_L'] = ros_g - ros_W
         entry['ros_pct'] = ros_pct
         entry['projected_W'] = projected_W
-        entry['projected_L'] = 162.0 - projected_W
+        entry['projected_L'] = projected_L
         entry['projected_pct'] = projected_pct
 
         # raw_input(entry)

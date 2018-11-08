@@ -71,8 +71,8 @@ def get_player_matrix(team_abb):
     LEFT JOIN teams t USING (team_id, year)
     LEFT JOIN current_rosters_excel cre USING (player_name)
     WHERE z.year = 2018
-    AND player_name NOT IN ('Gleyber Torres', 'Ronald Acuna', 'Victor Robles')
-    AND (cre.salary_counted IS NULL OR cre.salary_counted != 'N' OR w.player_name IS NOT NULL)
+    AND player_name NOT IN ('Player Name')
+    # AND (cre.salary_counted IS NULL OR cre.salary_counted != 'N' OR w.player_name IS NOT NULL)
     %s
     ) base"""
 

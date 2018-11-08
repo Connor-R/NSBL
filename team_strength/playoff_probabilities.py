@@ -43,7 +43,7 @@ def process_basic(year):
 
         basic_query = """SELECT
         team_abb, team_name,
-        year, games_played,
+        year, games_played, current_W, current_L,
         overall_var,
         roster_W, roster_L, roster_pct,
         ros_W, ros_L, ros_pct,
@@ -60,14 +60,15 @@ def process_basic(year):
 
         for basic_row in basic_res:
             entry = {}
-            team_abb, team_name, year, games_played, overall_var, roster_W, roster_L, roster_pct, ros_W, ros_L, ros_pct, projected_W, projected_L, projected_pct = basic_row
+            team_abb, team_name, year, games_played, cur_W, cur_L, overall_var, roster_W, roster_L, roster_pct, ros_W, ros_L, ros_pct, projected_W, projected_L, projected_pct = basic_row
 
-            games_remaining = float(ros_W) + float(ros_L)
-            games_played = 162.0 - games_remaining
-
+            games_played = float(games_played)
+            games_remaining = float(max(0.0, 162.0 - games_played))
 
             # linearly scaled variance (no variance at game 162, full variance at game 0)
-            projected_var = max(0.00001, float(overall_var)*(1-1/(float(games_played))))
+            projected_var = max(0.001, float(overall_var)*(games_remaining/162.0))
+
+            projected_std =  max(0.001, math.sqrt(float(overall_var))*(games_remaining/162.0))
 
 
             division, div_teams, conf_teams, non_conf_teams = helper.get_division(team_name)
@@ -93,10 +94,10 @@ def process_basic(year):
                 entry['p_05'] = p_05
 
             elif _type == 'projected':
-                p_95 = float(projected_W) + 1.96*math.sqrt(float(projected_var))
-                p_75 = float(projected_W) + 1.15*math.sqrt(float(projected_var))
-                p_25 = float(projected_W) - 1.15*math.sqrt(float(projected_var))
-                p_05 = float(projected_W) - 1.96*math.sqrt(float(projected_var))
+                p_95 = float(projected_W) + 1.96*(projected_std)
+                p_75 = float(projected_W) + 1.15*(projected_std)
+                p_25 = float(projected_W) - 1.15*(projected_std)
+                p_05 = float(projected_W) - 1.96*(projected_std)
 
                 entry['team_abb'] = team_abb
                 entry['team_name'] = team_name
@@ -197,9 +198,14 @@ def process_division(year):
                 team_abb, team_name, strength_pct, var, year, games_played = row
                 # print '\t\t', team_name
 
+                if games_played > 162:
+                    strength_pct = float((float(strength_pct)*162.0)/float(games_played))
+                else:
+                    strength_pct = float(strength_pct)
+
                 division, div_teams, conf_teams, non_conf_teams = helper.get_division(team_name)
 
-                win_division_prob = np.prod(get_probabilities(team_name, div_teams, float(strength_pct), games_played, float(var), _type, year)[0])
+                win_division_prob = np.prod(get_probabilities(team_name, div_teams, strength_pct, games_played, float(var), _type, year)[0])
 
                 div_dict[team_name] = [win_division_prob, 1.0, False, year, games_played]
 
@@ -231,9 +237,14 @@ def process_top_seed(year):
                 max_prob = float(max_prob)
                 # print '\t\t', team_name
 
+                if games_played > 162:
+                    strength_pct = float((float(strength_pct)*162.0)/float(games_played))
+                else:
+                    strength_pct = float(strength_pct)
+
                 division, div_teams, conf_teams, non_conf_teams = helper.get_division(team_name)
 
-                top_seed_prob = np.prod(get_probabilities(team_name, conf_teams, float(strength_pct), games_played, float(var), _type, year)[0])
+                top_seed_prob = np.prod(get_probabilities(team_name, conf_teams, strength_pct, games_played, float(var), _type, year)[0])
 
                 top_dict[team_name] = [top_seed_prob, max_prob, False, year, games_played]
 
@@ -257,6 +268,11 @@ def process_wc1(year):
             for team_row in team_res:
                 team_abb, team_name, div_prob, strength_pct, var, year, games_played = team_row
                 print '\t\t', team_name
+
+                if games_played > 162:
+                    strength_pct = float((float(strength_pct)*162.0)/float(games_played))
+                else:
+                    strength_pct = float(strength_pct)
 
                 division, div_teams, conf_teams, non_conf_teams = helper.get_division(team_name)
 
@@ -298,7 +314,7 @@ def process_wc1(year):
                         if tm not in (div1_team, div2_team, div3_team):
                             set_teams.append(tm)
 
-                    win_wc_prob = np.prod(get_probabilities(team_name, set_teams, float(strength_pct), games_played, float(var), _type, year)[0])
+                    win_wc_prob = np.prod(get_probabilities(team_name, set_teams, strength_pct, games_played, float(var), _type, year)[0])
 
                     wc_pre_prob += (float(situation_prob)*float(win_wc_prob))
 
@@ -323,6 +339,11 @@ def process_wc2(year):
             for team_row in team_res:
                 team_abb, team_name, po_prob, strength_pct, var, year, games_played = team_row
                 print '\t\t', team_name
+
+                if games_played > 162:
+                    strength_pct = float((float(strength_pct)*162.0)/float(games_played))
+                else:
+                    strength_pct = float(strength_pct)
 
                 division, div_teams, conf_teams, non_conf_teams = helper.get_division(team_name)
 
@@ -373,7 +394,7 @@ def process_wc2(year):
                         if tm not in (div1_team, div2_team, div3_team, div4_team):
                             set_teams.append(tm)
 
-                    win_wc2_prob = np.prod(get_probabilities(team_name, set_teams, float(strength_pct), games_played, float(var), _type, year)[0])
+                    win_wc2_prob = np.prod(get_probabilities(team_name, set_teams, strength_pct, games_played, float(var), _type, year)[0])
 
                     wc2_pre_prob += (float(situation_prob)*float(win_wc2_prob))
 
@@ -477,14 +498,14 @@ def process_cs(year):
 
                 # print '\t\t', team_name
 
-                oppn_qry = """SELECT team_abb, team_name, top_seed, win_division, win_wc, IF(division != '%s', win_division-top_seed, 0) AS 'middle_seed'
+                oppn_qry = """SELECT team_abb, team_name, top_seed, win_division, win_wc, (win_division-top_seed) AS 'middle_seed'
                 FROM __playoff_probabilities
                 JOIN (SELECT team_abb, MAX(YEAR) AS 'year', MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb, year) a USING (team_abb, YEAR, games_played)
                 WHERE strength_type = '%s' 
                 AND LEFT(division,2) = '%s'
                 AND team_name != '%s'
                 AND year = %s;"""
-                oppn_query = oppn_qry % (team_division, _type, conf, team_name, year)
+                oppn_query = oppn_qry % ( _type, conf, team_name, year)
                 # raw_input(oppn_query)
                 oppn_res = db.query(oppn_query)
 
@@ -687,11 +708,14 @@ def get_probabilities(team_name, oppn_teams, strength_pct, games_played, project
         AND team_name = '%s'
         AND year = %s;"""
         query = qry % (_type, opponent, year)
-        # raw_input(query)
+
+        # if _type == 'projected':
+            # raw_input(query)
         res = db.query(query)
 
         oppn_W, oppn_var, oppn_year, oppn_games_played = res[0]
 
+        
         team_W = strength_pct*162
         oppn_W = oppn_W
 
