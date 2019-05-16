@@ -91,10 +91,6 @@ def get_optimal_lineups(year):
         # weighted geometric mean (regressed towards roster strength)
         # (roster%^(remaining_games+80) * pythag%^((played_games+4)/2) * win%^((played_games+4)/2))^(1/250)
         ros_pct = ( (roster_pct**(ros_g+80)) * (max(py_pct,0.25)**(float(games_played+4.0)/2.0)) * (max(w_pct,0.25)**(float(games_played+4.0)/2.0)) ) ** (1.0/250.0)
-        if team_abb == 'Pit':
-            print roster_pct, ros_g, py_pct, games_played, w_pct
-            raw_input(row)
-            raw_input(ros_pct)
 
         ros_W = ros_pct*ros_g
 
