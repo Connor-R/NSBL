@@ -55,7 +55,7 @@ def process(curr_year):
                 salary_counted = team_sheet.cell(row, 9).value
 
 
-                entry = {'player_name':player_name, "team_abb":primary_abb, "position":position, "salary":salary, "year":year, "expires":expires, "opt":opt, "NTC":NTC, "salary_counted":salary_counted}
+                entry = {'player_name':player_name, "team_abb":primary_abb,  "position":position, "salary":salary, "year":year, "expires":expires, "opt":opt, "NTC":NTC, "salary_counted":salary_counted}
                 entries.append(entry)
 
 
@@ -105,6 +105,8 @@ def name_parser(reverse_name):
     "Jonathan Singleton":"Jon Singleton",
     "Jonathon Schoop":"Jonathan Schoop",
     "Jung-ho Kang":"Jung Ho Kang",
+    """Kevin "Fly Fatass Fly" Smith""":"Kevin Smith",
+    "Lenny Torres":"Lenny Torres Jr.",
     "Luis Alejandro (IF) Basabe":"Luis Alejandro Basabe",
     "Luis Alexander (OF) Basabe":"Luis Alexander Basabe",
     "Luke Sims":"Lucas Sims",
@@ -127,6 +129,44 @@ def name_parser(reverse_name):
     "Tyler (97) Watson":"Tyler Watson",
     "Vlad Jr Guerrero":"Vladimir Guerrero Jr.",
     "Melvin Jr Upton":"Melvin Upton Jr.",
+    "Ass-Dribble Cabrera": "Asdrual Cabrera",
+    "Austin Adams": "Austin L. Adams",
+    "Carl Edwards": "Carl Edwards Jr.",
+    "Colton Brewer": "Colten Brewer",
+    "Dan Duffy": "Danny Duffy",
+    "Daniel Winkler": "Dan Winkler",
+    "Enrique Kike Hernandez": "Kike Hernandez",
+    "Felipe Rivero": "Felipe Vazquez",
+    "Fernando Tatis Jr.": "Fernando Tatis",
+    "Gregory Bird": "Greg Bird",
+    "J.T. Chargois": "JT Chargois",
+    "J.T. Riddle": "JT Riddle",
+    "Jake deGrom": "Jacob deGrom",
+    "Jakob Junis": "Jake Junis",
+    "Ji Man Choi": "Ji-Man Choi",
+    "Jonathan Gray": "Jon Gray",
+    "Jordan Adell": "Jo Adell",
+    "Kyle Barraclaugh": "Kyle Barraclough",
+    "Leodys Taveras": "Leody Taveras",
+    "Lourdes Jr Gurriel": "Lourdes Gurriel",
+    "Mathew Skole": "Matt Skole",
+    "Mike Clevenger": "Michael Clevinger",
+    "Mike Wacha": "Michael Wacha",
+    "nAAAAthaniel Lowe": "Nathaniel Lowe",
+    "Nate Eovaldi": "Nathan Eovaldi",
+    "Nathan Orf": "Nate Orf",
+    "Nick Castellanos": "Nicholas Castellanos",
+    "Pat Corbin": "Patrick Corbin",
+    "Raul A. Mondesi": "Adalberto Mondesi",
+    "Samuel Tuivailala": "Sam Tuivailala",
+    "Seung Hwan Oh": "Seung-hwan Oh",
+    "Triggs. Andrew": "Andrew Triggs",
+    "Vincent Velasquez": "Vince Velasquez",
+    "Williams Astudillo": "Willians Astudillo",
+    "Yu-Cheng Chang": "Yu Chang",
+    "Yulieski Gurriel": "Yuli Gurriel",
+    "Zach Britton": "Zack Britton",
+    "Zack Granite": "Zach Granite",
     }
 
     player_name = ' '.join(reversed(reverse_name.split(', ')))
@@ -136,7 +176,7 @@ def name_parser(reverse_name):
 
 if __name__ == "__main__":     
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',type=int,default=2018)
+    parser.add_argument('--year',type=int,default=2019)
 
     args = parser.parse_args()
     

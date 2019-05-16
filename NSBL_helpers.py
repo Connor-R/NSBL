@@ -437,6 +437,36 @@ def get_team_abb2(team_name):
     "2018Texas Rangers": "Tex",
     "2018Toronto Blue Jays": "Tor",
     "2018Washington Nationals": "Was",
+    "2019Arizona Diamondbacks": "Ari",
+    "2019Atlanta Braves": "Atl",
+    "2019Baltimore Orioles": "Bal",
+    "2019Boston Red Sox": "Bos",
+    "2019Chicago Cubs": "ChN",
+    "2019Chicago White Sox": "ChA",
+    "2019Cincinnati Reds": "Cin",
+    "2019Cleveland Indians": "Cle",
+    "2019Colorado Rockies": "Col",
+    "2019Detroit Tigers": "Det",
+    "2019Houston Astros": "Hou",
+    "2019Kansas City Royals": "KC",
+    "2019Los Angeles Angels": "LAA",
+    "2019Los Angeles Dodgers": "LAN",
+    "2019Miami Marlins": "Mia",
+    "2019Milwaukee Brewers": "Mil",
+    "2019Minnesota Twins": "Min",
+    "2019New York Mets": "NYN",
+    "2019New York Yankees": "NYA",
+    "2019Oakland Athletics": "Oak",
+    "2019Philadelphia Phillies": "Phi",
+    "2019Pittsburgh Pirates": "Pit",
+    "2019San Diego Padres": "SD",
+    "2019San Francisco Giants": "SF",
+    "2019Seattle Mariners": "Sea",
+    "2019St. Louis Cardinals": "StL",
+    "2019Tampa Bay Rays": "Tam",
+    "2019Texas Rangers": "Tex",
+    "2019Toronto Blue Jays": "Tor",
+    "2019Washington Nationals": "Was",
     }
 
     team_abb = team_abb_dict.get(team_name)
@@ -664,6 +694,7 @@ def get_park_factors(team_abb):
     "NYN":98.33,
     "WAN":100,
     "WAS":100,
+    "WSN":100,
     "BAL":100.67,
     "BALT":100.67,
     "SAN":98,
@@ -930,7 +961,7 @@ def get_zips_pitching_metrics(metric_9, ip, year, pf,  g, gs, _type):
     lg_gs = float(get_zips_average_pitchers(year, 'lg_gs'))
     metric_RE = ((((18-(float(ip)/float(g)))*(float(lg_r)/float(lg_gs))+(float(ip)/float(g))*RApxMETRIC)/18)+2)*1.5
 
-    if (float(gs)/float(g)) > 0.5:
+    if (gs >= 10 or float(gs)/float(g) > 0.4):
         METRIC_x_win = ((lg_metric-RApxMETRIC)/(metric_RE))+0.5
         METRIC_x_win_9 = METRIC_x_win - 0.38
     else:

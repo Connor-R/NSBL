@@ -25,7 +25,7 @@ def process():
     i = 0 
 
     team_q = """SELECT DISTINCT team_abb FROM teams 
-    WHERE year = 2018
+    WHERE year = 2019
     ORDER BY team_abb ASC
     """
     team_qry = team_q
@@ -70,7 +70,7 @@ def get_player_matrix(team_abb):
     LEFT JOIN current_rosters c USING (player_name, year)
     LEFT JOIN teams t USING (team_id, year)
     LEFT JOIN current_rosters_excel cre USING (player_name)
-    WHERE z.year = 2018
+    WHERE z.year = 2019
     AND player_name NOT IN ('Player Name')
     # AND (cre.salary_counted IS NULL OR cre.salary_counted != 'N' OR w.player_name IS NOT NULL)
     %s
@@ -88,7 +88,7 @@ def get_player_matrix(team_abb):
                 q_add = """\nLEFT JOIN (
     SELECT player_name, %s AS '%s_WAR'
     FROM zips_WAR_hitters z
-    WHERE z.year = 2018
+    WHERE z.year = 2019
     AND z.position = '%s'
     ) _%s USING (player_name)"""
 
@@ -103,7 +103,7 @@ def get_player_matrix(team_abb):
     FROM zips_WAR_hitters z
     LEFT JOIN current_rosters c USING (player_name, YEAR)
     LEFT JOIN teams t USING (team_id, YEAR)
-    WHERE z.year = 2018
+    WHERE z.year = 2019
     %s"""
 
             cnt_qry = cnt_q % (tq_add)
@@ -193,7 +193,7 @@ def get_player_matrix(team_abb):
 
 if __name__ == "__main__":  
     parser = argparse.ArgumentParser()
-    # parser.add_argument('--year',default=2018)
+    # parser.add_argument('--year',default=2019)
     args = parser.parse_args()
     
     process()

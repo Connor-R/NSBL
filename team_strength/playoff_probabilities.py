@@ -745,7 +745,7 @@ def get_probabilities(team_name, oppn_teams, strength_pct, games_played, project
 
 if __name__ == "__main__":  
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',type=int,default=2018)
+    parser.add_argument('--year',type=int,default=2019)
     args = parser.parse_args()
     
     process(args.year)

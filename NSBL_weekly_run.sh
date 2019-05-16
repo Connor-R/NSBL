@@ -4,7 +4,7 @@
 SHELL=/bin/bash
 source "/Users/connordog/.bash_profile"
 
-year=2018
+year=2019
 
 
 

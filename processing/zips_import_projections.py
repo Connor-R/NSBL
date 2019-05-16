@@ -3,6 +3,10 @@ import pandas as pd
 import argparse
 import csv
 from time import time
+import codecs
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 # loading script for importing zips pitching/hitting/defense data from csv files
 
@@ -13,7 +17,7 @@ db = db("NSBL")
 def process(player_mapper):
     start_time = time()
 
-    year = 2018
+    year = 2019
     for _type in ('offense','pitching','defense'):
         initiate(year, _type, player_mapper)
     
@@ -37,7 +41,7 @@ def initiate(yr, _type, player_mapper):
     print yr, _type, csv_file_ext
 
     entries = []
-    with open(csv_file, 'rb') as f:
+    with codecs.open(csv_file, 'rb', encoding='utf-8', errors='ignore') as f:
         mycsv = csv.reader(f)
         i = 0
 
@@ -51,6 +55,7 @@ def initiate(yr, _type, player_mapper):
                     year, player_name, team_abb, age, bats, g, ab, r, h, _2b, _3b, hr, rbi , bb, so , hbp, sb, cs, sh, sf, ibb, war = row 
                     if player_name in player_mapper:
                         player_name = player_mapper.get(player_name)
+                    print player_name
                     entry = {"year":yr, "player_name":player_name, "team_abb":team_abb, "age":age, "bats":bats, "g":g, "ab":ab, "r":r, "h":h, "2b":_2b, "3b":_3b, "hr":hr, "rbi":rbi, "bb":bb, "so":so, "hbp":hbp, "sb":sb, "cs":cs, "sh":sh, "sf":sf, "ibb":ibb, "zWAR":war}
                     entries.append(entry)
 
@@ -79,6 +84,9 @@ if __name__ == "__main__":
     player_mapper = {
     "Brock Holt!":"Brock Holt",
     "Tyler Holt?!?":"Tyler Holt",
+    "Ronald Acua":"Ronald Acuna",
+    "Kik Hernandez":"Kike Hernandez",
+    "Chris B. Young Jr.":"Chris B. Young",
     }      
 
     process(player_mapper)

@@ -427,7 +427,7 @@ def process_champion(year, timestamp):
 
             matchup_prob = float(make_ws)*float(oppn_ws)
 
-            series_id = '%sCS' % (lg)
+            series_id = 'WS'
 
             series_wins, series_losses = get_series_data(series_id, team_name, oppn_name, strength_type)
         
