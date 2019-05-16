@@ -4,7 +4,7 @@ from py_db import db
 
 db = db('NSBL')
 
-for y in range(2006,2019):
+for y in range(2006,2020):
     year = str(y)
     print year
     hit_q = """
