@@ -71,7 +71,7 @@ def get_player_matrix(team_abb):
     LEFT JOIN teams t USING (team_id, year)
     LEFT JOIN current_rosters_excel cre USING (player_name)
     WHERE z.year = 2019
-    AND player_name NOT IN ('Player Name')
+    AND player_name NOT IN ('Player Name', 'Ronald Acuna', 'Gleyber Torres', 'Brendan Rodgers', 'Max Kepler')
     # AND (cre.salary_counted IS NULL OR cre.salary_counted != 'N' OR w.player_name IS NOT NULL)
     %s
     ) base"""
@@ -110,7 +110,7 @@ def get_player_matrix(team_abb):
             # raw_input(cnt_qry)
             cnt = db.query(cnt_qry)[0][0]
 
-            # if team_abb == 'ChN':
+            # if team_abb == 'Tam':
             #     raw_input(q)
             # raw_input(q)
             res = db.query(q)

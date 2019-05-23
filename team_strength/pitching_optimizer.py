@@ -56,8 +56,9 @@ def get_pitchers(team_abb):
     LEFT JOIN teams t USING (YEAR, team_id)
     LEFT JOIN current_rosters_excel cre USING (player_name)
     WHERE z.year = 2019
-    AND t.team_abb = '%s'
+    AND (t.team_abb = '%s')
     AND gs >= 3
+    AND player_name NOT IN ('Player Name', 'Nick Pivetta')
     # AND (cre.salary_counted IS NULL OR cre.salary_counted != 'N' OR w.player_name IS NOT NULL)
     ORDER BY WAR_per_ip DESC
     LIMIT 6;"""
@@ -118,12 +119,13 @@ def get_pitchers(team_abb):
     WHERE z.year = 2019
     AND t.team_abb = '%s'
     AND player_name NOT IN %s
+    AND player_name NOT IN ('Player Name', 'Nick Pivetta')
     # AND (cre.salary_counted IS NULL OR cre.salary_counted != 'N' OR w.player_name IS NOT NULL)
     ORDER BY WAR_per_ip DESC
     LIMIT 7;"""
 
     reliever_query = reliever_qry % (team_abb, tuple(starter_names))
-
+    # raw_input(reliever_query)
     relievers = db.query(reliever_query)
 
     reliever_ip = {"1":85.0, "2":80.0, "3":75.0, "4":75.0, "5":70.0, "6":65.0, "7":50.0}

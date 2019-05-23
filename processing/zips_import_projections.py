@@ -4,9 +4,7 @@ import argparse
 import csv
 from time import time
 import codecs
-import sys
-reload(sys)
-sys.setdefaultencoding('utf-8')
+
 
 # loading script for importing zips pitching/hitting/defense data from csv files
 

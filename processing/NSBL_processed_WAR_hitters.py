@@ -86,7 +86,11 @@ def calculate_war(year):
             else:
                 ip_games = pa_games
 
-            if (pa_games/ip_games) < 1.2:
+
+            try:
+                if (pa_games/ip_games) < 1.2:
+                    dh_adj = 0.0
+            except ZeroDivisionError:
                 dh_adj = 0.0
 
             entry['position_adj'] = float(position_adj) + dh_adj
@@ -129,7 +133,7 @@ def calculate_war(year):
 
 if __name__ == "__main__":        
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',type=int,default=2018)
+    parser.add_argument('--year',type=int,default=2019)
     args = parser.parse_args()
     
     process(args.year)

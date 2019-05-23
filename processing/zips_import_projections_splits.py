@@ -3,6 +3,7 @@ import pandas as pd
 import argparse
 import csv
 from time import time
+import codecs
 
 # loading script for importing zips pitching/hitting splits from csv files
 
@@ -36,7 +37,7 @@ def initiate(yr, _type, player_mapper):
     print yr, _type
 
     entries = []
-    with open(csv_file, 'rb') as f:
+    with codecs.open(csv_file, 'rb', encoding='utf-8', errors='ignore') as f:
         mycsv = csv.reader(f)
         i = 0
 
@@ -62,7 +63,10 @@ def initiate(yr, _type, player_mapper):
 if __name__ == "__main__":        
     player_mapper = {
     "Brock Holt!":"Brock Holt",
-    "Tyler Holt ?!?":"Tyler Holt"
+    "Tyler Holt?!?":"Tyler Holt",
+    "Ronald Acua":"Ronald Acuna",
+    "Kik Hernandez":"Kike Hernandez",
+    "Chris B. Young Jr.":"Chris B. Young",
     }      
 
     process(player_mapper)

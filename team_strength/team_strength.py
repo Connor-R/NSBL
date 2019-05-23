@@ -87,10 +87,15 @@ def get_optimal_lineups(year):
             py_pct = 0.5
 
 
+        # logistic weights for pythag% and win&
+        # rest of season projected win% = (1-2w)*(roster%) + w(pythag%) + w(win%)
+        # where w = (0.25) / (1+20e^(-0.035*games_played))
+        if games_played <= 10:
+            current_weight = 0.0015*float(games_played)
+        else:
+            current_weight = 0.25 / (1 + 20*math.exp(-0.035*float(games_played)))
 
-        # weighted geometric mean (regressed towards roster strength)
-        # (roster%^(remaining_games+80) * pythag%^((played_games+4)/2) * win%^((played_games+4)/2))^(1/250)
-        ros_pct = ( (roster_pct**(ros_g+80)) * (max(py_pct,0.25)**(float(games_played+4.0)/2.0)) * (max(w_pct,0.25)**(float(games_played+4.0)/2.0)) ) ** (1.0/250.0)
+        ros_pct = (1-2*current_weight)*roster_pct + (current_weight)*max(py_pct, 0.25) + (current_weight)*max(w_pct, 0.25)
 
         ros_W = ros_pct*ros_g
 
