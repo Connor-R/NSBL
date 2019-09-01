@@ -63,7 +63,7 @@ FROM(
 )a
 LEFT JOIN (SELECT team_abb, division, LEFT(division,2) AS league FROM __playoff_probabilities GROUP BY team_name) b USING (team_abb)
 LEFT JOIN (SELECT player_name, ip AS 'career_ip' FROM historical_stats_pitchers_advanced) c USING (player_name)
-LEFT JOIN (SELECT player_name, YEAR AS 'contract' FROM current_rosters_excel) d USING (player_name)
+LEFT JOIN (SELECT player_name, contract_year AS 'contract' FROM current_rosters_excel) d USING (player_name)
 WHERE a.year = %s
 ORDER BY YEAR DESC, split_WAR DESC;"""
 
@@ -151,7 +151,7 @@ FROM(
 ) a
 LEFT JOIN (SELECT team_abb, division, LEFT(division,2) AS league FROM __playoff_probabilities GROUP BY team_name) b USING (team_abb)
 LEFT JOIN (SELECT player_name, pa AS 'career_pa' FROM historical_stats_hitters_advanced) c USING (player_name)
-LEFT JOIN (SELECT player_name, YEAR AS 'contract' FROM current_rosters_excel) d USING (player_name)
+LEFT JOIN (SELECT player_name, contract_year AS 'contract' FROM current_rosters_excel) d USING (player_name)
 WHERE a.year = %s
 ORDER BY YEAR DESC, noD_WAR DESC;"""
 

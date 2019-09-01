@@ -10,7 +10,7 @@ db = db('NSBL')
 q = """
 -- Create syntax for TABLE '__in_playoff_bracket'
 CREATE TABLE `__in_playoff_bracket` (
-  `update_time` datetime DEFAULT NULL,
+  `total_playoff_games_played` int(11) DEFAULT NULL,
   `series_id` varchar(16) NOT NULL DEFAULT '',
   `year` int(11) NOT NULL DEFAULT '0',
   `strength_type` varchar(32) NOT NULL DEFAULT '',
@@ -25,6 +25,7 @@ CREATE TABLE `__in_playoff_bracket` (
   `team_in5` decimal(32,3) DEFAULT NULL,
   `team_in6` decimal(32,3) DEFAULT NULL,
   `team_in7` decimal(32,3) DEFAULT NULL,
+  `update_time` datetime DEFAULT NULL,
   PRIMARY KEY (`series_id`,`year`,`strength_type`,`team`,`opponent`,`series_wins`,`series_losses`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -41,7 +42,6 @@ CREATE TABLE `__in_playoff_game_results` (
 
 -- Create syntax for TABLE '__in_playoff_probabilities'
 CREATE TABLE `__in_playoff_probabilities` (
-  `update_time` datetime DEFAULT NULL,
   `team_name` varchar(32) NOT NULL DEFAULT '',
   `team_abb` varchar(11) DEFAULT NULL,
   `division` varchar(32) DEFAULT NULL,
@@ -57,6 +57,7 @@ CREATE TABLE `__in_playoff_probabilities` (
   `make_cs` decimal(32,3) DEFAULT NULL,
   `make_ws` decimal(32,3) DEFAULT NULL,
   `win_ws` decimal(32,3) DEFAULT NULL,
+  `update_time` datetime DEFAULT NULL,
   PRIMARY KEY (`team_name`,`year`,`total_playoff_games_played`,`strength_type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -220,6 +221,55 @@ CREATE TABLE `__team_strength` (
   PRIMARY KEY (`team_abb`,`year`,`games_played`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+-- Create syntax for TABLE '_draft_rosters'
+CREATE TABLE `_draft_rosters` (
+  `player_name` varchar(50) NOT NULL,
+  `fname` varchar(50) DEFAULT NULL,
+  `lname` varchar(50) DEFAULT NULL,
+  `team_abb` varchar(50) NOT NULL DEFAULT '',
+  `position` varchar(50) NOT NULL DEFAULT '',
+  `salary` decimal(32,3) NOT NULL,
+  `year` varchar(50) NOT NULL DEFAULT '',
+  `expires` int(12) NOT NULL DEFAULT '0',
+  `opt` varchar(50) NOT NULL DEFAULT '',
+  `NTC` varchar(50) DEFAULT NULL,
+  `salary_counted` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`player_name`,`salary`,`year`,`expires`,`opt`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- Create syntax for TABLE '_trade_value'
+CREATE TABLE `_trade_value` (
+  `year` int(11) DEFAULT NULL,
+  `player_name` varchar(50) NOT NULL,
+  `fname` varchar(50) DEFAULT NULL,
+  `lname` varchar(50) DEFAULT NULL,
+  `team_abb` varchar(50) NOT NULL DEFAULT '',
+  `position` varchar(50) NOT NULL DEFAULT '',
+  `salary` decimal(32,3) NOT NULL,
+  `contract_year` varchar(50) NOT NULL DEFAULT '',
+  `expires` int(11) NOT NULL DEFAULT '0',
+  `opt` varchar(50) NOT NULL DEFAULT '',
+  `NTC` varchar(50) DEFAULT NULL,
+  `salary_counted` varchar(50) DEFAULT NULL,
+  `rl_team` varchar(50) DEFAULT NULL,
+  `age` decimal(16,1) DEFAULT '0.0',
+  `adj_FV` decimal(16,1) DEFAULT NULL,
+  `zWAR` decimal(16,1) DEFAULT NULL,
+  `years_remaining` int(11) DEFAULT NULL,
+  `est_war_remaining` decimal(16,3) DEFAULT NULL,
+  `est_value` decimal(16,3) DEFAULT NULL,
+  `est_salary` decimal(16,3) DEFAULT NULL,
+  `est_raw_surplus` decimal(16,3) DEFAULT NULL,
+  `est_net_present_value` decimal(16,3) DEFAULT NULL,
+  PRIMARY KEY (`player_name`,`team_abb`,`position`,`salary`,`expires`,`opt`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- Create syntax for TABLE '_trade_value_teams'
+CREATE TABLE `_trade_value_teams` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 -- Create syntax for TABLE 'current_rosters'
 CREATE TABLE `current_rosters` (
   `year` int(11) NOT NULL,
@@ -233,15 +283,17 @@ CREATE TABLE `current_rosters` (
 -- Create syntax for TABLE 'current_rosters_excel'
 CREATE TABLE `current_rosters_excel` (
   `player_name` varchar(50) NOT NULL,
+  `fname` varchar(50) DEFAULT NULL,
+  `lname` varchar(50) DEFAULT NULL,
   `team_abb` varchar(50) NOT NULL DEFAULT '',
   `position` varchar(50) NOT NULL DEFAULT '',
   `salary` decimal(32,3) NOT NULL,
-  `year` varchar(50) NOT NULL DEFAULT '',
+  `contract_year` varchar(50) NOT NULL DEFAULT '',
   `expires` int(12) NOT NULL DEFAULT '0',
   `opt` varchar(50) NOT NULL DEFAULT '',
   `NTC` varchar(50) DEFAULT NULL,
   `salary_counted` varchar(50) DEFAULT NULL,
-  PRIMARY KEY (`player_name`,`salary`,`year`,`expires`,`opt`)
+  PRIMARY KEY (`player_name`,`salary`,`contract_year`,`expires`,`opt`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- Create syntax for TABLE 'historical_draft_picks'
@@ -1027,6 +1079,141 @@ CREATE TABLE `zips_defense` (
   `of_arm` varchar(5) DEFAULT NULL,
   `c_pb` int(5) DEFAULT NULL,
   PRIMARY KEY (`year`,`player_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- Create syntax for TABLE 'zips_fangraphs_batters_counting'
+CREATE TABLE `zips_fangraphs_batters_counting` (
+  `year` int(11) unsigned NOT NULL,
+  `Player` varchar(64) NOT NULL DEFAULT '',
+  `team_abb` varchar(8) NOT NULL DEFAULT '',
+  `post_date` date DEFAULT NULL,
+  `age` int(11) NOT NULL DEFAULT '0',
+  `PO` varchar(8) DEFAULT NULL,
+  `B` varchar(8) DEFAULT NULL,
+  `G` int(11) DEFAULT NULL,
+  `AB` int(11) DEFAULT NULL,
+  `R` int(11) DEFAULT NULL,
+  `H` int(11) DEFAULT NULL,
+  `2B` int(11) DEFAULT NULL,
+  `3B` int(11) DEFAULT NULL,
+  `HR` int(11) DEFAULT NULL,
+  `RBI` int(11) DEFAULT NULL,
+  `BB` int(11) DEFAULT NULL,
+  `SO` int(11) DEFAULT NULL,
+  `SB` int(11) DEFAULT NULL,
+  `CS` int(11) DEFAULT NULL,
+  PRIMARY KEY (`year`,`Player`,`team_abb`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- Create syntax for TABLE 'zips_fangraphs_batters_rate'
+CREATE TABLE `zips_fangraphs_batters_rate` (
+  `year` int(11) unsigned NOT NULL,
+  `Player` varchar(64) NOT NULL DEFAULT '',
+  `team_abb` varchar(8) NOT NULL DEFAULT '',
+  `post_date` date DEFAULT NULL,
+  `PA` int(11) DEFAULT NULL,
+  `BA` decimal(4,3) DEFAULT NULL,
+  `OBP` decimal(4,3) DEFAULT NULL,
+  `SLG` decimal(4,3) DEFAULT NULL,
+  `OPS_Plus` int(11) DEFAULT NULL,
+  `ISO` decimal(4,3) DEFAULT NULL,
+  `BABIP` decimal(4,3) DEFAULT NULL,
+  `RC_27` decimal(3,1) unsigned zerofill DEFAULT NULL,
+  `DEF` int(11) DEFAULT NULL,
+  `WAR` decimal(4,1) DEFAULT NULL,
+  `Top_Comp` varchar(64) DEFAULT NULL,
+  PRIMARY KEY (`year`,`Player`,`team_abb`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- Create syntax for TABLE 'zips_fangraphs_pitchers_counting'
+CREATE TABLE `zips_fangraphs_pitchers_counting` (
+  `year` int(11) unsigned NOT NULL,
+  `Player` varchar(64) NOT NULL DEFAULT '',
+  `team_abb` varchar(8) NOT NULL DEFAULT '',
+  `post_date` date DEFAULT NULL,
+  `age` int(11) NOT NULL DEFAULT '0',
+  `T` varchar(8) DEFAULT NULL,
+  `W` int(11) DEFAULT NULL,
+  `L` int(11) DEFAULT NULL,
+  `ERA` decimal(4,2) DEFAULT NULL,
+  `G` int(11) DEFAULT NULL,
+  `GS` int(11) DEFAULT NULL,
+  `IP` decimal(4,1) DEFAULT NULL,
+  `H` int(11) DEFAULT NULL,
+  `ER` int(11) DEFAULT NULL,
+  `HR` int(11) DEFAULT NULL,
+  `BB` int(11) DEFAULT NULL,
+  `SO` int(11) DEFAULT NULL,
+  PRIMARY KEY (`year`,`Player`,`team_abb`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- Create syntax for TABLE 'zips_fangraphs_pitchers_rate'
+CREATE TABLE `zips_fangraphs_pitchers_rate` (
+  `year` int(11) unsigned NOT NULL,
+  `Player` varchar(64) NOT NULL DEFAULT '',
+  `team_abb` varchar(8) NOT NULL DEFAULT '',
+  `post_date` date DEFAULT NULL,
+  `TBF` int(11) DEFAULT NULL,
+  `K_9` decimal(4,2) DEFAULT NULL,
+  `BB_9` decimal(4,2) DEFAULT NULL,
+  `HR_9` decimal(4,2) DEFAULT NULL,
+  `BABIP` decimal(4,3) DEFAULT NULL,
+  `ERA_Plus` int(11) DEFAULT NULL,
+  `ERA_Minus` int(11) DEFAULT NULL,
+  `FIP` decimal(4,2) DEFAULT NULL,
+  `WAR` decimal(4,1) DEFAULT NULL,
+  `Top_Comp` varchar(64) DEFAULT NULL,
+  PRIMARY KEY (`year`,`Player`,`team_abb`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- Create syntax for TABLE 'zips_fangraphs_prep_FA_batters'
+CREATE TABLE `zips_fangraphs_prep_FA_batters` (
+  `year` int(11) unsigned NOT NULL,
+  `player_name` varchar(64) NOT NULL DEFAULT '',
+  `team_abb` varchar(8) NOT NULL DEFAULT '',
+  `pos` varchar(8) DEFAULT NULL,
+  `pf` decimal(32,4) DEFAULT NULL,
+  `pa` int(11) DEFAULT NULL,
+  `ba` decimal(32,3) DEFAULT NULL,
+  `obp` decimal(32,3) DEFAULT NULL,
+  `slg` decimal(32,3) DEFAULT NULL,
+  `zOPS_Plus` int(11) DEFAULT NULL,
+  `DEF` int(11) DEFAULT NULL,
+  `zWAR` decimal(8,1) DEFAULT NULL,
+  `babip` decimal(32,3) DEFAULT NULL,
+  `OPS_plus` decimal(32,3) DEFAULT NULL,
+  `park_wOBA` decimal(32,3) DEFAULT NULL,
+  `wRC_plus` decimal(32,3) DEFAULT NULL,
+  `WAR600` decimal(8,1) DEFAULT NULL,
+  PRIMARY KEY (`year`,`player_name`,`team_abb`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- Create syntax for TABLE 'zips_fangraphs_prep_FA_pitchers'
+CREATE TABLE `zips_fangraphs_prep_FA_pitchers` (
+  `year` int(11) NOT NULL,
+  `player_name` varchar(50) NOT NULL DEFAULT '',
+  `team_abb` varchar(5) NOT NULL DEFAULT '',
+  `pos` varchar(8) DEFAULT NULL,
+  `pf` decimal(32,4) DEFAULT NULL,
+  `ip` decimal(30,1) DEFAULT NULL,
+  `babip` decimal(34,3) DEFAULT NULL,
+  `k_9` decimal(30,3) DEFAULT NULL,
+  `bb_9` decimal(30,3) DEFAULT NULL,
+  `k_bb` decimal(30,3) DEFAULT NULL,
+  `hr_9` decimal(30,3) DEFAULT NULL,
+  `zERA_plus` int(11) DEFAULT NULL,
+  `zERA_minus` int(11) DEFAULT NULL,
+  `zFIP` decimal(30,4) DEFAULT NULL,
+  `zWAR` decimal(30,4) DEFAULT NULL,
+  `FIP` decimal(30,4) DEFAULT NULL,
+  `park_FIP` decimal(30,4) DEFAULT NULL,
+  `FIP_minus` decimal(30,2) DEFAULT NULL,
+  `FIP_WAR` decimal(30,3) DEFAULT NULL,
+  `ERA` decimal(30,2) DEFAULT NULL,
+  `park_ERA` decimal(30,4) DEFAULT NULL,
+  `ERA_minus` decimal(30,2) DEFAULT NULL,
+  `ERA_WAR` decimal(30,3) DEFAULT NULL,
+  PRIMARY KEY (`year`,`player_name`,`team_abb`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- Create syntax for TABLE 'zips_offense'
