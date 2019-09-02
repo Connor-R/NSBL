@@ -107,10 +107,7 @@ def name_parser(reverse_name):
     "Fernando Tatis Jr.": ["Fernando", "Tatis"],
     "Francellis Montas": ["Frankie", "Montas"],
     "Franklin (97) Perez": ["Franklin", "Perez"],
-    "Greg Bird": ["Gregory", "Bird"],
     "Greg Polanco": ["Gregory", "Polanco"],
-    "Gregory Bird": ["Greg", "Bird"],
-    "Gregory Bird": ["Greg", "Bird"],
     "Gregory Deichmann": ["Greg", "Deichmann"],
     "Hudson Potts (Sanchez)": ["Hudson", "Potts"],
     "Isaiah (Zeke) White": ["Zeke", "White"],
@@ -192,6 +189,7 @@ def name_parser(reverse_name):
     "Zach Britton": ["Zack", "Britton"],
     "Zack Granite": ["Zach", "Granite"],
     'Willie "No Gloves" Calhoun': ["Willie", "Calhoun"],
+    "Julio (97) Rodriguez": ["Julio", "Rodriguez"],
     }
 
     first_name = reverse_name.split(', ')[1:]
