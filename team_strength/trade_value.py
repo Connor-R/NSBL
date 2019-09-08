@@ -34,6 +34,20 @@ def process(year):
 
 
 def player_values(year):
+    clear_current = db.query("DELETE FROM _trade_value WHERE year = %s" % (year))
+    db.conn.commit()
+
+    season_gp = db.query("SELECT gs FROM processed_league_averages_pitching WHERE year = %s" % (year))
+    if season_gp == ():
+        season_gp = 0
+    else:
+        season_gp = float(season_gp[0][0])
+
+    season_pct_multiplier = float(1-(season_gp/(30*162)))
+
+    print season_pct_multiplier
+
+
     qry = """
 SELECT r.*
     , COALESCE(p.age, zh.age, zp.age) AS age
@@ -109,7 +123,7 @@ SELECT r.*
 
         print '\n\n', player_name, team_abb, position, salary, contract_year, expires, opt, age
 
-        entry = {'year':year, 'player_name': player_name, 'fname': fname, 'lname': lname, 'team_abb': team_abb, 'position': position, 'salary': salary, 'contract_year': contract_year, 'expires': expires, 'opt': opt, 'NTC': NTC, 'salary_counted': salary_counted, 'age':age, 'adj_FV':adj_FV, 'zWAR':zWAR}
+        entry = {'year':year, 'player_name': player_name, 'fname': fname, 'lname': lname, 'team_abb': team_abb, 'position': position, 'salary': salary, 'contract_year': contract_year, 'expires': expires, 'opt': opt, 'NTC': NTC, 'salary_counted': salary_counted, 'curr_season_remaining':season_pct_multiplier, 'age':age, 'adj_FV':adj_FV, 'zWAR':zWAR}
 
         if adj_FV is not None:
             rl_team = p_Team
@@ -134,7 +148,7 @@ SELECT r.*
             war_val, dollar_val, est_total_salary, est_raw_surplus, est_present_surplus = None, None, None, None, None
 
         else:
-            war_val, dollar_val, est_total_salary, est_raw_surplus, est_present_surplus = get_war_val(year, adj_FV, age, position, zWAR, years_remaining, salary, contract_year, expires, opt)
+            war_val, dollar_val, est_total_salary, est_raw_surplus, est_present_surplus = get_war_val(year, adj_FV, age, position, zWAR, years_remaining, salary, contract_year, expires, opt, salary_counted, season_pct_multiplier)
 
         entry['est_war_remaining'] = war_val
         entry['est_value'] = dollar_val
@@ -149,16 +163,16 @@ SELECT r.*
         db.insertRowDict(entry, '_trade_value', insertMany=False, replace=True, rid=0, debug=1)
         db.conn.commit()
 
-def get_war_val(year, adj_FV, age, position, zWAR, years_remaining, salary, contract_year, expires, opt):
+def get_war_val(year, adj_FV, age, position, zWAR, years_remaining, salary, contract_year, expires, opt, salary_counted, season_pct_multiplier):
     salary = float(salary)
     if zWAR is not None:
         zWAR = float(zWAR)
 
-    def age_curve(current_age, position, current_war, years_remaining, salary, contract='Vet'):
-        # curve value is a decay function with "peak" age (multiplier = 1) at 26 for hitters and 25 for pitchers. The pitcher curve is steeper
+    def age_curve(current_age, position, current_war, years_remaining, salary, salary_counted, season_pct_multiplier, contract='Vet'):
+        # curve value is a decay function with "peak" age (age_multiplier = 1) at 26 for hitters and 25 for pitchers. The pitcher curve is steeper
         # dollar_value: 6 mil/WAR in 2018, increases by 0.4 mil/WAR each year
         current_age = round(float(current_age),0)
-        multiplier = 1
+        age_multiplier = 1
         war_val = 0
         dollar_val = 0
         est_total_salary = 0
@@ -169,20 +183,15 @@ def get_war_val(year, adj_FV, age, position, zWAR, years_remaining, salary, cont
             proj_age = current_age + yr
 
             if yr == 0:
-                multiplier = 1
+                age_multiplier = 1
             elif position == 'p':
-                multiplier *= (1-((0.97**(proj_age))*(proj_age-25))/8)
+                age_multiplier *= (1-((0.97**(proj_age))*(proj_age-25))/8)
             else:
-                multiplier *= (1-((0.95**(proj_age))*(proj_age-26))/10)
+                age_multiplier *= (1-((0.95**(proj_age))*(proj_age-26))/10)
 
-
-            year_war = min(max(current_war,0)*multiplier, 10)
+            year_war = min(max(current_war,0)*age_multiplier, 10)
             dollar_multiplier = (6.4 + yr*0.4) 
             year_dollar = year_war * dollar_multiplier
-
-            war_val += year_war
-            dollar_val += year_dollar
-
 
             if contract != 'Vet':
                 for k, v in years_map.items():
@@ -195,16 +204,23 @@ def get_war_val(year, adj_FV, age, position, zWAR, years_remaining, salary, cont
             else:
                 est_year_salary = salary
                 est_year_surplus = year_dollar - est_year_salary
-            
-            est_total_salary += est_year_salary
 
+            if yr == 0 and salary_counted == 'Y':
+                year_war = year_war*season_pct_multiplier
+                est_year_salary = est_year_salary*season_pct_multiplier
+                est_year_surplus = est_year_surplus*season_pct_multiplier
+                year_dollar = year_dollar*season_pct_multiplier
+
+            war_val += year_war
+            dollar_val += year_dollar
+            est_total_salary += est_year_salary
             est_raw_surplus += est_year_surplus
 
             # 8% discount rate (0.92^n)
             est_year_present_surplus = est_year_surplus*(0.92**yr)
             est_present_surplus += est_year_present_surplus
 
-            print '\t', year+yr, ': ', current_age, current_war, '|||', round(proj_age, 1), round(year_war, 1), round(multiplier, 2), '|||', round(year_dollar, 3), round(dollar_multiplier, 3), '|||', round(est_year_salary, 3), round(est_year_surplus, 3), round(est_year_present_surplus, 3)
+            print '\t', year+yr, ': ', current_age, current_war, '|||', round(proj_age, 1), round(year_war, 1), round(age_multiplier, 2), '|||', round(year_dollar, 3), round(dollar_multiplier, 3), '|||', round(est_year_salary, 3), round(est_year_surplus, 3), round(est_year_present_surplus, 3), season_pct_multiplier
 
         # print war_val
         return war_val, dollar_val, est_total_salary, est_raw_surplus, est_present_surplus
@@ -232,33 +248,45 @@ def get_war_val(year, adj_FV, age, position, zWAR, years_remaining, salary, cont
                 war_val = 0.1 + (adj_FV-35)*0.15
             elif adj_FV > 50:
                 war_val = 2.35 + (adj_FV-50)*0.35
-        war_val = (war_val) / (7-years_remaining)
+        year_war_avg = (war_val) / (years_remaining)
         # print '\n', entry, adj_FV, war_val, '\n'
 
-        # for zips players, we have an estimate for $/war each season, but for prospects, we treat is as a lump sum (since we don't know how their projected war will be dispersed)
-        dollar_val = (6.4 + (year-2019)*0.4) * war_val
-
         if contract_year not in ('V', 'CE', 'MLI'):
-            year_dollar = (dollar_val/years_remaining)
+            year_dollar = (6.4 + (year-2019)*0.4) * year_war_avg
 
+            war_val = 0
+            dollar_val = 0
             est_total_salary = 0
+            est_raw_surplus = 0
             for yr_indx in range (6-years_remaining, 6):
                 for k, v in years_map.items():
                     val_multiplier, indx, ceiling, floor = v[1], v[2], v[3], v[4]
+
                     if yr_indx == indx:
+                        year_war = year_war_avg
                         est_year_salary = min(min(max(val_multiplier * year_dollar, floor), ceiling), year_dollar)
-                        print est_year_salary, year_dollar
+
+                        if yr_indx == 6-years_remaining and salary_counted == 'Y':
+                            year_war = year_war_avg*season_pct_multiplier
+                            est_year_salary = est_year_salary*season_pct_multiplier
+
+
+                        print year_war, est_year_salary, year_dollar, season_pct_multiplier
+                        war_val += year_war
                         est_total_salary += est_year_salary
                         # print yr_indx, year_dollar, val_multiplier, est_year_salary
 
         else:
             est_total_salary = salary*years_remaining
-                            
+
+        # for zips players, we have an estimate for $/war each season, but for prospects, we treat it as a lump sum (since we don't know how their projected war will be dispersed)
+        dollar_val = (6.4 + (year-2019)*0.4) * war_val
+
         est_raw_surplus = dollar_val - est_total_salary
         est_present_surplus = est_raw_surplus
 
         if zWAR is not None:
-            temp_war_val, temp_dollar_val, temp_est_total_salary, temp_est_raw_surplus, temp_est_present_surplus = age_curve(age, position, zWAR, years_remaining, salary, contract)
+            temp_war_val, temp_dollar_val, temp_est_total_salary, temp_est_raw_surplus, temp_est_present_surplus = age_curve(age, position, zWAR, years_remaining, salary, salary_counted, season_pct_multiplier, contract)
 
             if temp_war_val > war_val:
                 war_val = temp_war_val
@@ -268,7 +296,7 @@ def get_war_val(year, adj_FV, age, position, zWAR, years_remaining, salary, cont
                 est_present_surplus = temp_est_present_surplus
 
     else:
-        war_val, dollar_val, est_total_salary, est_raw_surplus, est_present_surplus = age_curve(age, position, zWAR, years_remaining, salary, contract)
+        war_val, dollar_val, est_total_salary, est_raw_surplus, est_present_surplus = age_curve(age, position, zWAR, years_remaining, salary, salary_counted, season_pct_multiplier, contract)
 
     return war_val, dollar_val, est_total_salary, est_raw_surplus, est_present_surplus
 
