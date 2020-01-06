@@ -354,7 +354,7 @@ def team_values(year):
     else:
         season_gp = float(season_gp[0][0])
 
-    season_string = str(round(season_gp/2,0)) + " of " + str(30*81)
+    season_string = str(int(season_gp/2)) + " of " + str(30*81)
 
     qry = """SET SESSION group_concat_max_len = 1000000;
     DROP TABLE IF EXISTS _trade_value_teams;
