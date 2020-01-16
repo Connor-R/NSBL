@@ -348,19 +348,13 @@ def get_war_val(year, adj_FV, age, position, zWAR, years_remaining, salary, cont
 
 
 def team_values(year):
-    season_gp = db.query("SELECT gs FROM processed_league_averages_pitching WHERE year = %s" % (year))
-    if season_gp == ():
-        season_gp = 0
-    else:
-        season_gp = float(season_gp[0][0])
 
-    season_string = str(int(season_gp/2)) + " of " + str(30*81)
 
     qry = """SET SESSION group_concat_max_len = 1000000;
     DROP TABLE IF EXISTS _trade_value_teams;
     CREATE TABLE _trade_value_teams AS
     SELECT year
-    , '%s' as completed
+    , curr_season_remaining
     , team_abb
 
     , COUNT(*) AS roster_size
@@ -402,7 +396,8 @@ def team_values(year):
         , IF(adj_FV is NULL, '', CONCAT(', ', adj_FV, ' adjFV'))
         , IF(zWAR is NULL, '', CONCAT(', ', zWAR, ' zWAR'))
         , ')'
-        ) ORDER BY est_net_present_value DESC SEPARATOR '\n'
+        ) ORDER BY est_net_present_value DESC SEPARATOR '
+'
     ) AS all_player_values
 
     , GROUP_CONCAT(DISTINCT CONCAT(
@@ -413,7 +408,8 @@ def team_values(year):
         , IF(adj_FV is NULL, '', CONCAT(', ', adj_FV, ' adjFV'))
         , IF(zWAR is NULL, '', CONCAT(', ', zWAR, ' zWAR'))
         , ')'
-        ) ORDER BY est_net_present_value DESC SEPARATOR '\n'
+        ) ORDER BY est_net_present_value DESC SEPARATOR '
+'
     ) AS all_player_playoff_values
 
     , GROUP_CONCAT(IF(adj_FV IS NOT NULL, CONCAT(
@@ -424,7 +420,8 @@ def team_values(year):
         , IF(adj_FV is NULL, '', CONCAT(', ', adj_FV, ' adjFV'))
         , IF(zWAR is NULL, '', CONCAT(', ', zWAR, ' zWAR'))
         , ')'
-        ), NULL) ORDER BY est_net_present_value DESC SEPARATOR '\n'
+        ), NULL) ORDER BY est_net_present_value DESC SEPARATOR '
+'
     ) AS prospect_values
 
     , GROUP_CONCAT(IF(adj_FV IS NULL AND zWAR IS NOT NULL, CONCAT(
@@ -435,7 +432,8 @@ def team_values(year):
         , IF(adj_FV is NULL, '', CONCAT(', ', adj_FV, ' adjFV'))
         , IF(zWAR is NULL, '', CONCAT(', ', zWAR, ' zWAR'))
         , ')'
-        ), NULL) ORDER BY est_net_present_value DESC SEPARATOR '\n'
+        ), NULL) ORDER BY est_net_present_value DESC SEPARATOR '
+'
     ) AS MLB_player_values
 
     , GROUP_CONCAT(IF(est_value IS NULL, CONCAT(
@@ -445,16 +443,20 @@ def team_values(year):
         , IF(adj_FV is NULL, '', CONCAT(', ', adj_FV, ' adjFV'))
         , IF(zWAR is NULL, '', CONCAT(', ', zWAR, ' zWAR'))
         , ')'
-        ), NULL) SEPARATOR '\n'
+        ), NULL) SEPARATOR '
+'
     ) AS missing_player_values
 
-    FROM _trade_value
+    FROM _trade_value tv
+    JOIN(
+        SELECT DISTINCT year, curr_season_remaining
+        FROM _trade_value
+    ) a USING (year, curr_season_remaining)
     WHERE 1
-        AND year = %s
-    GROUP BY year, team_abb
+    GROUP BY year, curr_season_remaining, team_abb
     ;"""
 
-    query = qry % (season_string, year)
+    query = qry
 
     for q in query.split(';')[:-1]:
         # raw_input(q)
