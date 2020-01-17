@@ -7,7 +7,7 @@ from time import time
 
 db = db('NSBL')
 
-#find potential FA
+# find potential FA
 
 # SELECT f.year
 # , f.player_name
@@ -24,6 +24,7 @@ db = db('NSBL')
 # where r.player_name is null
 # and c.age >= 25
 # and c.team_abb IN ('COL')
+# and f.year = 2020
 # order by f.war600 desc
 # ;
 
@@ -50,21 +51,25 @@ db = db('NSBL')
 # where r.player_name is null
 # and c.age >= 25
 # and c.team_abb IN ('COL')
+# and f.year = 2020
 # order by f.FIP_WAR desc
 # ;
 
 
-def process():
+def process(year):
 
-    batters()
-    pitchers()
+    batters(year)
+    pitchers(year)
 
 
-def batters():
+def batters(year):
     player_q = """SELECT year
     , Player
     , team_abb
+    , age
+    , B as hand
     , PO
+    , COALESCE(a.PA, c.PA) AS pa
     , ab
     , h
     , 2b
@@ -81,25 +86,29 @@ def batters():
     , OPS_Plus
     , DEF
     , WAR
-    FROM zips_fangraphs_batters_counting
+    FROM zips_fangraphs_batters_counting a
     JOIN(
         SELECT year
         , Player
         , MAX(post_date) AS post_date
         FROM zips_fangraphs_batters_counting
+        WHERE 1
+            AND year = %s
         GROUP BY year, Player
-    ) lg USING (year,Player,post_date)
-    JOIN zips_fangraphs_batters_rate USING (year, Player, team_abb)
+    ) b USING (year,Player,post_date)
+    JOIN zips_fangraphs_batters_rate c USING (year, Player, team_abb)
     """
-    player_qry = player_q
+    player_qry = player_q % (year)
+    # raw_input(player_qry)
     player_data = db.query(player_qry)
 
     entries = []
     for row in player_data:
         entry = {}
-        year, player_name, team_abb, po, ab, h, _2, _3, hr, bb, so, sb, cs, ba, obp, slg, babip, zOPS_Plus, DEF, WAR = row
+        year, player_name, team_abb, age, hand, po, pa, ab, h, _2, _3, hr, bb, so, sb, cs, ba, obp, slg, babip, zOPS_Plus, DEF, WAR = row
 
-        pa = ab+bb
+        if pa is None:
+            pa = ab+bb
         bb2 = bb
         hbp = 0
         _1 = h - _2 - _3 - hr
@@ -116,6 +125,8 @@ def batters():
         entry['year'] = year
         entry['player_name'] = player_name
         entry['team_abb'] = team_abb
+        entry['age'] = age
+        entry['hand'] = hand
         entry['pos'] = po
         entry['pf'] = pf
         entry['pa'] = pa
@@ -142,10 +153,12 @@ def batters():
             db.conn.commit()
 
 
-def pitchers():
+def pitchers(year):
     player_q = """SELECT year
     , Player
     , team_abb
+    , age
+    , T as hand
     , ERA
     , G
     , GS
@@ -158,28 +171,33 @@ def pitchers():
     , k_9
     , bb_9
     , hr_9
+    , bb_pct
+    , k_pct
     , BABIP
     , ERA_Plus
     , ERA_minus
-    , FIP
+    , COALESCE(a.FIP, c.FIP) AS FIP
     , WAR
-    FROM zips_fangraphs_pitchers_counting
+    FROM zips_fangraphs_pitchers_counting a
     JOIN(
         SELECT year
         , Player
         , MAX(post_date) AS post_date
         FROM zips_fangraphs_pitchers_counting
+        WHERE 1
+            AND year = %s
         GROUP BY year, Player
-    ) lg USING (year,Player,post_date)
-    JOIN zips_fangraphs_pitchers_rate USING (year, Player, team_abb)
+    ) b USING (year,Player,post_date)
+    JOIN zips_fangraphs_pitchers_rate c USING (year, Player, team_abb)
     """
-    player_qry = player_q
+    player_qry = player_q % (year)
+    # raw_input(player_qry)
     player_data = db.query(player_qry)
 
     entries = []
     for row in player_data:
         entry = {}
-        year, player_name, team_abb, era, g, gs, ip, h, er, hr, bb, k, k_9, bb_9, hr_9, babip, zera_plus, zera_minus, zfip, zwar = row
+        year, player_name, team_abb, age, hand, era, g, gs, ip, h, er, hr, bb, k, k_9, bb_9, hr_9, bb_pct, k_pct, babip, zera_plus, zera_minus, zfip, zwar = row
 
         r = er
         if (gs >= 10 or float(gs)/float(g) > 0.4):
@@ -212,11 +230,15 @@ def pitchers():
             ERA_WAR = 180*(float(ERA_WAR)/float(ip))
         elif pos == 'RP':
             FIP_WAR = 60*(float(FIP_WAR)/float(ip))
-            ERA_WAR = 60*(float(ERA_WAR)/float(ip))  
+            ERA_WAR = 60*(float(ERA_WAR)/float(ip))
+
+        k_minus_bb_pct = float(k_pct)-float(bb_pct)  
 
         entry['year'] = year
         entry['player_name'] = player_name
         entry['team_abb'] = team_abb
+        entry['age'] = age
+        entry['hand'] = hand
         entry['pos'] = pos
         entry['pf'] = pf
         entry['ip'] = ip
@@ -225,6 +247,9 @@ def pitchers():
         entry['bb_9'] = bb_9
         entry['k_bb'] = k_bb
         entry['hr_9'] = hr_9
+        entry['k_pct'] = k_pct
+        entry['bb_pct'] = bb_pct
+        entry['k_minus_bb_pct'] = k_minus_bb_pct
         entry['zERA_plus'] = zera_plus
         entry['zERA_minus'] = zera_minus
         entry['zFIP'] = zfip
@@ -250,8 +275,10 @@ def pitchers():
 
 if __name__ == "__main__":        
     parser = argparse.ArgumentParser()
+
+    parser.add_argument("--year",type=int,default=2020)
     args = parser.parse_args()
     
-    process()
+    process(args.year)
 
 
