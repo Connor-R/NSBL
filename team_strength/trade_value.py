@@ -62,10 +62,11 @@ def player_values(year):
             WHEN r.position = 'c'
                 THEN 500*(zh.WAR/zh.PA)
             WHEN r.position = 'p'
-                THEN IF(zp.GS/zp.G > 0.75, 32*(zp.WAR/zp.GS), 65*(zp.WAR/zp.G))
+                THEN IF((zp.GS/zp.G >= 0.80 or zp.GS >= 20), 32*(zp.WAR/zp.GS), zp.WAR)
             WHEN r.position NOT IN ('p', 'c')
                 THEN 600*(zh.WAR/zh.PA)
-        END AS Full_WAR
+        END AS ScaledWAR
+        , IF(r.position = 'p', IF((zp.GS/zp.G >= 0.80 or zp.GS >= 20), 'sp', 'rp'), r.position) AS pos2
         FROM NSBL.current_rosters_excel r
         LEFT JOIN mlb_prospects._master_current p ON (1
             AND IF(r.position = 'p'
@@ -132,11 +133,11 @@ def player_values(year):
 
     for row in res:
         entry = {}
-        player_name, fname, lname, team_abb, position, salary, contract_year, expires, opt, NTC, salary_counted, age, p_Team, adj_FV, z_Team, z_usage, zWAR, fullWAR = row
+        player_name, fname, lname, team_abb, dummy_pos, salary, contract_year, expires, opt, NTC, salary_counted, age, p_Team, adj_FV, z_Team, z_usage, zWAR, scaledWAR, position = row
 
         print '\n\n', player_name, team_abb, position, salary, contract_year, expires, opt, age
 
-        entry = {'year':year, 'player_name': player_name, 'fname': fname, 'lname': lname, 'team_abb': team_abb, 'position': position, 'salary': salary, 'contract_year': contract_year, 'expires': expires, 'opt': opt, 'NTC': NTC, 'salary_counted': salary_counted, 'curr_season_remaining':season_pct_multiplier, 'age':age, 'adj_FV':adj_FV, 'zWAR':zWAR, 'fullWAR': fullWAR}
+        entry = {'year':year, 'player_name': player_name, 'fname': fname, 'lname': lname, 'team_abb': team_abb, 'position': position, 'salary': salary, 'contract_year': contract_year, 'expires': expires, 'opt': opt, 'NTC': NTC, 'salary_counted': salary_counted, 'curr_season_remaining':season_pct_multiplier, 'age':age, 'adj_FV':adj_FV, 'zWAR':zWAR, 'scaledWAR': scaledWAR}
 
         if adj_FV is not None:
             rl_team = p_Team
@@ -145,11 +146,12 @@ def player_values(year):
         else:
             rl_team = None
 
-        print zWAR, fullWAR
+        print zWAR, scaledWAR,
         if zWAR is not None:
-            model_war = (float(zWAR) + float(fullWAR))/2
+            model_war = (float(zWAR) + float(scaledWAR))/2
         else:
             model_war = None
+        print model_war
 
         entry['rl_team'] = rl_team
 
@@ -201,7 +203,11 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
 
     def age_curve(current_age, position, current_war, years_remaining, salary, salary_counted, season_pct_multiplier, contract='Vet'):
         # curve value is a decay function with "peak" age (age_multiplier = 1) at 26 for hitters and 25 for pitchers. The pitcher curve is steeper
-        # dollar_value: 6 mil/WAR in 2018, increases by 0.4 mil/WAR each year
+        # dollar_value:
+            # rps between 0 and 0.5 WAR: 4 mil/WAR in 2019, every win above 0.5 WAR: 10 mil/WAR
+            # catchers between 0 and 2 war: 5 mil/WAR in 2019, every win above 2 WAR: 10 mil/WAR
+            # players between 0 and 2 WAR: 6.5 mil/WAR in 2019, every win above 2 WAR: 10 mil/WAR
+            # increases by 0.4 mil/WAR each year
         current_age = round(float(current_age),0)
         age_multiplier = 1
         war_val = 0
@@ -221,14 +227,22 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
 
             if yr == 0:
                 age_multiplier = 1
-            elif position == 'p':
+            elif position in ('sp', 'rp'):
                 age_multiplier *= (1-((0.97**(proj_age))*(proj_age-25))/8)
             else:
                 age_multiplier *= (1-((0.95**(proj_age))*(proj_age-26))/10)
 
             year_war = min(max(current_war,0)*age_multiplier, 10)
-            dollar_multiplier = (7.5 + yr*0.4) 
-            year_dollar = year_war * dollar_multiplier
+
+            if position == 'rp':
+                dollar_multiplier = (4.0 + yr*0.4)
+                year_dollar = min(year_war, 0.5) * dollar_multiplier + max(year_war-0.5, 0) * (dollar_multiplier+6.0)
+            if position == 'c':
+                dollar_multiplier = (5.0 + yr*0.4)
+                year_dollar = min(year_war, 2) * dollar_multiplier + max(year_war-2, 0) * (dollar_multiplier+5.0)
+            else:
+                dollar_multiplier = (6.5 + yr*0.4)
+                year_dollar = min(year_war, 2) * dollar_multiplier + max(year_war-2, 0) * (dollar_multiplier+3.5)
 
             if contract != 'Vet':
                 for k, v in years_map.items():
@@ -249,6 +263,8 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
 
             playoff_present_surplus += est_year_surplus*(0.92**yr)
 
+            print '\t', year+yr, ': ', current_age, current_war, '|||', round(proj_age, 1), round(year_war, 1), round(age_multiplier, 2), '|||', round(year_dollar, 3), round(dollar_multiplier, 3), '|||', round(est_year_salary, 3), round(est_year_surplus, 3), round(playoff_present_surplus, 3), season_pct_multiplier
+
             if yr == 0 and salary_counted == 'Y':
                 year_war = year_war*season_pct_multiplier
                 est_year_salary = est_year_salary*season_pct_multiplier
@@ -265,7 +281,7 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
             est_present_surplus += est_year_present_surplus
 
 
-            print '\t', year+yr, ': ', current_age, current_war, '|||', round(proj_age, 1), round(year_war, 1), round(age_multiplier, 2), '|||', round(year_dollar, 3), round(dollar_multiplier, 3), '|||', round(est_year_salary, 3), round(est_year_surplus, 3), round(est_year_present_surplus, 3), season_pct_multiplier
+
 
         # print war_val
         return war_val, dollar_val, est_total_salary, est_raw_surplus, est_present_surplus, playoff_war_val, playoff_dollar_val, playoff_total_salary, playoff_raw_surplus, playoff_present_surplus
@@ -279,7 +295,7 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
     if adj_FV is not None:
         adj_FV = float(adj_FV)
         age = float(age)
-        if position != 'p':
+        if position in ('sp', 'rp'):
             if adj_FV <= 35:
                 war_val = 0.1
             elif adj_FV > 35 and adj_FV <= 50:
@@ -413,7 +429,7 @@ def team_values(year):
         , ', ', IFNULL(age, ''), ' - ', UPPER(position)
         , ', $', salary, ' - ', contract_year, IF(expires>0, CONCAT(' ', expires), ''), IF(opt='Y', '+1', '')
         , IF(adj_FV is NULL, '', CONCAT(', ', adj_FV, ' adjFV'))
-        , IF(zWAR is NULL, '', CONCAT(', ', zWAR, '/', fullWAR, ' zWAR/fullWAR'))
+        , IF(zWAR is NULL, '', CONCAT(', ', zWAR, '/', scaledWAR, ' zWAR/scaledWAR'))
         , ')'
         ) ORDER BY est_net_present_value DESC SEPARATOR '
 '
@@ -425,7 +441,7 @@ def team_values(year):
         , ', ', IFNULL(age, ''), ' - ', UPPER(position)
         , ', $', salary, ' - ', contract_year, IF(expires>0, CONCAT(' ', expires), ''), IF(opt='Y', '+1', '')
         , IF(adj_FV is NULL, '', CONCAT(', ', adj_FV, ' adjFV'))
-        , IF(zWAR is NULL, '', CONCAT(', ', zWAR, '/', fullWAR, ' zWAR/fullWAR'))
+        , IF(zWAR is NULL, '', CONCAT(', ', zWAR, '/', scaledWAR, ' zWAR/scaledWAR'))
         , ')'
         ) ORDER BY est_net_present_value DESC SEPARATOR '
 '
@@ -437,7 +453,7 @@ def team_values(year):
         , ', ', IFNULL(age, ''), ' - ', UPPER(position)
         , ', $', salary, ' - ', contract_year, IF(expires>0, CONCAT(' ', expires), ''), IF(opt='Y', '+1', '')
         , IF(adj_FV is NULL, '', CONCAT(', ', adj_FV, ' adjFV'))
-        , IF(zWAR is NULL, '', CONCAT(', ', zWAR, '/', fullWAR, ' zWAR/fullWAR'))
+        , IF(zWAR is NULL, '', CONCAT(', ', zWAR, '/', scaledWAR, ' zWAR/scaledWAR'))
         , ')'
         ), NULL) ORDER BY est_net_present_value DESC SEPARATOR '
 '
@@ -449,7 +465,7 @@ def team_values(year):
         , ', ', IFNULL(age, ''), ' - ', UPPER(position)
         , ', $', salary, ' - ', contract_year, IF(expires>0, CONCAT(' ', expires), ''), IF(opt='Y', '+1', '')
         , IF(adj_FV is NULL, '', CONCAT(', ', adj_FV, ' adjFV'))
-        , IF(zWAR is NULL, '', CONCAT(', ', zWAR, '/', fullWAR, ' zWAR/fullWAR'))
+        , IF(zWAR is NULL, '', CONCAT(', ', zWAR, '/', scaledWAR, ' zWAR/scaledWAR'))
         , ')'
         ), NULL) ORDER BY est_net_present_value DESC SEPARATOR '
 '
@@ -460,7 +476,7 @@ def team_values(year):
         , ', ', IFNULL(age, ''), ' - ', UPPER(position)
         , ', $', salary, ' - ', contract_year, IF(expires>0, CONCAT(' ', expires), ''), IF(opt='Y', '+1', '')
         , IF(adj_FV is NULL, '', CONCAT(', ', adj_FV, ' adjFV'))
-        , IF(zWAR is NULL, '', CONCAT(', ', zWAR, '/', fullWAR, ' zWAR/fullWAR'))
+        , IF(zWAR is NULL, '', CONCAT(', ', zWAR, '/', scaledWAR, ' zWAR/scaledWAR'))
         , ')'
         ), NULL) SEPARATOR '
 '
