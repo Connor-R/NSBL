@@ -88,7 +88,7 @@ def player_values(year):
             AND find_in_set(replace(r.lname, ".", ""), replace(p.lnames, ".", "")) >= 1
         )
         LEFT JOIN (
-            SELECT zfg.player as player_name
+            SELECT zr.player_name
             , zfg.*
             , zbc.age
             , COALESCE(zfg.PA, zbc.PA) AS z_PA
@@ -111,7 +111,7 @@ def player_values(year):
             AND (replace(replace(zh.player, ".", ""), "-", " ") LIKE CONCAT("%%", replace(replace(r.lname, ".", ""), "-", " "), "%%") OR replace(replace(zh.player_name, ".", ""), "-", " ") LIKE CONCAT("%%", replace(replace(r.lname, ".", ""), "-", " "), "%%"))
         )
         LEFT JOIN (
-            SELECT zfg.player as player_name
+            SELECT zr.player_name
             , zfg.*
             , zfc.age
             , zfc.IP
@@ -128,6 +128,9 @@ def player_values(year):
                 GROUP BY player
             ) pd USING (player, post_date)
             JOIN NSBL.zips_fangraphs_pitchers_counting zfc USING (player, post_date)
+            LEFT JOIN NSBL.zips_pitching zr  ON (zfg.year = zr.year
+                AND replace(zfg.Player, "!", "") = replace(replace(replace(zr.player_name, "'", ""), " Acuna", " Acua"), "Kike ", "Kik ")
+            )
         ) zp ON (1
             AND r.position = 'p'
             AND (replace(replace(zp.player, ".", ""), "-", " ") LIKE CONCAT("%%", replace(replace(r.fname, ".", ""), "-", " "), "%%") OR replace(replace(zp.player_name, ".", ""), "-", " ") LIKE CONCAT("%%", replace(replace(r.fname, ".", ""), "-", " "), "%%"))
