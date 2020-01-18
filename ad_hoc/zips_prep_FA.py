@@ -20,7 +20,17 @@ db = db('NSBL')
 # , f.WAR600
 # FROM zips_fangraphs_prep_FA_batters f
 # JOIN zips_fangraphs_batters_counting c on (f.year=c.year AND f.player_name=c.player AND f.team_abb=c.team_abb)
-# LEFT JOIN current_rosters_excel r ON (f.player_name=r.player_name)
+# LEFT JOIN(
+#     SELECT *
+#     FROM excel_rosters
+#     JOIN (
+#         SELECT year
+#         , MAX(gp) AS gp
+#         FROM excel_rosters
+#         WHERE 1
+#             AND year = 2020
+#     ) cur USING (year, gp)
+# ) r ON (f.player_name=r.player_name)
 # where r.player_name is null
 # and c.age >= 25
 # and c.team_abb IN ('COL')
@@ -47,7 +57,17 @@ db = db('NSBL')
 # , f.ERA_WAR
 # FROM zips_fangraphs_prep_FA_pitchers f
 # JOIN zips_fangraphs_pitchers_counting c on (f.year=c.year AND f.player_name=c.player AND f.team_abb=c.team_abb)
-# LEFT JOIN current_rosters_excel r ON (f.player_name=r.player_name)
+# LEFT JOIN(
+#     SELECT *
+#     FROM excel_rosters
+#     JOIN (
+#         SELECT year
+#         , MAX(gp) AS gp
+#         FROM excel_rosters
+#         WHERE 1
+#             AND year = 2020
+#     ) cur USING (year, gp)
+# ) r ON (f.player_name=r.player_name)
 # where r.player_name is null
 # and c.age >= 25
 # and c.team_abb IN ('COL')

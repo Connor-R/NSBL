@@ -43,7 +43,7 @@ def process_basic(year):
 
         basic_query = """SELECT
         team_abb, team_name,
-        year, games_played, current_W, current_L,
+        year, season_gp, games_played, current_W, current_L,
         overall_var,
         roster_W, roster_L, roster_pct,
         ros_W, ros_L, ros_pct,
@@ -60,7 +60,7 @@ def process_basic(year):
 
         for basic_row in basic_res:
             entry = {}
-            team_abb, team_name, year, games_played, cur_W, cur_L, overall_var, roster_W, roster_L, roster_pct, ros_W, ros_L, ros_pct, projected_W, projected_L, projected_pct = basic_row
+            team_abb, team_name, year, season_gp, games_played, cur_W, cur_L, overall_var, roster_W, roster_L, roster_pct, ros_W, ros_L, ros_pct, projected_W, projected_L, projected_pct = basic_row
 
             games_played = float(games_played)
             games_remaining = float(max(0.0, 162.0 - games_played))
@@ -81,6 +81,7 @@ def process_basic(year):
                 entry['team_abb'] = team_abb
                 entry['team_name'] = team_name
                 entry['year'] = year
+                entry['season_gp'] = season_gp
                 entry['games_played'] = games_played
                 entry['division'] = division
                 entry['strength_type'] = _type
@@ -102,6 +103,7 @@ def process_basic(year):
                 entry['team_abb'] = team_abb
                 entry['team_name'] = team_name
                 entry['year'] = year
+                entry['season_gp'] = season_gp
                 entry['games_played'] = games_played
                 entry['division'] = division
                 entry['strength_type'] = _type
@@ -124,7 +126,7 @@ def process_matrix(year):
     entries = []
     for _type in ('roster', 'projected'):
         qry = """SELECT
-        team_abb, strength_pct, year, games_played
+        team_abb, strength_pct, year, games_played, season_gp
         FROM __playoff_probabilities
         JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb, year) t2 USING (team_abb, year, games_played)
         WHERE strength_type = '%s'
@@ -137,7 +139,7 @@ def process_matrix(year):
 
         for row in res:
 
-            team_abb, strength_pct, year, games_played = row
+            team_abb, strength_pct, year, games_played, season_gp = row
 
             oppn_qry = """SELECT
             team_abb, strength_pct, year, games_played
@@ -157,6 +159,7 @@ def process_matrix(year):
                 oppn_abb, opponent_strength_pct, oppn_year, oppn_games_played = row
                 entry['team_abb'] = team_abb
                 entry['year'] = year
+                entry['season_gp'] = season_gp
                 entry['games_played'] = games_played
                 entry['opponent'] = oppn_abb
                 entry['strength_type'] = _type

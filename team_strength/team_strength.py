@@ -16,7 +16,13 @@ db = db('NSBL')
 def process(year):
     start_time = time()
 
-    get_optimal_lineups(year)
+    season_gp = db.query("SELECT gs FROM processed_league_averages_pitching WHERE year = %s" % (year))
+    if season_gp == ():
+        season_gp = 0
+    else:
+        season_gp = float(season_gp[0][0])/2
+
+    get_optimal_lineups(year, season_gp)
 
     end_time = time()
 
@@ -26,7 +32,7 @@ def process(year):
     print "time elapsed (in minutes): " + str(elapsed_time/60.0)
 
 
-def get_optimal_lineups(year):
+def get_optimal_lineups(year, season_gp):
     optimal_query = """SELECT team_abb, 
     starter_val, bullpen_val, 
     l.lineup_val AS lineup_vsL, r.lineup_val AS lineup_vsR,
@@ -127,6 +133,7 @@ def get_optimal_lineups(year):
         entry['team_abb'] = team_abb
         entry['team_name'] = team_name
         entry['year'] = year
+        entry['season_gp'] = season_gp
         entry['games_played'] = games_played
         entry['starter_val'] = starter_val
         entry['bullpen_val'] = bullpen_val

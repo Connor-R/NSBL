@@ -14,7 +14,7 @@ from time import time
 db = db('NSBL')
 
 # year: [years_remaining, salary multiplied, reverse index, ceiling, floor]
-# select year, max(salary), min(salary) from current_rosters_excel where year not in ('v', 'ce', 'mli') group by year
+# select year, max(salary), min(salary) from excel_rosters where year not in ('v', 'ce', 'mli') group by year
 years_map = {'6th':[1, 0.8, 5, 17.500, 2.00], '5th':[2, .6, 4, 9, 1.50], '4th':[3, .4, 3, 5.5, 1.0], '3rd':[4, 0.2, 2, 2.5, 0.650], '2nd':[5, 0.1, 1, 1.250, 0.600], '1st':[6, 1, 0, 0.550, 0.550], 'XXX':[6, 1, -1, 0.550, 0.550]}
 
 
@@ -41,9 +41,9 @@ def player_values(year):
     if season_gp == ():
         season_gp = 0
     else:
-        season_gp = float(season_gp[0][0])
+        season_gp = float(season_gp[0][0])/2
 
-    season_pct_multiplier = float(1-(season_gp/(30*162)))
+    season_pct_multiplier = float(1-(season_gp/(15*162)))
 
     # print season_pct_multiplier
 
@@ -54,20 +54,27 @@ def player_values(year):
         , COALESCE(p.FG_Team, p.MLB_Team) AS p_Team
         , p.adj_FV
         , IF(r.position != 'p', zh.team_abb, zp.team_abb) AS z_Team
-        , IF(r.position != 'p', zh.PA, CONCAT(zp.IP, '-', zp.GS, '/', zp.G)) AS z_usage
+        , IF(r.position != 'p', zh.z_PA, CONCAT(zp.IP, '-', zp.GS, '/', zp.G)) AS z_usage
         , IF(r.position != 'p', zh.WAR, zp.WAR) AS zWAR
         , CASE
-            WHEN IF(r.position != 'p', zh.PA, zp.IP) IS NULL
+            WHEN IF(r.position != 'p', zh.z_PA, zp.IP) IS NULL
                 THEN IF(r.position != 'p', zh.WAR, zp.WAR)
             WHEN r.position = 'c'
-                THEN 500*(zh.WAR/zh.PA)
+                THEN 500*(zh.WAR/zh.z_PA)
             WHEN r.position = 'p'
                 THEN IF((zp.GS/zp.G >= 0.80 or zp.GS >= 20), 32*(zp.WAR/zp.GS), zp.WAR)
             WHEN r.position NOT IN ('p', 'c')
-                THEN 600*(zh.WAR/zh.PA)
+                THEN 600*(zh.WAR/zh.z_PA)
         END AS ScaledWAR
         , IF(r.position = 'p', IF((zp.GS/zp.G >= 0.80 or zp.GS >= 20), 'sp', 'rp'), r.position) AS pos2
-        FROM NSBL.current_rosters_excel r
+        FROM NSBL.excel_rosters r
+        JOIN (
+            SELECT year
+            , MAX(gp) AS gp
+            FROM excel_rosters
+            WHERE 1
+                AND year = %s
+        ) cur USING (year, gp)
         LEFT JOIN mlb_prospects._master_current p ON (1
             AND IF(r.position = 'p'
                 , p.position LIKE "%%p%%"
@@ -81,9 +88,10 @@ def player_values(year):
             AND find_in_set(replace(r.lname, ".", ""), replace(p.lnames, ".", "")) >= 1
         )
         LEFT JOIN (
-            SELECT zr.player_name
+            SELECT zfg.player as player_name
             , zfg.*
-            , zr.age
+            , zbc.age
+            , COALESCE(zfg.PA, zbc.PA) AS z_PA
             FROM NSBL.zips_fangraphs_batters_rate zfg
             JOIN(
                 SELECT player
@@ -93,6 +101,7 @@ def player_values(year):
                     AND year = %s
                 GROUP BY player
             ) pd USING (player, post_date)
+            JOIN NSBL.zips_fangraphs_batters_counting zbc USING (player, post_date)
             LEFT JOIN NSBL.zips_offense zr ON (zfg.year = zr.year
                 AND replace(zfg.Player, "!", "") = replace(replace(replace(zr.player_name, "'", ""), " Acuna", " Acua"), "Kike ", "Kik ")
             )
@@ -102,12 +111,13 @@ def player_values(year):
             AND (replace(replace(zh.player, ".", ""), "-", " ") LIKE CONCAT("%%", replace(replace(r.lname, ".", ""), "-", " "), "%%") OR replace(replace(zh.player_name, ".", ""), "-", " ") LIKE CONCAT("%%", replace(replace(r.lname, ".", ""), "-", " "), "%%"))
         )
         LEFT JOIN (
-            SELECT zr.player_name
+            SELECT zfg.player as player_name
             , zfg.*
-            , zr.age
-            , zr.IP
-            , zr.GS
-            , zr.G
+            , zfc.age
+            , zfc.IP
+            , zfc.GS
+            , zfc.G
+            , COALESCE(zfg.FIP, zfc.FIP) AS z_FIP
             FROM NSBL.zips_fangraphs_pitchers_rate zfg
             JOIN(
                 SELECT player
@@ -117,27 +127,25 @@ def player_values(year):
                     AND year = %s
                 GROUP BY player
             ) pd USING (player, post_date)
-            LEFT JOIN NSBL.zips_pitching zr  ON (zfg.year = zr.year
-                AND replace(zfg.Player, "!", "") = replace(replace(replace(zr.player_name, "'", ""), " Acuna", " Acua"), "Kike ", "Kik ")
-            )
+            JOIN NSBL.zips_fangraphs_pitchers_counting zfc USING (player, post_date)
         ) zp ON (1
             AND r.position = 'p'
             AND (replace(replace(zp.player, ".", ""), "-", " ") LIKE CONCAT("%%", replace(replace(r.fname, ".", ""), "-", " "), "%%") OR replace(replace(zp.player_name, ".", ""), "-", " ") LIKE CONCAT("%%", replace(replace(r.fname, ".", ""), "-", " "), "%%"))
             AND (replace(replace(zp.player, ".", ""), "-", " ") LIKE CONCAT("%%", replace(replace(r.lname, ".", ""), "-", " "), "%%") OR replace(replace(zp.player_name, ".", ""), "-", " ") LIKE CONCAT("%%", replace(replace(r.lname, ".", ""), "-", " "), "%%"))
         )
     ;"""
-    query = qry % (year, year)
+    query = qry % (year, year, year)
 
     print 'querying...'
     res = db.query(query)
 
     for row in res:
         entry = {}
-        player_name, fname, lname, team_abb, dummy_pos, salary, contract_year, expires, opt, NTC, salary_counted, age, p_Team, adj_FV, z_Team, z_usage, zWAR, scaledWAR, position = row
+        yr, gp, player_name, fname, lname, team_abb, dummy_pos, salary, contract_year, expires, opt, NTC, salary_counted, age, p_Team, adj_FV, z_Team, z_usage, zWAR, scaledWAR, position = row
 
         print '\n\n', player_name, team_abb, position, salary, contract_year, expires, opt, age
 
-        entry = {'year':year, 'player_name': player_name, 'fname': fname, 'lname': lname, 'team_abb': team_abb, 'position': position, 'salary': salary, 'contract_year': contract_year, 'expires': expires, 'opt': opt, 'NTC': NTC, 'salary_counted': salary_counted, 'curr_season_remaining':season_pct_multiplier, 'age':age, 'adj_FV':adj_FV, 'zWAR':zWAR, 'scaledWAR': scaledWAR}
+        entry = {'year':year, 'player_name': player_name, 'fname': fname, 'lname': lname, 'team_abb': team_abb, 'position': position, 'salary': salary, 'contract_year': contract_year, 'expires': expires, 'opt': opt, 'NTC': NTC, 'salary_counted': salary_counted, 'season_gp':season_gp, 'age':age, 'adj_FV':adj_FV, 'zWAR':zWAR, 'scaledWAR': scaledWAR}
 
         if adj_FV is not None:
             rl_team = p_Team
@@ -169,13 +177,13 @@ def player_values(year):
         else:
             entry['years_remaining'] = years_remaining
 
-        entry['playoff_years_remaining'] = years_remaining
+        entry['preseason_years_remaining'] = years_remaining
 
         if age is None:
-            war_val, dollar_val, est_total_salary, est_raw_surplus, est_present_surplus, playoff_war_val, playoff_dollar_val, playoff_total_salary, playoff_raw_surplus, playoff_present_surplus = None, None, None, None, None, None, None, None, None, None
+            war_val, dollar_val, est_total_salary, est_raw_surplus, est_present_surplus, preseason_war_val, preseason_dollar_val, preseason_total_salary, preseason_raw_surplus, preseason_present_surplus = None, None, None, None, None, None, None, None, None, None
 
         else:
-            war_val, dollar_val, est_total_salary, est_raw_surplus, est_present_surplus, playoff_war_val, playoff_dollar_val, playoff_total_salary, playoff_raw_surplus, playoff_present_surplus = get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary, contract_year, expires, opt, salary_counted, season_pct_multiplier)
+            war_val, dollar_val, est_total_salary, est_raw_surplus, est_present_surplus, preseason_war_val, preseason_dollar_val, preseason_total_salary, preseason_raw_surplus, preseason_present_surplus = get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary, contract_year, expires, opt, salary_counted, season_pct_multiplier)
 
         entry['est_war_remaining'] = war_val
         entry['est_value'] = dollar_val
@@ -183,11 +191,11 @@ def player_values(year):
         entry['est_raw_surplus'] = est_raw_surplus
         entry['est_net_present_value'] = est_present_surplus
 
-        entry['playoff_war_remaining'] = playoff_war_val
-        entry['playoff_value'] = playoff_dollar_val
-        entry['playoff_salary'] = playoff_total_salary
-        entry['playoff_raw_surplus'] = playoff_raw_surplus
-        entry['playoff_net_present_value'] = playoff_present_surplus
+        entry['preseason_war_remaining'] = preseason_war_val
+        entry['preseason_value'] = preseason_dollar_val
+        entry['preseason_salary'] = preseason_total_salary
+        entry['preseason_raw_surplus'] = preseason_raw_surplus
+        entry['preseason_net_present_value'] = preseason_present_surplus
 
         # for k,v in entry.items():
         #     print k, v
@@ -216,11 +224,11 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
         est_raw_surplus = 0
         est_present_surplus = 0
 
-        playoff_war_val = 0
-        playoff_dollar_val = 0
-        playoff_total_salary = 0
-        playoff_raw_surplus = 0
-        playoff_present_surplus = 0
+        preseason_war_val = 0
+        preseason_dollar_val = 0
+        preseason_total_salary = 0
+        preseason_raw_surplus = 0
+        preseason_present_surplus = 0
 
         for yr in range (0, years_remaining):
             proj_age = current_age + yr
@@ -256,14 +264,14 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
                 est_year_salary = salary
                 est_year_surplus = year_dollar - est_year_salary
 
-            playoff_war_val += year_war
-            playoff_dollar_val += year_dollar
-            playoff_total_salary += est_year_salary
-            playoff_raw_surplus += est_year_surplus
+            preseason_war_val += year_war
+            preseason_dollar_val += year_dollar
+            preseason_total_salary += est_year_salary
+            preseason_raw_surplus += est_year_surplus
 
-            playoff_present_surplus += est_year_surplus*(0.92**yr)
+            preseason_present_surplus += est_year_surplus*(0.92**yr)
 
-            print '\t', year+yr, ': ', current_age, current_war, '|||', round(proj_age, 1), round(year_war, 1), round(age_multiplier, 2), '|||', round(year_dollar, 3), round(dollar_multiplier, 3), '|||', round(est_year_salary, 3), round(est_year_surplus, 3), round(playoff_present_surplus, 3), season_pct_multiplier
+            print '\t', year+yr, ': ', current_age, current_war, '|||', round(proj_age, 1), round(year_war, 1), round(age_multiplier, 2), '|||', round(year_dollar, 3), round(dollar_multiplier, 3), '|||', round(est_year_salary, 3), round(est_year_surplus, 3), round(preseason_present_surplus, 3), season_pct_multiplier
 
             if yr == 0 and salary_counted == 'Y':
                 year_war = year_war*season_pct_multiplier
@@ -284,7 +292,7 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
 
 
         # print war_val
-        return war_val, dollar_val, est_total_salary, est_raw_surplus, est_present_surplus, playoff_war_val, playoff_dollar_val, playoff_total_salary, playoff_raw_surplus, playoff_present_surplus
+        return war_val, dollar_val, est_total_salary, est_raw_surplus, est_present_surplus, preseason_war_val, preseason_dollar_val, preseason_total_salary, preseason_raw_surplus, preseason_present_surplus
 
 
     if contract_year not in ('V', 'CE', 'MLI'):
@@ -310,7 +318,7 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
             elif adj_FV > 50:
                 war_val = 2.35 + (adj_FV-50)*0.35
         year_war_avg = (war_val) / (years_remaining)
-        playoff_war_val = war_val
+        preseason_war_val = war_val
         # print '\n', entry, adj_FV, war_val, '\n'
 
         if contract_year not in ('V', 'CE', 'MLI'):
@@ -321,8 +329,8 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
             est_total_salary = 0
             est_raw_surplus = 0
 
-            playoff_war_val = 0
-            playoff_total_salary = 0
+            preseason_war_val = 0
+            preseason_total_salary = 0
 
             for yr_indx in range (6-years_remaining, 6):
                 for k, v in years_map.items():
@@ -332,8 +340,8 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
                         year_war = year_war_avg
                         est_year_salary = min(min(max(val_multiplier * year_dollar, floor), ceiling), year_dollar)
 
-                        playoff_war_val += year_war
-                        playoff_total_salary += est_year_salary
+                        preseason_war_val += year_war
+                        preseason_total_salary += est_year_salary
 
                         if yr_indx == 6-years_remaining and salary_counted == 'Y':
                             year_war = year_war_avg*season_pct_multiplier
@@ -347,20 +355,20 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
 
         else:
             est_total_salary = salary*years_remaining
-            playoff_total_salary = est_total_salary
+            preseason_total_salary = est_total_salary
 
         # for zips players, we have an estimate for $/war each season, but for prospects, we treat it as a lump sum (since we don't know how their projected war will be dispersed) (7.5 is the current $/WAR, and 0.4 is the inflation multiplier for future season)
         dollar_val = (7.5 + (year-2019)*0.4) * war_val
-        playoff_dollar_val = (7.5 + (year-2019)*0.4) * playoff_war_val
+        preseason_dollar_val = (7.5 + (year-2019)*0.4) * preseason_war_val
         
-        playoff_raw_surplus = playoff_dollar_val - playoff_total_salary
-        playoff_present_surplus = playoff_raw_surplus
+        preseason_raw_surplus = preseason_dollar_val - preseason_total_salary
+        preseason_present_surplus = preseason_raw_surplus
 
         est_raw_surplus = dollar_val - est_total_salary
         est_present_surplus = est_raw_surplus
 
         if model_war is not None:
-            temp_war_val, temp_dollar_val, temp_est_total_salary, temp_est_raw_surplus, temp_est_present_surplus, temp_playoff_war_val, temp_playoff_dollar_val, temp_playoff_total_salary, temp_playoff_raw_surplus, temp_playoff_present_surplus = age_curve(age, position, model_war, years_remaining, salary, salary_counted, season_pct_multiplier, contract)
+            temp_war_val, temp_dollar_val, temp_est_total_salary, temp_est_raw_surplus, temp_est_present_surplus, temp_preseason_war_val, temp_preseason_dollar_val, temp_preseason_total_salary, temp_preseason_raw_surplus, temp_preseason_present_surplus = age_curve(age, position, model_war, years_remaining, salary, salary_counted, season_pct_multiplier, contract)
 
             if temp_war_val > war_val:
                 war_val = temp_war_val
@@ -369,17 +377,17 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
                 est_raw_surplus = temp_est_raw_surplus
                 est_present_surplus = temp_est_present_surplus
 
-            if temp_playoff_war_val > playoff_war_val:
-                playoff_war_val = temp_playoff_war_val
-                playoff_dollar_val = temp_playoff_dollar_val
-                playoff_total_salary = temp_playoff_total_salary
-                playoff_raw_surplus = temp_playoff_raw_surplus
-                playoff_present_surplus = temp_playoff_present_surplus
+            if temp_preseason_war_val > preseason_war_val:
+                preseason_war_val = temp_preseason_war_val
+                preseason_dollar_val = temp_preseason_dollar_val
+                preseason_total_salary = temp_preseason_total_salary
+                preseason_raw_surplus = temp_preseason_raw_surplus
+                preseason_present_surplus = temp_preseason_present_surplus
 
     else:
-        war_val, dollar_val, est_total_salary, est_raw_surplus, est_present_surplus, playoff_war_val, playoff_dollar_val, playoff_total_salary, playoff_raw_surplus, playoff_present_surplus = age_curve(age, position, model_war, years_remaining, salary, salary_counted, season_pct_multiplier, contract)
+        war_val, dollar_val, est_total_salary, est_raw_surplus, est_present_surplus, preseason_war_val, preseason_dollar_val, preseason_total_salary, preseason_raw_surplus, preseason_present_surplus = age_curve(age, position, model_war, years_remaining, salary, salary_counted, season_pct_multiplier, contract)
 
-    return war_val, dollar_val, est_total_salary, est_raw_surplus, est_present_surplus, playoff_war_val, playoff_dollar_val, playoff_total_salary, playoff_raw_surplus, playoff_present_surplus
+    return war_val, dollar_val, est_total_salary, est_raw_surplus, est_present_surplus, preseason_war_val, preseason_dollar_val, preseason_total_salary, preseason_raw_surplus, preseason_present_surplus
 
 
 def team_values(year):
@@ -389,7 +397,7 @@ def team_values(year):
     DROP TABLE IF EXISTS _trade_value_teams;
     CREATE TABLE _trade_value_teams AS
     SELECT year
-    , curr_season_remaining
+    , season_gp
     , team_abb
 
     , COUNT(*) AS roster_size
@@ -417,11 +425,11 @@ def team_values(year):
     , SUM(IF(adj_FV IS NULL AND zWAR IS NOT NULL, est_raw_surplus, 0)) AS MLB_player_raw_surplus
     , SUM(IF(adj_FV IS NULL AND zWAR IS NOT NULL, est_net_present_value, 0)) AS MLB_player_net_present_value
 
-    , SUM(playoff_war_remaining) AS playoff_war
-    , SUM(playoff_value) AS playoff_value
-    , SUM(playoff_salary) AS playoff_salary
-    , SUM(playoff_raw_surplus) AS playoff_raw_surplus
-    , SUM(playoff_net_present_value) AS playoff_net_present_value
+    , SUM(preseason_war_remaining) AS preseason_war
+    , SUM(preseason_value) AS preseason_value
+    , SUM(preseason_salary) AS preseason_salary
+    , SUM(preseason_raw_surplus) AS preseason_raw_surplus
+    , SUM(preseason_net_present_value) AS preseason_net_present_value
 
     , GROUP_CONCAT(DISTINCT CONCAT(
         player_name
@@ -437,15 +445,15 @@ def team_values(year):
 
     , GROUP_CONCAT(DISTINCT CONCAT(
         player_name
-        , ' ($', ifnull(playoff_net_present_value, 0)
+        , ' ($', ifnull(preseason_net_present_value, 0)
         , ', ', IFNULL(age, ''), ' - ', UPPER(position)
         , ', $', salary, ' - ', contract_year, IF(expires>0, CONCAT(' ', expires), ''), IF(opt='Y', '+1', '')
         , IF(adj_FV is NULL, '', CONCAT(', ', adj_FV, ' adjFV'))
         , IF(zWAR is NULL, '', CONCAT(', ', zWAR, '/', scaledWAR, ' zWAR/scaledWAR'))
         , ')'
-        ) ORDER BY est_net_present_value DESC SEPARATOR '
+        ) ORDER BY preseason_net_present_value DESC SEPARATOR '
 '
-    ) AS all_player_playoff_values
+    ) AS all_player_preseason_values
 
     , GROUP_CONCAT(IF(adj_FV IS NOT NULL, CONCAT(
         player_name
@@ -484,11 +492,11 @@ def team_values(year):
 
     FROM _trade_value tv
     JOIN(
-        SELECT DISTINCT year, curr_season_remaining
+        SELECT DISTINCT year, season_gp
         FROM _trade_value
-    ) a USING (year, curr_season_remaining)
+    ) a USING (year, season_gp)
     WHERE 1
-    GROUP BY year, curr_season_remaining, team_abb
+    GROUP BY year, season_gp, team_abb
     ;"""
 
     query = qry

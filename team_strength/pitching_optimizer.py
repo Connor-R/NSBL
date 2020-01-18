@@ -13,7 +13,7 @@ import numpy as np
 db = db('NSBL')
 
 
-def process():
+def process(year):
     start_time = time()
 
     #Each time we run this, we clear the pre-existing table
@@ -22,10 +22,10 @@ def process():
     i = 0 
 
     team_q = """SELECT DISTINCT team_abb FROM teams 
-    WHERE year = 2019
+    WHERE year = %s
     ORDER BY team_abb ASC
     """
-    team_qry = team_q
+    team_qry = team_q % (year)
     teams = db.query(team_qry)
     for team in teams:
         team_abb = team[0]
@@ -33,7 +33,7 @@ def process():
         i += 1
         print i, team_abb
 
-        get_pitchers(team_abb)
+        get_pitchers(team_abb, year)
 
     end_time = time()
 
@@ -43,7 +43,7 @@ def process():
     print "time elapsed (in minutes): " + str(elapsed_time/60.0)
 
 
-def get_pitchers(team_abb):
+def get_pitchers(team_abb, year):
     entry = {}
 
     entry['team_abb'] = team_abb
@@ -54,8 +54,18 @@ def get_pitchers(team_abb):
     LEFT JOIN current_rosters c USING (YEAR, player_name)
     LEFT JOIN processed_WAR_pitchers w USING (YEAR, player_name, team_abb)
     LEFT JOIN teams t USING (YEAR, team_id)
-    LEFT JOIN current_rosters_excel cre USING (player_name)
-    WHERE z.year = 2019
+    LEFT JOIN(
+        SELECT *
+        FROM excel_rosters
+        JOIN (
+            SELECT year
+            , MAX(gp) AS gp
+            FROM excel_rosters
+            WHERE 1
+                AND year = %s
+        ) cur USING (year, gp)
+    ) cre USING (player_name)
+    WHERE z.year = %s
     AND (t.team_abb = '%s')
     AND gs >= 3
     AND player_name NOT IN ('Player Name', 'Nick Pivetta')
@@ -63,7 +73,7 @@ def get_pitchers(team_abb):
     ORDER BY WAR_per_ip DESC
     LIMIT 6;"""
 
-    starter_query = starter_qry % (team_abb)
+    starter_query = starter_qry % (year, year, team_abb)
 
     starters = db.query(starter_query)
 
@@ -115,8 +125,18 @@ def get_pitchers(team_abb):
     LEFT JOIN current_rosters c USING (YEAR, player_name)
     LEFT JOIN processed_WAR_pitchers w USING (YEAR, player_name, team_abb)
     LEFT JOIN teams t USING (YEAR, team_id)
-    LEFT JOIN current_rosters_excel cre USING (player_name)
-    WHERE z.year = 2019
+    LEFT JOIN(
+        SELECT *
+        FROM excel_rosters
+        JOIN (
+            SELECT year
+            , MAX(gp) AS gp
+            FROM excel_rosters
+            WHERE 1
+                AND year = %s
+        ) cur USING (year, gp)
+    ) cre USING (player_name)
+    WHERE z.year = %s
     AND t.team_abb = '%s'
     AND player_name NOT IN %s
     AND player_name NOT IN ('Player Name', 'Nick Pivetta')
@@ -124,7 +144,7 @@ def get_pitchers(team_abb):
     ORDER BY WAR_per_ip DESC
     LIMIT 7;"""
 
-    reliever_query = reliever_qry % (team_abb, tuple(starter_names))
+    reliever_query = reliever_qry % (year, year, team_abb, tuple(starter_names))
     # raw_input(reliever_query)
     relievers = db.query(reliever_query)
 
@@ -179,9 +199,9 @@ def get_pitchers(team_abb):
 
 if __name__ == "__main__":  
     parser = argparse.ArgumentParser()
-    # parser.add_argument('--year',default=2019)
+    parser.add_argument('--year',default=2019)
     args = parser.parse_args()
     
-    process()
+    process(args.year)
     
 
