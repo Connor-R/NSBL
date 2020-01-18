@@ -9,15 +9,15 @@ db = db('NSBL')
 
 # find potential FA
 
-# SELECT f.year
-# , f.player_name
+# SELECT f.player_name
+# /* , f.year
 # , c.age
 # , f.team_abb
 # , f.pos
 # , f.zOPS_Plus
 # , f.DEF
 # , f.wRC_plus
-# , f.WAR600
+# , f.WAR600 */
 # FROM zips_fangraphs_prep_FA_batters f
 # JOIN zips_fangraphs_batters_counting c on (f.year=c.year AND f.player_name=c.player AND f.team_abb=c.team_abb)
 # LEFT JOIN(
@@ -33,13 +33,14 @@ db = db('NSBL')
 # ) r ON (f.player_name=r.player_name)
 # where r.player_name is null
 # and c.age >= 25
-# and c.team_abb IN ('COL')
+# -- and c.team_abb IN ('COL')
 # and f.year = 2020
+# and ( (600*f.def/f.pa) > 6 or f.zops_plus >= 80 or f.war600 >= 1 or f.wrc_plus >= 80)
 # order by f.war600 desc
 # ;
-
-# SELECT f.year
-# , f.player_name
+# 
+# SELECT f.player_name
+# /* , f.year
 # , c.age
 # , f.team_abb
 # , f.pos
@@ -54,7 +55,7 @@ db = db('NSBL')
 # , f.FIP_minus
 # , f.ERA_minus
 # , f.FIP_WAR
-# , f.ERA_WAR
+# , f.ERA_WAR */
 # FROM zips_fangraphs_prep_FA_pitchers f
 # JOIN zips_fangraphs_pitchers_counting c on (f.year=c.year AND f.player_name=c.player AND f.team_abb=c.team_abb)
 # LEFT JOIN(
@@ -70,8 +71,9 @@ db = db('NSBL')
 # ) r ON (f.player_name=r.player_name)
 # where r.player_name is null
 # and c.age >= 25
-# and c.team_abb IN ('COL')
+# -- and c.team_abb IN ('COL')
 # and f.year = 2020
+# and if(f.gs >= 3, zERA_plus >= 90, zERA_plus >= 100)
 # order by f.FIP_WAR desc
 # ;
 
@@ -261,6 +263,8 @@ def pitchers(year):
         entry['hand'] = hand
         entry['pos'] = pos
         entry['pf'] = pf
+        entry['g'] = g
+        entry['gs'] = gs
         entry['ip'] = ip
         entry['babip'] = babip
         entry['k_9'] = k_9

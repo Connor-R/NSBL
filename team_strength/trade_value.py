@@ -60,7 +60,7 @@ def player_values(year):
             WHEN IF(r.position != 'p', zh.z_PA, zp.IP) IS NULL
                 THEN IF(r.position != 'p', zh.WAR, zp.WAR)
             WHEN r.position = 'c'
-                THEN 500*(zh.WAR/zh.z_PA)
+                THEN 450*(zh.WAR/zh.z_PA)
             WHEN r.position = 'p'
                 THEN IF((zp.GS/zp.G >= 0.80 or zp.GS >= 20), 32*(zp.WAR/zp.GS), zp.WAR)
             WHEN r.position NOT IN ('p', 'c')
