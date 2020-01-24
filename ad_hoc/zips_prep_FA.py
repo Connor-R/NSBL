@@ -9,82 +9,120 @@ db = db('NSBL')
 
 # find potential FA
 
-# SELECT f.player_name
-# /* , f.year
-# , c.age
-# , f.team_abb
-# , f.pos
-# , f.zOPS_Plus
-# , f.DEF
-# , f.wRC_plus
-# , f.WAR600 */
-# FROM zips_fangraphs_prep_FA_batters f
-# JOIN zips_fangraphs_batters_counting c on (f.year=c.year AND f.player_name=c.player AND f.team_abb=c.team_abb)
-# LEFT JOIN(
-#     SELECT *
-#     FROM excel_rosters
-#     JOIN (
-#         SELECT year
-#         , MAX(gp) AS gp
+# SELECT *
+# FROM(
+#     SELECT f.player_name
+#     /* , f.year
+#     , c.age
+#     , f.team_abb
+#     , f.pos
+#     , f.zOPS_Plus
+#     , f.DEF
+#     , f.wRC_plus
+#     , f.WAR600 */
+#     FROM zips_fangraphs_prep_FA_batters f
+#     JOIN zips_fangraphs_batters_counting c on (f.year=c.year AND f.player_name=c.player AND f.team_abb=c.team_abb)
+#     LEFT JOIN(
+#         SELECT *
 #         FROM excel_rosters
-#         WHERE 1
-#             AND year = 2020
-#     ) cur USING (year, gp)
-# ) r ON (f.player_name=r.player_name)
-# where r.player_name is null
-# and c.age >= 25
-# -- and c.team_abb IN ('COL')
-# and f.year = 2020
-# and ( (600*f.def/f.pa) > 6 or f.zops_plus >= 80 or f.war600 >= 1 or f.wrc_plus >= 80)
-# order by f.war600 desc
+#         JOIN (
+#             SELECT year
+#             , MAX(gp) AS gp
+#             FROM excel_rosters
+#             WHERE 1
+#                 AND year = 2020
+#         ) cur USING (year, gp)
+#     ) r ON (f.player_name=r.player_name)
+#     where r.player_name is null
+#     and c.age >= 25
+#     -- and c.team_abb IN ('COL')
+#     and f.year = 2020
+#     and ( (600*f.def/f.pa) > 6 or f.zops_plus >= 80 or f.war600 >= 1 or f.wrc_plus >= 80)
+#     -- order by f.WAR600 DESC
+#     union
+#     select distinct player_name
+#     from excel_rosters
+#     where 1
+#         and year = 2019
+#         and position != 'p'
+#         and (contract_year = '6th'
+#             or (expires = 2019 and opt = '')
+#         )
+# ) a
+# WHERE 1
+#     AND player_name NOT IN ('Pete Alonso', 'Will D. Smith', 'Gary Snchez', 'Kik Hernandez', 'Eugenio Surez', 'Shogo Akiyama', 'Miguel Andjar', 'Gio Urshela', 'DJ Stewart', 'Christian Coln', 'AJ Reed', 'Csar Puello')
 # ;
-# 
-# SELECT f.player_name
-# /* , f.year
-# , c.age
-# , f.team_abb
-# , f.pos
-# , f.ip
-# , f.zERA_plus
-# , f.zERA_minus
-# , f.zWAR
-# , f.k_9
-# , f.bb_9
-# , f.k_bb
-# , f.hr_9
-# , f.FIP_minus
-# , f.ERA_minus
-# , f.FIP_WAR
-# , f.ERA_WAR */
-# FROM zips_fangraphs_prep_FA_pitchers f
-# JOIN zips_fangraphs_pitchers_counting c on (f.year=c.year AND f.player_name=c.player AND f.team_abb=c.team_abb)
-# LEFT JOIN(
-#     SELECT *
-#     FROM excel_rosters
-#     JOIN (
-#         SELECT year
-#         , MAX(gp) AS gp
+
+# SELECT *
+# FROM(
+#     SELECT f.player_name
+#     /* , f.year
+#     , c.age
+#     , f.team_abb
+#     , f.pos
+#     , f.ip
+#     , f.zERA_plus
+#     , f.zERA_minus
+#     , f.zWAR
+#     , f.k_9
+#     , f.bb_9
+#     , f.k_bb
+#     , f.hr_9
+#     , f.FIP_minus
+#     , f.ERA_minus
+#     , f.FIP_WAR
+#     , f.ERA_WAR */
+#     FROM zips_fangraphs_prep_FA_pitchers f
+#     JOIN zips_fangraphs_pitchers_counting c on (f.year=c.year AND f.player_name=c.player AND f.team_abb=c.team_abb)
+#     LEFT JOIN(
+#         SELECT *
 #         FROM excel_rosters
-#         WHERE 1
-#             AND year = 2020
-#     ) cur USING (year, gp)
-# ) r ON (f.player_name=r.player_name)
-# where r.player_name is null
-# and c.age >= 25
-# -- and c.team_abb IN ('COL')
-# and f.year = 2020
-# and if(f.gs >= 3, zERA_plus >= 90, zERA_plus >= 100)
-# order by f.FIP_WAR desc
+#         JOIN (
+#             SELECT year
+#             , MAX(gp) AS gp
+#             FROM excel_rosters
+#             WHERE 1
+#                 AND year = 2020
+#         ) cur USING (year, gp)
+#     ) r ON (f.player_name=r.player_name)
+#     where r.player_name is null
+#     and c.age >= 25
+#     -- and c.team_abb IN ('COL')
+#     and f.year = 2020
+#     and if(f.gs >= 3, zERA_plus >= 90, zERA_plus >= 100)
+#     -- order by f.FIP_WAR DESC
+#     union
+#     select distinct replace(player_name,'  ', ' ')
+#     from excel_rosters
+#     where 1
+#         and year = 2019
+#         and position = 'p'
+#         and (contract_year = '6th'
+#             or (expires = 2019 and opt = '')
+#         )
+# ) a
+# WHERE 1
+#     AND player_name NOT IN ('Lance McCullers Jr.', 'Joe Jimnez', 'Chi Chi Gonzalez', 'Seunghwan Oh', 'Randy Dobnak', 'Darren ODay')
 # ;
 
 
 def process(year):
 
+    clear_year = "DELETE FROM zips_fangraphs_prep_FA_batters WHERE year = %s;" % (year)
+    db.query(clear_year)
+    db.conn.commit()
     batters(year)
+
+    clear_year = "DELETE FROM zips_fangraphs_prep_FA_pitchers WHERE year = %s;" % (year)
+    db.query(clear_year)
+    db.conn.commit()
     pitchers(year)
 
 
 def batters(year):
+
+
+
     player_q = """SELECT year
     , Player
     , team_abb
