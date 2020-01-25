@@ -9,9 +9,31 @@ db = db('NSBL')
 
 # find potential FA
 
+names_dict = {'foo': 'temp'
+    , 'AJ Reed': 'A.J. Reed'
+    , 'Chi Chi Gonzalez': 'Chi-Chi Gonzalez'
+    , 'Christian Coln': 'Christian Colon'
+    , 'Csar Puello': 'Cesar Puello' 
+    , 'Darren ODay': "Darren O'Day"
+    , 'DJ Stewart': 'D.J. Stewart'
+    , 'Eugenio Surez': 'Eugenio Suarez'
+    , 'Gary Snchez': 'Gary Sanchez'
+    , 'Gio Urshela': 'Giovanny Urshela'
+    , 'Joe Jimnez': 'Joe Jimenez'
+    , 'Kik Hernandez': 'Kike Hernandez'
+    , 'Lance McCullers Jr.': 'Lance McCullers'
+    , 'Miguel Andjar': 'Miguel Andujar'
+    , 'Pete Alonso': 'Peter Alonso'
+    , 'Ronald Acua Jr.': 'Ronald Acuna'
+    , 'Seunghwan Oh': 'Seung-hwan Oh'
+    , 'Gnesis Cabrera': 'Genesis Cabrera'
+}
+
+# SELECT * FROM zips_fangraphs_prep_FA_batters WHERE year = 2020;
+# SELECT * FROM zips_fangraphs_prep_FA_pitchers WHERE year = 2020;
 # SELECT *
 # FROM(
-#     SELECT REPLACE(f.player_name, 'Ronald Acua Jr.', 'Ronald Acuna')
+#     SELECT f.player_name
 #     /* , f.year
 #     , c.age
 #     , f.team_abb
@@ -50,7 +72,7 @@ db = db('NSBL')
 #         )
 # ) a
 # WHERE 1
-#     AND player_name NOT IN ('Pete Alonso', 'Will D. Smith', 'Gary Snchez', 'Kik Hernandez', 'Eugenio Surez', 'Shogo Akiyama', 'Miguel Andjar', 'Gio Urshela', 'DJ Stewart', 'Christian Coln', 'AJ Reed', 'Csar Puello')
+#     AND player_name NOT IN ('Will D. Smith', 'Shogo Akiyama')
 # ;
 
 # SELECT *
@@ -102,7 +124,7 @@ db = db('NSBL')
 #         )
 # ) a
 # WHERE 1
-#     AND player_name NOT IN ('Lance McCullers Jr.', 'Joe Jimnez', 'Chi Chi Gonzalez', 'Seunghwan Oh', 'Randy Dobnak', 'Darren ODay')
+#     AND player_name NOT IN ('Randy Dobnak')
 # ;
 
 
@@ -179,6 +201,8 @@ def batters(year):
 
         WAR600 = 600*(float(WAR)/float(pa))
 
+        if player_name in names_dict:
+            player_name = names_dict.get(player_name)
 
         ops, wOBA, park_wOBA, OPS_plus, wrc, wrc27, wRC_plus, raa, oWAR = helper.get_zips_offensive_metrics(year-1, pf, pa, ab, bb2, hbp, _1, _2, _3, hr, sb, cs)
 
@@ -258,6 +282,9 @@ def pitchers(year):
     for row in player_data:
         entry = {}
         year, player_name, team_abb, age, hand, era, g, gs, ip, h, er, hr, bb, k, k_9, bb_9, hr_9, bb_pct, k_pct, babip, zera_plus, zera_minus, zfip, zwar = row
+
+        if player_name in names_dict:
+            player_name = names_dict.get(player_name)
 
         r = er
         if (gs >= 10 or float(gs)/float(g) > 0.4):
