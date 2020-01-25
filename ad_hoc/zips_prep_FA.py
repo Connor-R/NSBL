@@ -11,7 +11,7 @@ db = db('NSBL')
 
 # SELECT *
 # FROM(
-#     SELECT f.player_name
+#     SELECT REPLACE(f.player_name, 'Ronald Acua Jr.', 'Ronald Acuna')
 #     /* , f.year
 #     , c.age
 #     , f.team_abb

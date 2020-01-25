@@ -184,10 +184,10 @@ def player_values(year):
         entry['preseason_years_remaining'] = years_remaining
 
         if age is None:
-            war_val, dollar_val, est_total_salary, est_raw_surplus, est_present_surplus, preseason_war_val, preseason_dollar_val, preseason_total_salary, preseason_raw_surplus, preseason_present_surplus, preseason_payout, est_payout, prospect_payout = None, None, None, None, None, None, None, None, None, None, None, None, None
+            war_val, dollar_val, est_total_salary, est_raw_surplus, est_present_surplus, preseason_war_val, preseason_dollar_val, preseason_total_salary, preseason_raw_surplus, preseason_present_surplus, prospect_war_val, prospect_dollar_val, prospect_total_salary, prospect_raw_surplus, prospect_present_surplus, preseason_payout, est_payout, prospect_payout = None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
 
         else:
-            war_val, dollar_val, est_total_salary, est_raw_surplus, est_present_surplus, preseason_war_val, preseason_dollar_val, preseason_total_salary, preseason_raw_surplus, preseason_present_surplus, preseason_payout, est_payout, prospect_payout = get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary, contract_year, expires, opt, salary_counted, season_pct_multiplier, player_name, team_abb, rl_team)
+            war_val, dollar_val, est_total_salary, est_raw_surplus, est_present_surplus, preseason_war_val, preseason_dollar_val, preseason_total_salary, preseason_raw_surplus, preseason_present_surplus, prospect_war_val, prospect_dollar_val, prospect_total_salary, prospect_raw_surplus, prospect_present_surplus, preseason_payout, est_payout, prospect_payout = get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary, contract_year, expires, opt, salary_counted, season_pct_multiplier, player_name, team_abb, rl_team)
 
         entry['est_war_remaining'] = war_val
         entry['est_value'] = dollar_val
@@ -201,8 +201,14 @@ def player_values(year):
         entry['preseason_raw_surplus'] = preseason_raw_surplus
         entry['preseason_net_present_value'] = preseason_present_surplus
 
-        entry['preseason_payout'] = preseason_payout
+        entry['prospect_war_remaining'] = prospect_war_val
+        entry['prospect_value'] = prospect_dollar_val
+        entry['prospect_salary'] = prospect_total_salary
+        entry['prospect_raw_surplus'] = prospect_raw_surplus
+        entry['prospect_net_present_value'] = prospect_present_surplus
+
         entry['est_payout'] = est_payout
+        entry['preseason_payout'] = preseason_payout
         entry['prospect_payout'] = prospect_payout
 
         # for k,v in entry.items():
@@ -214,6 +220,11 @@ def player_values(year):
 
 def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary, contract_year, expires, opt, salary_counted, season_pct_multiplier, player_name, team_abb, rl_team):
     preseason_payout, est_payout, prospect_payout = None, None, None
+    prospect_war_val = None
+    prospect_dollar_val = None
+    prospect_total_salary = None
+    prospect_raw_surplus = None
+    prospect_present_surplus = None
 
     salary = float(salary)
     if model_war is not None:
@@ -259,6 +270,9 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
                 # rps: between 0 and 0.2 WAR: 2 mil/WAR
                     # between 0.2 and 0.4 WAR: 4 mil/WAR
                     # every win above 0.4 WAR: 8 mil/WAR
+                # sps: between 0 and 0.5 WAR: 2 mil/WAR
+                    # between 0.5 and 1.0 WAR: 4 mil/WAR
+                    # every win above 1.0 WAR: 8 mil/WAR
                 # catchers: between 0 and 0.5 WAR: 2 mil/WAR
                     # between 0.5 and 1.5 WAR: 4 mil/WAR
                     # every win above 1.5 WAR: 8 mil/WAR
@@ -273,7 +287,15 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
                     year_dollar = 2*(0.2) + (year_war-0.2)*(dollar_multiplier+2)
                 elif year_war > 0.4:
                     year_dollar = 2*(0.2) + 4*(0.4-0.2) + (year_war-0.4)*(dollar_multiplier+6)
-            if position == 'c':
+            elif position == 'sp':
+                dollar_multiplier = (2.0 + yr*0.4)
+                if year_war <= 0.5:
+                    year_dollar = min(year_war, 0.5)*dollar_multiplier
+                elif year_war > 0.5 and year_war <= 1.0:
+                    year_dollar = 2*(0.5) + (year_war-0.5)*(dollar_multiplier+2)
+                elif year_war > 1.0:
+                    year_dollar = 2*(0.5) + (dollar_multiplier+2)*(1.0-0.5) + (year_war-1.0)*(dollar_multiplier+6)
+            elif position == 'c':
                 dollar_multiplier = (2.0 + yr*0.4)
                 if year_war <= 0.5:
                     year_dollar = min(year_war, 0.5)*dollar_multiplier
@@ -294,10 +316,14 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
                 for k, v in years_map.items():
                     val_multiplier, indx, ceiling, floor = v[1], v[0], v[3], v[4]
                     if yr == 0:
-                        est_year_salary = salary
+                        est_year_salary = salary 
+                        if salary_counted == 'Y':
+                            est_year_surplus = year_dollar - est_year_salary
+                        else:
+                            est_year_surplus = max(year_dollar - est_year_salary, 0)
                     elif years_remaining-yr == indx:
                         est_year_salary = min(max(val_multiplier * year_dollar, floor), ceiling)
-                    est_year_surplus = max(year_dollar - est_year_salary, 0)
+                        est_year_surplus = max(year_dollar - est_year_salary, 0)
             else:
                 est_year_salary = salary
                 est_year_surplus = year_dollar - est_year_salary
@@ -324,8 +350,8 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
             preseason_payout += ' (Inflation: +$' + str(yr*0.4) + ')' 
             preseason_payout += '\n\t\tEst salary: $' + str(round(est_year_salary, 1))
             preseason_payout += ' | Raw year surplus: $' + str(round(est_year_surplus, 1)) 
-            preseason_payout += ' (PV discount: ' + str(round(0.92**yr, 2)) + '%)'
-            preseason_payout += ' | Sum surplus: $' + str(round(preseason_present_surplus, 1))
+            preseason_payout += ' (PV discount: ' + str(100*round(0.92**yr, 2)) + '%)'
+            preseason_payout += ' | Rolling surplus: $' + str(round(preseason_present_surplus, 1))
 
             # print preseason_payout
 
@@ -350,7 +376,7 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
             est_payout += ' (Inflation: +$' + str(yr*0.4) + ')' 
             est_payout += '\n\t\tEst salary: $' + str(round(est_year_salary, 1))
             est_payout += ' | Raw year surplus: $' + str(round(est_year_surplus, 1)) 
-            est_payout += ' (PV discount: ' + str(round(0.92**yr, 2)) + '%)'
+            est_payout += ' (PV discount: ' + str(100*round(0.92**yr, 2)) + '%)'
             est_payout += ' | Rolling surplus: $' + str(round(est_present_surplus, 1))
 
         est_payout += '\n\nSum salary: $' + str(round(est_total_salary, 1))
@@ -361,7 +387,7 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
         preseason_payout += '\n\nSum salary: $' + str(round(preseason_total_salary, 1))
         preseason_payout += ' | Sum WAR: ' + str(round(preseason_war_val, 1))
         preseason_payout += ' | Sum value: $' + str(round(preseason_dollar_val, 1))
-        preseason_payout += ' | Sum surplus: $' + str(round(preseason_raw_surplus, 1))
+        preseason_payout += ' | Sum surplus: $' + str(round(preseason_present_surplus, 1))
 
 
         print preseason_payout
@@ -499,17 +525,23 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
 
         print prospect_payout
 
+        prospect_war_val = preseason_war_val
+        prospect_dollar_val = preseason_dollar_val
+        prospect_total_salary = preseason_total_salary
+        prospect_raw_surplus = preseason_present_surplus
+        prospect_present_surplus = preseason_present_surplus
+
         if model_war is not None:
             temp_war_val, temp_dollar_val, temp_est_total_salary, temp_est_raw_surplus, temp_est_present_surplus, temp_preseason_war_val, temp_preseason_dollar_val, temp_preseason_total_salary, temp_preseason_raw_surplus, temp_preseason_present_surplus, preseason_payout, est_payout = age_curve(age, position, model_war, years_remaining, salary, salary_counted, season_pct_multiplier, player_name, team_abb, rl_team, contract)
 
-            if temp_dollar_val > dollar_val:
+            if temp_est_present_surplus > est_present_surplus:
                 war_val = temp_war_val
                 dollar_val = temp_dollar_val
                 est_total_salary = temp_est_total_salary
                 est_raw_surplus = temp_est_raw_surplus
                 est_present_surplus = temp_est_present_surplus
 
-            if temp_preseason_dollar_val > preseason_dollar_val:
+            if temp_preseason_present_surplus > preseason_present_surplus:
                 preseason_war_val = temp_preseason_war_val
                 preseason_dollar_val = temp_preseason_dollar_val
                 preseason_total_salary = temp_preseason_total_salary
@@ -519,7 +551,7 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
     else:
         war_val, dollar_val, est_total_salary, est_raw_surplus, est_present_surplus, preseason_war_val, preseason_dollar_val, preseason_total_salary, preseason_raw_surplus, preseason_present_surplus, preseason_payout, est_payout = age_curve(age, position, model_war, years_remaining, salary, salary_counted, season_pct_multiplier, player_name, team_abb, rl_team, contract)
 
-    return war_val, dollar_val, est_total_salary, est_raw_surplus, est_present_surplus, preseason_war_val, preseason_dollar_val, preseason_total_salary, preseason_raw_surplus, preseason_present_surplus, preseason_payout, est_payout, prospect_payout
+    return war_val, dollar_val, est_total_salary, est_raw_surplus, est_present_surplus, preseason_war_val, preseason_dollar_val, preseason_total_salary, preseason_raw_surplus, preseason_present_surplus, prospect_war_val, prospect_dollar_val, prospect_total_salary, prospect_raw_surplus, prospect_present_surplus, preseason_payout, est_payout, prospect_payout
 
 
 def team_values(year):
@@ -545,11 +577,11 @@ def team_values(year):
     , SUM(est_raw_surplus) AS total_raw_surplus
     , SUM(est_net_present_value) AS total_net_present_value
 
-    , SUM(IF(adj_FV IS NOT NULL, est_war_remaining, 0)) AS prospect_war
-    , SUM(IF(adj_FV IS NOT NULL, est_value, 0)) AS prospect_value
-    , SUM(IF(adj_FV IS NOT NULL, est_salary, 0)) AS prospect_salary
-    , SUM(IF(adj_FV IS NOT NULL, est_raw_surplus, 0)) AS prospect_raw_surplus
-    , SUM(IF(adj_FV IS NOT NULL, est_net_present_value, 0)) AS prospect_net_present_value
+    , SUM(prospect_war_remaining) AS prospect_war
+    , SUM(prospect_value) AS prospect_value
+    , SUM(prospect_salary) AS prospect_salary
+    , SUM(prospect_raw_surplus) AS prospect_raw_surplus
+    , SUM(prospect_net_present_value) AS prospect_net_present_value
 
     , SUM(IF(adj_FV IS NULL AND zWAR IS NOT NULL, est_war_remaining, 0)) AS MLB_player_war
     , SUM(IF(adj_FV IS NULL AND zWAR IS NOT NULL, est_value, 0)) AS MLB_player_value
