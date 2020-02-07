@@ -27,104 +27,318 @@ names_dict = {'foo': 'temp'
     , 'Ronald Acua Jr.': 'Ronald Acuna'
     , 'Seunghwan Oh': 'Seung-hwan Oh'
     , 'Gnesis Cabrera': 'Genesis Cabrera'
+    , 'Williams Prez': 'Williams Perez'
+    , 'Tyler ONeill': "Tyler O'Neill"
+    , 'Ramn Uras': 'Ramon Urias'
+    , 'Travis dArnaud': "Travis d'Arnaud"
+    , 'Dom Nunez': 'Dominic Nunez'
+    , 'LaMonte Wade Jr': 'Lamonte Wade'
+    , 'Tyler ONeill': "Tyler O'Neill"
+    , 'Brock Holt!': 'Brock Holt'
+    , 'Mauricio Dubn': 'Mauricio Dubon'
+    , 'Hctor Neris': 'Hector Neris'
+    , 'Vctor Arano': 'Victor Arano'
+    , 'Seranthony Domnguez': 'Seranthony Dominguez'
+    , 'Hctor Noesi': 'Hector Noesi'
+    , 'Jhoulys Chacn': 'Jhoulys Chacin'
+    , 'Martn Prez': 'Martin Perez'
+    , 'Jos Godoy': 'Jose Godoy'
+    , 'Yairo Muoz': 'Yairo Munoz'
+    , 'Jos Peraza': 'Jose Peraza'
+    , 'Brian OKeefe': "Brian O'Keefe"
+    , 'Jos Osuna': 'Jose Osuna'
+    , 'Austin L. Adams': 'Austin Adams'
+    , 'Albert Almora Jr.': 'Albert Almora'
+    , 'Hernn Prez': 'Hernan Perez'
+    , 'Javier Bez': 'Javier Baez'
+    , 'Steven Souza Jr.': 'Steven Souza'
+    , 'Ryan OHearn': "Ryan O'Hearn"
+    , 'Kaai Tom': "Ka'ai Tom"
+    , 'Mike Clevinger': 'Michael Clevinger'
 }
 
 # SELECT * FROM zips_fangraphs_prep_FA_batters WHERE year = 2020;
 # SELECT * FROM zips_fangraphs_prep_FA_pitchers WHERE year = 2020;
-# SELECT *
+# SELECT b.*
 # FROM(
-#     SELECT f.player_name
-#     /* , f.year
-#     , c.age
-#     , f.team_abb
-#     , f.pos
-#     , f.zOPS_Plus
-#     , f.DEF
-#     , f.wRC_plus
-#     , f.WAR600 */
-#     FROM zips_fangraphs_prep_FA_batters f
-#     JOIN zips_fangraphs_batters_counting c on (f.year=c.year AND f.player_name=c.player AND f.team_abb=c.team_abb)
-#     LEFT JOIN(
-#         SELECT *
-#         FROM excel_rosters
-#         JOIN (
-#             SELECT year
-#             , MAX(gp) AS gp
+#     SELECT *
+#     FROM(
+#         SELECT f.player_name
+#         /* , f.year
+#         , c.age
+#         , f.team_abb
+#         , f.pos
+#         , f.zOPS_Plus
+#         , f.DEF
+#         , f.wRC_plus
+#         , f.scaledWAR */
+#         FROM zips_fangraphs_prep_FA_batters f
+#         JOIN zips_fangraphs_batters_counting c on (f.year=c.year AND f.player_name=c.player AND f.team_abb=c.team_abb)
+#         LEFT JOIN(
+#             SELECT *
 #             FROM excel_rosters
-#             WHERE 1
-#                 AND year = 2020
-#         ) cur USING (year, gp)
-#     ) r ON (f.player_name=r.player_name)
-#     where r.player_name is null
-#     and c.age >= 25
-#     -- and c.team_abb IN ('COL')
-#     and f.year = 2020
-#     and ( (600*f.def/f.pa) > 6 or f.zops_plus >= 80 or f.war600 >= 1 or f.wrc_plus >= 80)
-#     -- order by f.WAR600 DESC
-#     union
-#     select distinct player_name
-#     from excel_rosters
-#     where 1
-#         and year = 2019
-#         and position != 'p'
-#         and (contract_year = '6th'
-#             or (expires = 2019 and opt = '')
-#         )
-# ) a
+#             JOIN (
+#                 SELECT year
+#                 , MAX(gp) AS gp
+#                 FROM excel_rosters
+#                 WHERE 1
+#                     AND year = 2020
+#             ) cur USING (year, gp)
+#         ) r ON (f.player_name=r.player_name)
+#         where r.player_name is null
+#         and c.age >= 25
+#         -- and c.team_abb IN ('COL')
+#         and f.year = 2020
+#         and ( (600*f.def/f.pa) > 6 or f.zops_plus >= 80 or f.scaledWAR >= 1 or f.wrc_plus >= 80)
+#         -- order by f.scaledWAR DESC
+#         union
+#         select distinct player_name
+#         from excel_rosters
+#         where 1
+#             and year = 2019
+#             and position != 'p'
+#             and (contract_year = '6th'
+#                 or (expires = 2019 and opt = '')
+#             )
+#     ) a
+#     UNION ALL
+#     SELECT *
+#     FROM(
+#         SELECT f.player_name
+#         /* , f.year
+#         , c.age
+#         , f.team_abb
+#         , f.pos
+#         , f.ip
+#         , f.zERA_plus
+#         , f.zERA_minus
+#         , f.zWAR
+#         , f.k_9
+#         , f.bb_9
+#         , f.k_bb
+#         , f.hr_9
+#         , f.FIP_minus
+#         , f.ERA_minus
+#         , f.FIP_WAR
+#         , f.ERA_WAR */
+#         FROM zips_fangraphs_prep_FA_pitchers f
+#         JOIN zips_fangraphs_pitchers_counting c on (f.year=c.year AND f.player_name=c.player AND f.team_abb=c.team_abb)
+#         LEFT JOIN(
+#             SELECT *
+#             FROM excel_rosters
+#             JOIN (
+#                 SELECT year
+#                 , MAX(gp) AS gp
+#                 FROM excel_rosters
+#                 WHERE 1
+#                     AND year = 2020
+#             ) cur USING (year, gp)
+#         ) r ON (f.player_name=r.player_name)
+#         where r.player_name is null
+#         and c.age >= 25
+#         -- and c.team_abb IN ('COL')
+#         and f.year = 2020
+#         and if(f.gs >= 3, zERA_plus >= 90, zERA_plus >= 100)
+#         -- order by f.FIP_WAR DESC
+#         union
+#         select distinct replace(player_name,'  ', ' ')
+#         from excel_rosters
+#         where 1
+#             and year = 2019
+#             and position = 'p'
+#             and (contract_year = '6th'
+#                 or (expires = 2019 and opt = '')
+#             )
+#     ) a
+# ) b
 # WHERE 1
-#     AND player_name NOT IN ('Will D. Smith', 'Shogo Akiyama')
+#     AND player_name NOT IN ('Randy Dobnak', 'Kwang-hyun Kim', 'Sam Delaplane', 'Addison Russ', 'Bennett Sousa', 'Connor Brogdon', 'Corbin Clouse', 'Trevor Bettencourt', 'David Bednar', 'Ethan DeCaster', 'Evan Miller', 'Gabriel Moya', 'Ian Hamilton', 'Joel Kuhnel',  'Wyatt Mills',  'Marcel Renteria',  'Matt Foster',  'Nolan Blackwood', 'Phillip Diehl',  'Will Vest', 'Cole Stapler', 'Garrett Williams', 'Griffin Jax',  'Jeremy Walker',  'Michael King',  'Zack Kelly', 'John Schreiber', 'Kevin Ginkel', 'Miguel Sanchez', 'Jack Anderson', 'Penn Murfee', 'Will D. Smith', 'Shogo Akiyama', 'Brian Serven', 'Ivan Castillo', 'Jon Rosoff', 'Jonathan Morales', 'Arden Pabst', 'Ben DeLuzio', 'Thomas Milone', 'Chas McCormick', 'Danny Woodrow', 'Josh VanMeter', 'Rodrigo Orozco', 'Ryan Grotjohn', 'Vance Vizcaino', 'Jaylin Davis', 'Jake Fraley', 'Hunter Owen', 'Renae Martinez', 'Cole Billingsley', 'Jimmy Kerrigan', 'Chad Sedio', 'Josh Rojas', 'Luke Burch', 'Zach Reks', 'Alfredo Rodriguez', 'Jose Rojas', 'Robel Garcia', 'Tyler Zuber', 'Aaron Civale', 'Logan Ice', 'Zack Short', 'Wyatt Short')
+# ORDER BY player_name ASC
 # ;
 
-# SELECT *
+# SELECT a.*
+# , IF(opt = 'no', NULL, IF(base_value-base_salary > opt_value-opt_salary, 'no', 'yes')) as proj_opt
+# , ROUND(IF(opt = 'no', base_salary, IF(base_value-base_salary > opt_value-opt_salary, base_salary, opt_salary)), 3) as proj_salary
+# , ROUND(IF(opt = 'no', base_value-base_salary, IF(base_value-base_salary > opt_value-opt_salary, base_value-base_salary, opt_value-opt_salary)), 3) as proj_value
+# , ROUND(IF(opt = 'no', base_WAR, IF(base_value-base_salary > opt_value-opt_salary, base_WAR, opt_WAR)), 1) as proj_WAR
 # FROM(
-#     SELECT f.player_name
-#     /* , f.year
-#     , c.age
-#     , f.team_abb
-#     , f.pos
-#     , f.ip
-#     , f.zERA_plus
-#     , f.zERA_minus
-#     , f.zWAR
-#     , f.k_9
-#     , f.bb_9
-#     , f.k_bb
-#     , f.hr_9
-#     , f.FIP_minus
-#     , f.ERA_minus
-#     , f.FIP_WAR
-#     , f.ERA_WAR */
-#     FROM zips_fangraphs_prep_FA_pitchers f
-#     JOIN zips_fangraphs_pitchers_counting c on (f.year=c.year AND f.player_name=c.player AND f.team_abb=c.team_abb)
-#     LEFT JOIN(
-#         SELECT *
-#         FROM excel_rosters
-#         JOIN (
-#             SELECT year
-#             , MAX(gp) AS gp
-#             FROM excel_rosters
-#             WHERE 1
-#                 AND year = 2020
-#         ) cur USING (year, gp)
-#     ) r ON (f.player_name=r.player_name)
-#     where r.player_name is null
-#     and c.age >= 25
-#     -- and c.team_abb IN ('COL')
-#     and f.year = 2020
-#     and if(f.gs >= 3, zERA_plus >= 90, zERA_plus >= 100)
-#     -- order by f.FIP_WAR DESC
-#     union
-#     select distinct replace(player_name,'  ', ' ')
-#     from excel_rosters
-#     where 1
-#         and year = 2019
-#         and position = 'p'
-#         and (contract_year = '6th'
-#             or (expires = 2019 and opt = '')
-#         )
+#     SELECT hfa.year
+#     , hfa.player_name as player
+#     , hfa.signing_team as team
+#     , hfa.age
+#     , hfa.position
+#     , hfa.contract_years AS yrs
+#     , hfa.opt
+#     , hfa.aav
+#     , hfa.zWAR
+#     , fab.yr1_WAR AS ModelWAR
+#     , IF(hfa.opt = 'no', hfa.contract_years*hfa.aav, hfa.contract_years*hfa.aav + 0.1*hfa.aav) AS base_salary
+#     , IF(hfa.opt = 'yes', (hfa.contract_years+1)*hfa.aav, NULL) AS opt_salary
+#     , CASE 
+#         WHEN hfa.contract_years = 1
+#             THEN fab.yr1_value 
+#         WHEN hfa.contract_years = 2
+#             THEN fab.yr2_value 
+#         WHEN hfa.contract_years = 3
+#             THEN fab.yr3_value 
+#         WHEN hfa.contract_years = 4
+#             THEN fab.yr4_value 
+#         WHEN hfa.contract_years = 5
+#             THEN fab.yr5_value 
+#         WHEN hfa.contract_years = 6
+#             THEN fab.yr6_value 
+#         WHEN hfa.contract_years = 7
+#             THEN fab.yr7_value 
+#     END AS base_value
+#     , CASE WHEN hfa.opt = 'no'
+#         THEN NULL
+#         ELSE CASE
+#             WHEN hfa.contract_years = 1
+#                 THEN fab.yr2_value 
+#             WHEN hfa.contract_years = 2
+#                 THEN fab.yr3_value 
+#             WHEN hfa.contract_years = 3
+#                 THEN fab.yr4_value 
+#             WHEN hfa.contract_years = 4
+#                 THEN fab.yr5_value 
+#             WHEN hfa.contract_years = 5
+#                 THEN fab.yr6_value 
+#             WHEN hfa.contract_years = 6
+#                 THEN fab.yr7_value 
+#             WHEN hfa.contract_years = 7
+#                 THEN fab.yr8_value 
+#         END END AS opt_value
+#     , CASE 
+#         WHEN hfa.contract_years = 1
+#             THEN fab.yr1_WAR
+#         WHEN hfa.contract_years = 2
+#             THEN fab.yr2_WAR
+#         WHEN hfa.contract_years = 3
+#             THEN fab.yr3_WAR
+#         WHEN hfa.contract_years = 4
+#             THEN fab.yr4_WAR
+#         WHEN hfa.contract_years = 5
+#             THEN fab.yr5_WAR
+#         WHEN hfa.contract_years = 6
+#             THEN fab.yr6_WAR
+#         WHEN hfa.contract_years = 7
+#             THEN fab.yr7_WAR
+#     END AS base_WAR
+#     , CASE WHEN hfa.opt = 'no'
+#         THEN NULL
+#         ELSE CASE
+#             WHEN hfa.contract_years = 1
+#                 THEN fab.yr2_WAR
+#             WHEN hfa.contract_years = 2
+#                 THEN fab.yr3_WAR
+#             WHEN hfa.contract_years = 3
+#                 THEN fab.yr4_WAR
+#             WHEN hfa.contract_years = 4
+#                 THEN fab.yr5_WAR
+#             WHEN hfa.contract_years = 5
+#                 THEN fab.yr6_WAR
+#             WHEN hfa.contract_years = 6
+#                 THEN fab.yr7_WAR
+#             WHEN hfa.contract_years = 7
+#                 THEN fab.yr8_WAR
+#         END END AS opt_WAR
+#     FROM historical_free_agency hfa
+#     LEFT JOIN zips_fangraphs_prep_FA_batters fab ON (hfa.player_name = fab.player_name
+#         AND hfa.year = fab.year
+#     )
+#     WHERE 1
+#         AND hfa.year = 2019
+#         AND hfa.position NOT IN ('RP', 'SP')
+#     UNION ALL   
+#     SELECT hfa.year
+#     , hfa.player_name
+#     , hfa.signing_team
+#     , hfa.age
+#     , hfa.position
+#     , hfa.contract_years
+#     , hfa.opt
+#     , hfa.aav
+#     , hfa.zWAR
+#     , fab.yr1_WAR AS ModelWAR
+#     , IF(hfa.opt = 'no', hfa.contract_years*hfa.aav, hfa.contract_years*hfa.aav + 0.1*hfa.aav) AS base_salary
+#     , IF(hfa.opt = 'yes', (hfa.contract_years+1)*hfa.aav, NULL) AS opt_salary
+#     , CASE 
+#         WHEN hfa.contract_years = 1
+#             THEN fab.yr1_value 
+#         WHEN hfa.contract_years = 2
+#             THEN fab.yr2_value 
+#         WHEN hfa.contract_years = 3
+#             THEN fab.yr3_value 
+#         WHEN hfa.contract_years = 4
+#             THEN fab.yr4_value 
+#         WHEN hfa.contract_years = 5
+#             THEN fab.yr5_value 
+#         WHEN hfa.contract_years = 6
+#             THEN fab.yr6_value 
+#         WHEN hfa.contract_years = 7
+#             THEN fab.yr7_value 
+#     END AS base_value
+#     , CASE WHEN hfa.opt = 'no'
+#         THEN NULL
+#         ELSE CASE
+#             WHEN hfa.contract_years = 1
+#                 THEN fab.yr2_value 
+#             WHEN hfa.contract_years = 2
+#                 THEN fab.yr3_value 
+#             WHEN hfa.contract_years = 3
+#                 THEN fab.yr4_value 
+#             WHEN hfa.contract_years = 4
+#                 THEN fab.yr5_value 
+#             WHEN hfa.contract_years = 5
+#                 THEN fab.yr6_value 
+#             WHEN hfa.contract_years = 6
+#                 THEN fab.yr7_value 
+#             WHEN hfa.contract_years = 7
+#                 THEN fab.yr8_value 
+#         END END AS opt_value
+#     , CASE 
+#         WHEN hfa.contract_years = 1
+#             THEN fab.yr1_WAR
+#         WHEN hfa.contract_years = 2
+#             THEN fab.yr2_WAR
+#         WHEN hfa.contract_years = 3
+#             THEN fab.yr3_WAR
+#         WHEN hfa.contract_years = 4
+#             THEN fab.yr4_WAR
+#         WHEN hfa.contract_years = 5
+#             THEN fab.yr5_WAR
+#         WHEN hfa.contract_years = 6
+#             THEN fab.yr6_WAR
+#         WHEN hfa.contract_years = 7
+#             THEN fab.yr7_WAR
+#     END AS base_WAR
+#     , CASE WHEN hfa.opt = 'no'
+#         THEN NULL
+#         ELSE CASE
+#             WHEN hfa.contract_years = 1
+#                 THEN fab.yr2_WAR
+#             WHEN hfa.contract_years = 2
+#                 THEN fab.yr3_WAR
+#             WHEN hfa.contract_years = 3
+#                 THEN fab.yr4_WAR
+#             WHEN hfa.contract_years = 4
+#                 THEN fab.yr5_WAR
+#             WHEN hfa.contract_years = 5
+#                 THEN fab.yr6_WAR
+#             WHEN hfa.contract_years = 6
+#                 THEN fab.yr7_WAR
+#             WHEN hfa.contract_years = 7
+#                 THEN fab.yr8_WAR
+#         END END AS opt_WAR
+#     FROM historical_free_agency hfa
+#     LEFT JOIN zips_fangraphs_prep_FA_pitchers fab ON (hfa.player_name = fab.player_name
+#         AND hfa.year = fab.year
+#     )
+#     WHERE 1
+#         AND hfa.year = 2019
+#         AND hfa.position IN ('RP', 'SP')
 # ) a
-# WHERE 1
-#     AND player_name NOT IN ('Randy Dobnak')
+# ORDER BY proj_value DESC
 # ;
 
 
@@ -145,29 +359,45 @@ def batters(year):
 
 
 
-    player_q = """SELECT year
-    , Player
-    , team_abb
-    , age
-    , B as hand
-    , PO
+    player_q = """SELECT a.year
+    , a.Player
+    , a.team_abb
+    , a.age
+    , a.B as hand
+    , a.PO
     , COALESCE(a.PA, c.PA) AS pa
-    , ab
-    , h
-    , 2b
-    , 3b
-    , hr
-    , bb
-    , so
-    , sb
-    , cs
+    , a.ab
+    , a.h
+    , a.2b
+    , a.3b
+    , a.hr
+    , a.bb
+    , a.so
+    , a.sb
+    , a.cs
     , BA
     , OBP
     , SLG
     , BABIP
     , OPS_Plus
     , DEF
-    , WAR
+    , c.WAR
+    , cv.yr1_WAR
+    , cv.yr1_value
+    , cv.yr2_WAR
+    , cv.yr2_value
+    , cv.yr3_WAR
+    , cv.yr3_value
+    , cv.yr4_WAR
+    , cv.yr4_value
+    , cv.yr5_WAR
+    , cv.yr5_value
+    , cv.yr6_WAR
+    , cv.yr6_value
+    , cv.yr7_WAR
+    , cv.yr7_value
+    , cv.yr8_WAR
+    , cv.yr8_value
     FROM zips_fangraphs_batters_counting a
     JOIN(
         SELECT year
@@ -179,6 +409,7 @@ def batters(year):
         GROUP BY year, Player
     ) b USING (year,Player,post_date)
     JOIN zips_fangraphs_batters_rate c USING (year, Player, team_abb)
+    JOIN zips_FA_contract_value_batters cv USING (year, Player, team_abb)
     """
     player_qry = player_q % (year)
     # raw_input(player_qry)
@@ -187,7 +418,7 @@ def batters(year):
     entries = []
     for row in player_data:
         entry = {}
-        year, player_name, team_abb, age, hand, po, pa, ab, h, _2, _3, hr, bb, so, sb, cs, ba, obp, slg, babip, zOPS_Plus, DEF, WAR = row
+        year, player_name, team_abb, age, hand, po, pa, ab, h, _2, _3, hr, bb, so, sb, cs, ba, obp, slg, babip, zOPS_Plus, DEF, WAR, yr1_WAR, yr1_value, yr2_WAR, yr2_value, yr3_WAR, yr3_value, yr4_WAR, yr4_value, yr5_WAR, yr5_value, yr6_WAR, yr6_value, yr7_WAR, yr7_value, yr8_WAR, yr8_value = row
 
         if pa is None:
             pa = ab+bb
@@ -199,7 +430,11 @@ def batters(year):
 
         pf = float(helper.get_park_factors(team_abb))/float(100)
 
-        WAR600 = 600*(float(WAR)/float(pa))
+        if po != 'c':
+            scaledWAR = 600*(float(WAR)/float(pa))
+        else:
+            scaledWAR = 450*(float(WAR)/float(pa))
+        
 
         if player_name in names_dict:
             player_name = names_dict.get(player_name)
@@ -224,7 +459,24 @@ def batters(year):
         entry['OPS_plus'] = OPS_plus
         entry['park_wOBA'] = park_wOBA
         entry['wRC_plus'] = wRC_plus
-        entry['WAR600'] = WAR600
+        entry['scaledWAR'] = scaledWAR
+        entry['yr1_WAR'] = yr1_WAR
+        entry['yr1_value'] = yr1_value
+        entry['yr2_WAR'] = yr2_WAR
+        entry['yr2_value'] = yr2_value
+        entry['yr3_WAR'] = yr3_WAR
+        entry['yr3_value'] = yr3_value
+        entry['yr4_WAR'] = yr4_WAR
+        entry['yr4_value'] = yr4_value
+        entry['yr5_WAR'] = yr5_WAR
+        entry['yr5_value'] = yr5_value
+        entry['yr6_WAR'] = yr6_WAR
+        entry['yr6_value'] = yr6_value
+        entry['yr7_WAR'] = yr7_WAR
+        entry['yr7_value'] = yr7_value
+        entry['yr8_WAR'] = yr8_WAR
+        entry['yr8_value'] = yr8_value
+
 
         entries.append(entry)
 
@@ -238,14 +490,14 @@ def batters(year):
 
 
 def pitchers(year):
-    player_q = """SELECT year
-    , Player
-    , team_abb
-    , age
+    player_q = """SELECT a.year
+    , a.Player
+    , a.team_abb
+    , a.age
     , T as hand
     , ERA
-    , G
-    , GS
+    , a.G
+    , a.GS
     , IP
     , H
     , ER
@@ -261,7 +513,23 @@ def pitchers(year):
     , ERA_Plus
     , ERA_minus
     , COALESCE(a.FIP, c.FIP) AS FIP
-    , WAR
+    , c.WAR
+    , cv.yr1_WAR
+    , cv.yr1_value
+    , cv.yr2_WAR
+    , cv.yr2_value
+    , cv.yr3_WAR
+    , cv.yr3_value
+    , cv.yr4_WAR
+    , cv.yr4_value
+    , cv.yr5_WAR
+    , cv.yr5_value
+    , cv.yr6_WAR
+    , cv.yr6_value
+    , cv.yr7_WAR
+    , cv.yr7_value
+    , cv.yr8_WAR
+    , cv.yr8_value
     FROM zips_fangraphs_pitchers_counting a
     JOIN(
         SELECT year
@@ -273,6 +541,7 @@ def pitchers(year):
         GROUP BY year, Player
     ) b USING (year,Player,post_date)
     JOIN zips_fangraphs_pitchers_rate c USING (year, Player, team_abb)
+    JOIN zips_FA_contract_value_pitchers cv USING (year, Player, team_abb)
     """
     player_qry = player_q % (year)
     # raw_input(player_qry)
@@ -281,13 +550,13 @@ def pitchers(year):
     entries = []
     for row in player_data:
         entry = {}
-        year, player_name, team_abb, age, hand, era, g, gs, ip, h, er, hr, bb, k, k_9, bb_9, hr_9, bb_pct, k_pct, babip, zera_plus, zera_minus, zfip, zwar = row
+        year, player_name, team_abb, age, hand, era, g, gs, ip, h, er, hr, bb, k, k_9, bb_9, hr_9, bb_pct, k_pct, babip, zera_plus, zera_minus, zfip, zwar, yr1_WAR, yr1_value, yr2_WAR, yr2_value, yr3_WAR, yr3_value, yr4_WAR, yr4_value, yr5_WAR, yr5_value, yr6_WAR, yr6_value, yr7_WAR, yr7_value, yr8_WAR, yr8_value = row
 
         if player_name in names_dict:
             player_name = names_dict.get(player_name)
 
         r = er
-        if (gs >= 10 or float(gs)/float(g) > 0.4):
+        if (gs >= 20 or float(gs)/float(g) > 0.8):
             pos = 'SP'
         else:
             pos = 'RP'
@@ -313,13 +582,16 @@ def pitchers(year):
         park_ERA, ERA_min, ERA_WAR = helper.get_zips_pitching_metrics(ERA, ip, year-1, pf, g, gs, 'era')
 
         if pos == 'SP':
-            FIP_WAR = 180*(float(FIP_WAR)/float(ip))
-            ERA_WAR = 180*(float(ERA_WAR)/float(ip))
+            FIP_WAR = 32*(float(FIP_WAR)/float(gs))
+            ERA_WAR = 32*(float(ERA_WAR)/float(gs))
         elif pos == 'RP':
-            FIP_WAR = 60*(float(FIP_WAR)/float(ip))
-            ERA_WAR = 60*(float(ERA_WAR)/float(ip))
+            FIP_WAR = float(FIP_WAR)
+            ERA_WAR = float(ERA_WAR)
 
-        k_minus_bb_pct = float(k_pct)-float(bb_pct)  
+        if k_pct is not None and bb_pct is not None:
+            k_minus_bb_pct = float(k_pct)-float(bb_pct)  
+        else:
+            k_minus_bb_pct = None
 
         entry['year'] = year
         entry['player_name'] = player_name
@@ -351,6 +623,22 @@ def pitchers(year):
         entry['park_ERA'] = park_ERA
         entry['ERA_minus'] = ERA_min
         entry['ERA_WAR'] = ERA_WAR
+        entry['yr1_WAR'] = yr1_WAR
+        entry['yr1_value'] = yr1_value
+        entry['yr2_WAR'] = yr2_WAR
+        entry['yr2_value'] = yr2_value
+        entry['yr3_WAR'] = yr3_WAR
+        entry['yr3_value'] = yr3_value
+        entry['yr4_WAR'] = yr4_WAR
+        entry['yr4_value'] = yr4_value
+        entry['yr5_WAR'] = yr5_WAR
+        entry['yr5_value'] = yr5_value
+        entry['yr6_WAR'] = yr6_WAR
+        entry['yr6_value'] = yr6_value
+        entry['yr7_WAR'] = yr7_WAR
+        entry['yr7_value'] = yr7_value
+        entry['yr8_WAR'] = yr8_WAR
+        entry['yr8_value'] = yr8_value
 
         entries.append(entry)
 

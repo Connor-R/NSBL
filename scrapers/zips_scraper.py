@@ -40,7 +40,7 @@ def initiate(year):
             # print url
             team_abb = link.getText()
 
-            if "/" + str(year) + "-zips" in url:
+            if ("/" + str(year) + "-zips" in url) or ("/zips-" + str(year) in url):
                 urls.append({team_abb:url})
 
     # raw_input(urls)

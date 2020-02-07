@@ -226,6 +226,8 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
     prospect_raw_surplus = None
     prospect_present_surplus = None
 
+    position = position.lower()
+
     salary = float(salary)
     if model_war is not None:
         model_war = float(model_war)
@@ -255,6 +257,8 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
         for yr in range (0, years_remaining):
             proj_age = current_age + yr
 
+            szn = year+yr
+
             # curve value is a decay function with "peak" age (age_multiplier = 1) at 26 for hitters and 25 for pitchers. The pitcher curve is steeper
             if yr == 0:
                 age_multiplier = 1
@@ -280,7 +284,7 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
                     # between 0.5 and 1.5 WAR: 6 mil/WAR
                     # every win above 1.5 WAR: 9 mil/WAR
             if position == 'rp':
-                dollar_multiplier = (2.0 + yr*0.4)
+                dollar_multiplier = (2.0 + (szn-2019)*0.4)
                 if year_war <= 0.2:
                     year_dollar = min(year_war, 0.2)*dollar_multiplier
                 elif year_war > 0.2 and year_war <= 0.4:
@@ -288,7 +292,7 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
                 elif year_war > 0.4:
                     year_dollar = 2*(0.2) + 4*(0.4-0.2) + (year_war-0.4)*(dollar_multiplier+6)
             elif position == 'sp':
-                dollar_multiplier = (2.0 + yr*0.4)
+                dollar_multiplier = (2.0 + (szn-2019)*0.4)
                 if year_war <= 0.5:
                     year_dollar = min(year_war, 0.5)*dollar_multiplier
                 elif year_war > 0.5 and year_war <= 1.0:
@@ -296,7 +300,7 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
                 elif year_war > 1.0:
                     year_dollar = 2*(0.5) + (dollar_multiplier+2)*(1.0-0.5) + (year_war-1.0)*(dollar_multiplier+6)
             elif position == 'c':
-                dollar_multiplier = (2.0 + yr*0.4)
+                dollar_multiplier = (2.0 + (szn-2019)*0.4)
                 if year_war <= 0.5:
                     year_dollar = min(year_war, 0.5)*dollar_multiplier
                 elif year_war > 0.5 and year_war <= 1.5:
@@ -304,7 +308,7 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
                 elif year_war > 1.5:
                     year_dollar = 2*(0.5) + (dollar_multiplier+2)*(1.5-0.5) + (year_war-1.5)*(dollar_multiplier+6)
             else:
-                dollar_multiplier = (2.0 + yr*0.4)
+                dollar_multiplier = (2.0 + (szn-2019)*0.4)
                 if year_war <= 0.5:
                     year_dollar = min(year_war, 0.5)*dollar_multiplier
                 elif year_war > 0.5 and year_war <= 1.5:
@@ -337,13 +341,13 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
             preseason_present_surplus += est_year_surplus*(0.92**yr)
 
             if yr == 0:
-                txt_add = ' (' + str(season_pct_multiplier) + '% remaining)'
+                txt_add = ' (' + str(100*season_pct_multiplier) + '% remaining)'
             else:
                 preseason_payout += '\n'
                 est_payout += '\n'
                 txt_add = ''
 
-            preseason_payout += '\nYear: ' + str(year+yr)
+            preseason_payout += '\nYear: ' + str(szn)
             preseason_payout += ' | Age: ' + str(round(proj_age, 1)) + ' (age curve: ' + str(round(age_multiplier, 2)) + ')'
             preseason_payout += ' | zWAR: ' + str(round(year_war, 1))
             preseason_payout += ' | Year value: $' + str(round(year_dollar, 1))
@@ -369,7 +373,7 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
             est_year_present_surplus = est_year_surplus*(0.92**yr)
             est_present_surplus += est_year_present_surplus
 
-            est_payout += '\nYear: ' + str(year+yr) + txt_add
+            est_payout += '\nYear: ' + str(szn) + txt_add
             est_payout += ' | Age: ' + str(round(proj_age, 1)) + ' (age curve: ' + str(round(age_multiplier, 2)) + ')'
             est_payout += ' | zWAR: ' + str(round(year_war, 1))
             est_payout += ' | Year value: $' + str(round(year_dollar, 1)) 
@@ -462,7 +466,7 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
                             year_war2 = year_war_avg*season_pct_multiplier
                             year_dollar2 = year_dollar*season_pct_multiplier
                             est_year_salary2 = est_year_salary*season_pct_multiplier
-                            txt_add2 = ' (' + str(season_pct_multiplier) + '% remaining)'
+                            txt_add2 = ' (' + str(100*season_pct_multiplier) + '% remaining)'
                             war_val += year_war2
                             dollar_val += year_dollar2
                             est_total_salary += est_year_salary2
