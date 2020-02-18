@@ -52,8 +52,12 @@ def process_urls(urls, year):
         for tm, url in team_pair.items():
             print '\t', str(teamcnt+1), tm, '-', url
             
-            # if tm != 'COL':
-            #     continue
+            tm_list = []
+            tm_query = db.query("SELECT DISTINCT team_abb FROM zips_fangraphs_batters_counting WHERE year = %s" % (year))
+            for t in tm_query:
+                tm_list.append(t[0])
+            if tm in tm_list:
+                continue
 
             sleep(sleep_time)
             team_data = requests.get(url)

@@ -55,6 +55,22 @@ names_dict = {'foo': 'temp'
     , 'Ryan OHearn': "Ryan O'Hearn"
     , 'Kaai Tom': "Ka'ai Tom"
     , 'Mike Clevinger': 'Michael Clevinger'
+    , 'Oliver Prez': 'Oliver Perez'
+    , 'Jose Garcia': 'Jose Israel Garcia'
+    , 'Ramn Laureano': 'Ramon Laureano'
+    , 'Ronald Guzmn': 'Ronald Guzman'
+    , 'Yohander Mndez': 'Yohander Mendez'
+    , 'Jos Leclerc': 'Jose Leclerc'
+    , 'Andy Ibez': 'Andy Ibanez'
+    , 'Jeanmar Gmez': 'Jeanmar Gomez'
+    , 'Riley OBrien': "Riley O'Brien"
+    , 'Lourdes Gurriel Jr.': 'Lourdes Gurriel'
+    , 'Daniel Vogelbach': 'Dan Vogelbach'
+    , 'Asdrbal Cabrera': 'Asdrubal Cabrera'
+    , 'Yandy Daz': 'Yandy Diaz'
+    , 'Jess Aguilar': 'Jesus Aguilar'
+    , 'Scrates Brito': 'Socrates Brito'
+    , 'Toms Telis': 'Tomas Telis'
 }
 
 # SELECT * FROM zips_fangraphs_prep_FA_batters WHERE year = 2020;
@@ -152,7 +168,7 @@ names_dict = {'foo': 'temp'
 #     ) a
 # ) b
 # WHERE 1
-#     AND player_name NOT IN ('Randy Dobnak', 'Kwang-hyun Kim', 'Sam Delaplane', 'Addison Russ', 'Bennett Sousa', 'Connor Brogdon', 'Corbin Clouse', 'Trevor Bettencourt', 'David Bednar', 'Ethan DeCaster', 'Evan Miller', 'Gabriel Moya', 'Ian Hamilton', 'Joel Kuhnel',  'Wyatt Mills',  'Marcel Renteria',  'Matt Foster',  'Nolan Blackwood', 'Phillip Diehl',  'Will Vest', 'Cole Stapler', 'Garrett Williams', 'Griffin Jax',  'Jeremy Walker',  'Michael King',  'Zack Kelly', 'John Schreiber', 'Kevin Ginkel', 'Miguel Sanchez', 'Jack Anderson', 'Penn Murfee', 'Will D. Smith', 'Shogo Akiyama', 'Brian Serven', 'Ivan Castillo', 'Jon Rosoff', 'Jonathan Morales', 'Arden Pabst', 'Ben DeLuzio', 'Thomas Milone', 'Chas McCormick', 'Danny Woodrow', 'Josh VanMeter', 'Rodrigo Orozco', 'Ryan Grotjohn', 'Vance Vizcaino', 'Jaylin Davis', 'Jake Fraley', 'Hunter Owen', 'Renae Martinez', 'Cole Billingsley', 'Jimmy Kerrigan', 'Chad Sedio', 'Josh Rojas', 'Luke Burch', 'Zach Reks', 'Alfredo Rodriguez', 'Jose Rojas', 'Robel Garcia', 'Tyler Zuber', 'Aaron Civale', 'Logan Ice', 'Zack Short', 'Wyatt Short')
+#     AND player_name NOT IN ('Randy Dobnak', 'Kwang-hyun Kim', 'Sam Delaplane', 'Addison Russ', 'Bennett Sousa', 'Connor Brogdon', 'Corbin Clouse', 'Trevor Bettencourt', 'David Bednar', 'Ethan DeCaster', 'Evan Miller', 'Gabriel Moya', 'Ian Hamilton', 'Joel Kuhnel',  'Wyatt Mills',  'Marcel Renteria',  'Matt Foster',  'Nolan Blackwood', 'Phillip Diehl',  'Will Vest', 'Cole Stapler', 'Garrett Williams', 'Griffin Jax',  'Jeremy Walker',  'Michael King',  'Zack Kelly', 'John Schreiber', 'Kevin Ginkel', 'Miguel Sanchez', 'Jack Anderson', 'Penn Murfee', 'Will D. Smith', 'Shogo Akiyama', 'Brian Serven', 'Ivan Castillo', 'Jon Rosoff', 'Jonathan Morales', 'Arden Pabst', 'Ben DeLuzio', 'Thomas Milone', 'Chas McCormick', 'Danny Woodrow', 'Josh VanMeter', 'Rodrigo Orozco', 'Ryan Grotjohn', 'Vance Vizcaino', 'Jaylin Davis', 'Jake Fraley', 'Hunter Owen', 'Renae Martinez', 'Cole Billingsley', 'Jimmy Kerrigan', 'Chad Sedio', 'Josh Rojas', 'Luke Burch', 'Zach Reks', 'Alfredo Rodriguez', 'Jose Rojas', 'Robel Garcia', 'Tyler Zuber', 'Aaron Civale', 'Logan Ice', 'Zack Short', 'Wyatt Short', 'Daniel Castano', 'Dylan Lee', 'Sterling Sharp', 'Tommy Eveld', 'Alex Dunlap', 'Jonah Heim', "Riley O'Brien", 'Santiago Espinal', 'Tyler Zombro', 'Michael Brosseau', 'Shun Yamaguchi', 'Yoshitomo Tsutsugo', 'Yadiel Hernandez')
 # ORDER BY player_name ASC
 # ;
 
@@ -430,7 +446,7 @@ def batters(year):
 
         pf = float(helper.get_park_factors(team_abb))/float(100)
 
-        if po != 'c':
+        if po.lower() != 'c':
             scaledWAR = 600*(float(WAR)/float(pa))
         else:
             scaledWAR = 450*(float(WAR)/float(pa))

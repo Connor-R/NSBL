@@ -259,13 +259,13 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
 
             szn = year+yr
 
-            # curve value is a decay function with "peak" age (age_multiplier = 1) at 26 for hitters and 25 for pitchers. The pitcher curve is steeper
+            # age curve based on https://mglbaseball.com/2016/12/21/a-new-method-of-constructing-more-accurate-aging-curves/ and increasing by factor of 10 (mgl based his on wOBA point increase/decrease)
+            # https://www.wolframalpha.com/input/?i=0.00000243826x%5E4+-+0.000350939x%5E3+%2B+0.0183211x%5E2+-+0.432409x+%2B+3.93752+for+x+%3D+30
             if yr == 0:
                 age_multiplier = 1
-            elif position in ('sp', 'rp'):
-                age_multiplier *= (1-((0.97**(proj_age))*(proj_age-25))/8)
             else:
-                age_multiplier *= (1-((0.95**(proj_age))*(proj_age-26))/10)
+                age_multiplier *= 1+min(max((0.00000243826*(proj_age**4) - 0.000350939*(proj_age**3) + 0.0183211*(proj_age**2) - 0.432409*(proj_age) + 3.93752), -0.5), 0.2)
+
 
             year_war = min(max(current_war,0)*age_multiplier, 10)
 
