@@ -4,7 +4,7 @@
 SHELL=/bin/bash
 source "/Users/connordog/.bash_profile"
 
-year=2019
+year=2020
 
 
 
@@ -13,7 +13,7 @@ year=2019
 
 # wait
 
-# python processing/NSBL_excel_rosters.py --year "$year"
+python processing/NSBL_excel_rosters.py --year "$year"
 
 # wait
 
@@ -47,28 +47,28 @@ year=2019
 
 # wait
 
-# python team_strength/lineup_optimizer.py --year "$year"
-# python team_strength/pitching_optimizer.py --year "$year"
+python team_strength/lineup_optimizer.py --year "$year"
+python team_strength/pitching_optimizer.py --year "$year"
 
 # wait
 
-# python team_strength/team_strength.py --year "$year"
+python team_strength/team_strength.py --year "$year"
 
 # wait
 
-# python team_strength/playoff_probabilities.py --year "$year"
+python team_strength/playoff_probabilities.py --year "$year"
 
 # wait
 
-python team_strength/trade_value.py --year "$year"
+# python team_strength/trade_value.py --year "$year"
 
-wait
+# wait
 
-python ad_hoc/zips_FA_contract_value.py
+# python ad_hoc/zips_FA_contract_value.py
 
-wait
+# wait
 
-python ad_hoc/zips_prep_FA.py --year "$year"
+# python ad_hoc/zips_prep_FA.py --year "$year"
 
 wait
 

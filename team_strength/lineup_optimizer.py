@@ -24,7 +24,9 @@ def process(year):
 
     i = 0 
 
-    team_q = """SELECT DISTINCT team_abb FROM teams 
+    team_q = """SELECT DISTINCT team_abb
+    -- FROM teams 
+    FROM excel_rosters
     WHERE year = %s
     ORDER BY team_abb ASC
     """
@@ -48,7 +50,9 @@ def process(year):
 
 def get_player_matrix(team_abb, year):
 
-    tq_add = "AND t.team_abb = '%s'" % team_abb
+    # tq_add = "AND t.team_abb = '%s'" % team_abb
+    tq_add = "AND cre.team_abb = '%s'" % team_abb
+
 
     for lu_type in ('all', 'r', 'l'):
         for dh_type in ('with', 'without'):
@@ -63,7 +67,8 @@ def get_player_matrix(team_abb, year):
 
             q = """SELECT *
     FROM (
-    SELECT DISTINCT player_name, t.team_abb, (zo.ab+zo.bb+zo.hbp+zo.sh+zo.sf) as 'zips_pa'
+    -- SELECT DISTINCT player_name, t.team_abb, (zo.ab+zo.bb+zo.hbp+zo.sh+zo.sf) as 'zips_pa'
+    SELECT DISTINCT player_name, COALESCE(t.team_abb, cre.team_abb) AS team_abb, (zo.ab+zo.bb+zo.hbp+zo.sh+zo.sf) as 'zips_pa'
     FROM zips_WAR_hitters z
     JOIN zips_offense zo USING (player_name, year, team_abb, age)
     LEFT JOIN processed_WAR_hitters w USING (YEAR, player_name, age)
@@ -81,13 +86,14 @@ def get_player_matrix(team_abb, year):
         ) cur USING (year, gp)
     ) cre USING (player_name)
     WHERE z.year = %s
-    AND player_name NOT IN ('Player Name', 'Ronald Acuna', 'Gleyber Torres', 'Brendan Rodgers', 'Max Kepler')
+    AND player_name NOT IN ('Player Name', 'Harrison Bader', 'Luis Arraez', 'Willy Adames')
     # AND (cre.salary_counted IS NULL OR cre.salary_counted != 'N' OR w.player_name IS NOT NULL)
     %s
     ) base"""
 
             q = q % (year, year, tq_add)
 
+            # raw_input(q)
             positions = ('dh', 'c', '1b', '2b', '3b', 'ss', 'lf', 'cf', 'rf')
             a = 0
             position_map = {}
@@ -113,14 +119,25 @@ def get_player_matrix(team_abb, year):
     FROM zips_WAR_hitters z
     LEFT JOIN current_rosters c USING (player_name, YEAR)
     LEFT JOIN teams t USING (team_id, YEAR)
+    LEFT JOIN(
+        SELECT *
+        FROM excel_rosters
+        JOIN (
+            SELECT year
+            , MAX(gp) AS gp
+            FROM excel_rosters
+            WHERE 1
+                AND year = %s
+        ) cur USING (year, gp)
+    ) cre USING (player_name)
     WHERE z.year = %s
     %s"""
 
-            cnt_qry = cnt_q % (year, tq_add)
-            # raw_input(cnt_qry)
+            cnt_qry = cnt_q % (year, year, tq_add)
+            # print(cnt_qry)
             cnt = db.query(cnt_qry)[0][0]
 
-            # if team_abb == 'Tam':
+            # if team_abb.upper() == 'TAM':
             #     raw_input(q)
             # raw_input(q)
             res = db.query(q)
@@ -203,7 +220,7 @@ def get_player_matrix(team_abb, year):
 
 if __name__ == "__main__":  
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',default=2019)
+    parser.add_argument('--year',default=2020)
     args = parser.parse_args()
     
     process(args.year)

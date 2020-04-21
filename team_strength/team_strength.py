@@ -73,6 +73,7 @@ def get_optimal_lineups(year, season_gp):
         mascot_name = helper.get_mascot_names(team_abb.upper())
 
         team_name, games_played, rep_WAR, oWAR, dWAR, FIP_WAR, W, L, py_W, py_L = get_standing_metrics(year, mascot_name)
+        team_abb = helper.get_team_abb(team_name)
 
         games_played = float(games_played)
 
@@ -172,17 +173,16 @@ def get_standing_metrics(year, mascot_name):
     AND team_name LIKE '%%%s%%'
     AND games_played = (SELECT MAX(games_played) FROM processed_team_standings_advanced WHERE year = %s AND team_name LIKE '%%%s%%');"""
 
-    query = qry % (year, mascot_name, year, mascot_name)
-    # raw_input(query)
+    # query = qry % (year, mascot_name, year, mascot_name)
+    # return db.query(query)[0]
 
-    return db.query(query)[0]
-
-    # return db.query(query)[0][0], 0,0,0,0,0,0,0,0,0
+    query = qry % (year-1, mascot_name, year-1, mascot_name)
+    return db.query(query)[0][0], 0,0,0,0,0,0,0,0,0
 
 
 if __name__ == "__main__":  
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',type=int,default=2019)
+    parser.add_argument('--year',type=int,default=2020)
     args = parser.parse_args()
     
     process(args.year)

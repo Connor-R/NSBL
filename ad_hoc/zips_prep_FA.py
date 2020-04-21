@@ -183,6 +183,7 @@ names_dict = {'foo': 'temp'
 #     , hfa.signing_team as team
 #     , hfa.age
 #     , hfa.position
+#     , hfa.day
 #     , hfa.contract_years AS yrs
 #     , hfa.opt
 #     , hfa.aav
@@ -271,6 +272,7 @@ names_dict = {'foo': 'temp'
 #     , hfa.signing_team
 #     , hfa.age
 #     , hfa.position
+#     , hfa.day
 #     , hfa.contract_years
 #     , hfa.opt
 #     , hfa.aav

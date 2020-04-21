@@ -14,7 +14,7 @@ db = db("NSBL")
 def process(player_mapper):
     start_time = time()
 
-    year = 2019
+    year = 2020
     for _type in ('offense','pitching'):
         initiate(year, _type, player_mapper)
     
@@ -65,6 +65,7 @@ if __name__ == "__main__":
     "Brock Holt!":"Brock Holt",
     "Tyler Holt?!?":"Tyler Holt",
     "Ronald Acua":"Ronald Acuna",
+    "Ronald Acua Jr.":"Ronald Acuna",
     "Kik Hernandez":"Kike Hernandez",
     "Chris B. Young Jr.":"Chris B. Young",
     }      

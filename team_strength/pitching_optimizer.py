@@ -21,7 +21,9 @@ def process(year):
 
     i = 0 
 
-    team_q = """SELECT DISTINCT team_abb FROM teams 
+    team_q = """SELECT DISTINCT team_abb
+    -- FROM teams 
+    FROM excel_rosters
     WHERE year = %s
     ORDER BY team_abb ASC
     """
@@ -46,6 +48,9 @@ def process(year):
 def get_pitchers(team_abb, year):
     entry = {}
 
+    # tq_add = "AND t.team_abb = '%s'" % team_abb
+    tq_add = "AND cre.team_abb = '%s'" % team_abb
+
     entry['team_abb'] = team_abb
 
     starter_qry = """SELECT player_name, p.ip as zips_ip, (z.FIP_WAR/p.ip) AS WAR_per_ip
@@ -66,14 +71,14 @@ def get_pitchers(team_abb, year):
         ) cur USING (year, gp)
     ) cre USING (player_name)
     WHERE z.year = %s
-    AND (t.team_abb = '%s')
     AND gs >= 3
-    AND player_name NOT IN ('Player Name', 'Nick Pivetta')
+    AND player_name NOT IN ('Player Name', 'Dustin May', 'Nick Pivetta', 'Jeff Hoffman')
     # AND (cre.salary_counted IS NULL OR cre.salary_counted != 'N' OR w.player_name IS NOT NULL)
+    %s
     ORDER BY WAR_per_ip DESC
     LIMIT 6;"""
 
-    starter_query = starter_qry % (year, year, team_abb)
+    starter_query = starter_qry % (year, year, tq_add)
 
     starters = db.query(starter_query)
 
@@ -137,14 +142,14 @@ def get_pitchers(team_abb, year):
         ) cur USING (year, gp)
     ) cre USING (player_name)
     WHERE z.year = %s
-    AND t.team_abb = '%s'
     AND player_name NOT IN %s
-    AND player_name NOT IN ('Player Name', 'Nick Pivetta')
+    AND player_name NOT IN ('Player Name', 'Dustin May', 'Nick Pivetta', 'Jeff Hoffman')
     # AND (cre.salary_counted IS NULL OR cre.salary_counted != 'N' OR w.player_name IS NOT NULL)
+    %s
     ORDER BY WAR_per_ip DESC
     LIMIT 7;"""
 
-    reliever_query = reliever_qry % (year, year, team_abb, tuple(starter_names))
+    reliever_query = reliever_qry % (year, year, tuple(starter_names), tq_add)
     # raw_input(reliever_query)
     relievers = db.query(reliever_query)
 
@@ -199,7 +204,7 @@ def get_pitchers(team_abb, year):
 
 if __name__ == "__main__":  
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',default=2019)
+    parser.add_argument('--year',default=2020)
     args = parser.parse_args()
     
     process(args.year)
