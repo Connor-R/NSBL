@@ -340,7 +340,7 @@ def scrape_current_rosters(team_id, url_base, year, rating_type):
 
 if __name__ == "__main__":     
     parser = argparse.ArgumentParser()
-    parser.add_argument('--end_year',type=int,default=2019)
+    parser.add_argument('--end_year',type=int,default=2020)
     parser.add_argument('--scrape_length',type=str,default="All")
 
     args = parser.parse_args()

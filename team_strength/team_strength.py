@@ -173,11 +173,11 @@ def get_standing_metrics(year, mascot_name):
     AND team_name LIKE '%%%s%%'
     AND games_played = (SELECT MAX(games_played) FROM processed_team_standings_advanced WHERE year = %s AND team_name LIKE '%%%s%%');"""
 
-    # query = qry % (year, mascot_name, year, mascot_name)
-    # return db.query(query)[0]
+    query = qry % (year, mascot_name, year, mascot_name)
+    return db.query(query)[0]
 
-    query = qry % (year-1, mascot_name, year-1, mascot_name)
-    return db.query(query)[0][0], 0,0,0,0,0,0,0,0,0
+    # query = qry % (year-1, mascot_name, year-1, mascot_name)
+    # return db.query(query)[0][0], 0,0,0,0,0,0,0,0,0
 
 
 if __name__ == "__main__":  

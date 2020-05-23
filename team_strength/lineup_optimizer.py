@@ -25,8 +25,8 @@ def process(year):
     i = 0 
 
     team_q = """SELECT DISTINCT team_abb
-    -- FROM teams 
-    FROM excel_rosters
+    FROM teams 
+    -- FROM excel_rosters
     WHERE year = %s
     ORDER BY team_abb ASC
     """
@@ -50,8 +50,8 @@ def process(year):
 
 def get_player_matrix(team_abb, year):
 
-    # tq_add = "AND t.team_abb = '%s'" % team_abb
-    tq_add = "AND cre.team_abb = '%s'" % team_abb
+    tq_add = "AND t.team_abb = '%s'" % team_abb
+    # tq_add = "AND cre.team_abb = '%s'" % team_abb
 
 
     for lu_type in ('all', 'r', 'l'):
@@ -67,8 +67,8 @@ def get_player_matrix(team_abb, year):
 
             q = """SELECT *
     FROM (
-    -- SELECT DISTINCT player_name, t.team_abb, (zo.ab+zo.bb+zo.hbp+zo.sh+zo.sf) as 'zips_pa'
-    SELECT DISTINCT player_name, COALESCE(t.team_abb, cre.team_abb) AS team_abb, (zo.ab+zo.bb+zo.hbp+zo.sh+zo.sf) as 'zips_pa'
+    SELECT DISTINCT player_name, t.team_abb, (zo.ab+zo.bb+zo.hbp+zo.sh+zo.sf) as 'zips_pa'
+    -- SELECT DISTINCT player_name, COALESCE(t.team_abb, cre.team_abb) AS team_abb, (zo.ab+zo.bb+zo.hbp+zo.sh+zo.sf) as 'zips_pa'
     FROM zips_WAR_hitters z
     JOIN zips_offense zo USING (player_name, year, team_abb, age)
     LEFT JOIN processed_WAR_hitters w USING (YEAR, player_name, age)

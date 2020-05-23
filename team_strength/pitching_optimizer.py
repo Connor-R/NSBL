@@ -22,8 +22,8 @@ def process(year):
     i = 0 
 
     team_q = """SELECT DISTINCT team_abb
-    -- FROM teams 
-    FROM excel_rosters
+    FROM teams 
+    -- FROM excel_rosters
     WHERE year = %s
     ORDER BY team_abb ASC
     """
@@ -48,8 +48,8 @@ def process(year):
 def get_pitchers(team_abb, year):
     entry = {}
 
-    # tq_add = "AND t.team_abb = '%s'" % team_abb
-    tq_add = "AND cre.team_abb = '%s'" % team_abb
+    tq_add = "AND t.team_abb = '%s'" % team_abb
+    # tq_add = "AND cre.team_abb = '%s'" % team_abb
 
     entry['team_abb'] = team_abb
 

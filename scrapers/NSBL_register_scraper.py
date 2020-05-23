@@ -230,7 +230,7 @@ def scrape_standings(year, current):
 
 if __name__ == "__main__":     
     parser = argparse.ArgumentParser()
-    parser.add_argument('--end_year',type=int,default=2018)
+    parser.add_argument('--end_year',type=int,default=2020)
     parser.add_argument('--scrape_length',type=str,default='All')
 
     args = parser.parse_args()
