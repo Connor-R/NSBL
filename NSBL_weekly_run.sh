@@ -6,8 +6,11 @@ SHELL=/bin/bash
 source "/Users/connordog/.bash_profile"
 
 year=2020
+date=$( date +"%b %d, %Y" )
 
 
+echo starting weekly run
+echo $(date)
 
 python scrapers/NSBL_register_scraper.py --end_year "$year" --scrape_length "Current"
 python scrapers/NSBL_scraper.py --end_year "$year" --scrape_length "Current"
@@ -18,8 +21,10 @@ python processing/NSBL_processed_league_averages.py
 
 wait
 
+cd processing
+python NSBL_excel_rosters_GoogleSheets.py
+cd ..
 # python processing/NSBL_excel_rosters.py --year "$year"
-python processing/NSBL_excel_rosters_GoogleSheets.py
 
 wait 
 
@@ -61,7 +66,7 @@ python team_strength/team_strength.py --year "$year"
 
 wait
 
-python team_strength/playoff_probabilities.py --year "$year"
+# # python team_strength/playoff_probabilities.py --year "$year"
 
 wait
 
@@ -79,3 +84,7 @@ wait
 
 cd weekly_leaderboards
 bash post_leaderboards_run.sh
+
+wait
+
+echo weekly run completed

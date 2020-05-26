@@ -11,7 +11,7 @@ db = db('NSBL')
 def process():
     db.query("TRUNCATE TABLE `processed_team_hitting_basic`")
     db.query("TRUNCATE TABLE `processed_team_hitting_advanced`")
-    for year in range(2006, 2019):
+    for year in range(2006, 2021):
         for _type in ('basic', 'advanced'):
             print str(year) + "\thitting\t" + _type
             table = 'processed_team_hitting_%s' % (_type)

@@ -1,7 +1,8 @@
 import urllib2
 from py_db import db
 from bs4 import BeautifulSoup
-from time import sleep, strftime, localtime # be nice
+from time import sleep, strftime, localtime
+from datetime import datetime
 import re
 import NSBL_helpers as helper
 import subprocess
@@ -25,20 +26,42 @@ with open(key_file, 'rU') as f:
 
 def initiate():
 
-    standings_update = scrape_cur_standings()
+    qry = """SELECT DATEDIFF(DATE(NOW()), MAX(update_date)) AS DAYS_SINCE_UPDATE
+    FROM update_log
+    WHERE 1
+        AND type = 'weekly'
+    """
 
-    if standings_update == True:
-        subprocess.call(['./NSBL_weekly_run.sh'])
-        email_sub = "NSBL Updated [%s]" % (strftime("%Y-%m-%d %H:%M:%S", localtime()))
-        email_msg = "Check http://thensbl.com/orgstand.htm for updated standings"
-        email_msg += "\n\n\nUpdated Advanced Standings: http://connor-r.github.io/Tables/leaderboard_Standings.html"
-        email_msg += "\nUpdated Leaderboard Changes: http://connor-r.github.io/Tables/leaderboard_Changes.html"
-        email_msg += "\nUpdated Pitching Leaderboard: http://connor-r.github.io/Tables/leaderboard_Pitchers.html"
-        email_msg += "\nUpdated Hitting Leaderboard: http://connor-r.github.io/Tables/leaderboard_Batters.html"
-        email(email_sub, email_msg)
+    date_since_update = db.query(qry)[0][0]
 
+    if (date_since_update >= 4 or date_since_update is None):
+        standings_update = scrape_cur_standings()
+
+        if standings_update == True:
+            date = datetime.now().date()
+            entry = {'type':'weekly', 'update_date':date}
+            db.insertRowDict(entry, 'update_log', insertMany=False, replace=True, rid=0,debug=1)
+            db.conn.commit()
+
+            email_sub = "NSBL Update Started [%s]" % (strftime("%Y-%m-%d %H:%M:%S", localtime()))
+            email_msg = "wooo"
+            email(email_sub, email_msg)
+
+            subprocess.call(['./NSBL_weekly_run.sh'])
+
+            email_sub = "NSBL Updated [%s]" % (strftime("%Y-%m-%d %H:%M:%S", localtime()))
+            email_msg = "Check http://thensbl.com/orgstand.htm for updated standings"
+            email_msg += "\n\n\nCheck out recent board activity: https://nsbl2012.boards.net/posts/recent"
+            email_msg += "\n\n\nUpdated Advanced Standings: http://connor-r.github.io/Tables/leaderboard_Standings.html"
+            email_msg += "\nUpdated Leaderboard Changes: http://connor-r.github.io/Tables/leaderboard_Changes.html"
+            email_msg += "\nUpdated Pitching Leaderboard: http://connor-r.github.io/Tables/leaderboard_Pitchers.html"
+            email_msg += "\nUpdated Hitting Leaderboard: http://connor-r.github.io/Tables/leaderboard_Batters.html"
+            email(email_sub, email_msg)
+
+        else:
+            print "--------------\nNo update - %s\n--------------" % (strftime("%Y-%m-%d %H:%M:%S", localtime()))
     else:
-        print "No update - %s" % (strftime("%Y-%m-%d %H:%M:%S", localtime()))
+            print "--------------\nAlready updated - %s\n--------------" % (strftime("%Y-%m-%d %H:%M:%S", localtime()))
 
 
 def email(sub, mesg):
@@ -67,8 +90,8 @@ def scrape_cur_standings():
 
     tables = get_tables(table_url)
 
+    standings_changed = False
     for table in tables:
-        standings_changed = False
         titles = table.find_all('tr', class_ = re.compile('dmrptsecttitle'))
 
         for title in titles:

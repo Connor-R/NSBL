@@ -140,14 +140,15 @@ def player_values(year):
     query = qry % (year, year, year)
 
     print 'querying...'
+    # raw_input(query)
     res = db.query(query)
 
     for row in res:
         entry = {}
-        yr, gp, player_name, fname, lname, team_abb, dummy_pos, salary, contract_year, expires, opt, NTC, salary_counted, age, p_Team, adj_FV, z_Team, z_usage, zWAR, scaledWAR, position = row
+        yr, gp, date, player_name, fname, lname, team_abb, dummy_pos, salary, contract_year, expires, opt, NTC, salary_counted, entered_name, age, p_Team, adj_FV, z_Team, z_usage, zWAR, scaledWAR, position = row
 
-        print '\n\n-------------------------------------------------------------------'
-        print player_name, team_abb, position, salary, contract_year, expires, opt, age
+        # print '\n\n-------------------------------------------------------------------'
+        # print player_name, team_abb, position, salary, contract_year, expires, opt, age
 
         entry = {'year':year, 'player_name': player_name, 'fname': fname, 'lname': lname, 'team_abb': team_abb, 'position': position, 'salary': salary, 'contract_year': contract_year, 'expires': expires, 'opt': opt, 'NTC': NTC, 'salary_counted': salary_counted, 'season_gp':season_gp, 'age':age, 'adj_FV':adj_FV, 'zWAR':zWAR, 'scaledWAR': scaledWAR}
 
@@ -167,8 +168,10 @@ def player_values(year):
 
         entry['rl_team'] = rl_team
 
-        if expires == 0:
-            years_remaining = years_map.get(contract_year)[0]
+        if expires == 0 and contract_year.upper() != 'MLI':
+            years_remaining = years_map.get(contract_year.replace("-G",""))[0]
+        elif contract_year.upper() == 'MLI' and expires == 0:
+            years_remaining = 1
         else:
             years_remaining = expires-(year-1)
             # treat options as an extra year of value
@@ -394,8 +397,8 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
         preseason_payout += ' | Sum surplus: $' + str(round(preseason_present_surplus, 1))
 
 
-        print preseason_payout
-        print est_payout
+        # print preseason_payout
+        # print est_payout
 
 
         # print war_val
@@ -527,7 +530,7 @@ def get_war_val(year, adj_FV, age, position, model_war, years_remaining, salary,
         prospect_payout += ' | Sum value: $' + str(round(preseason_dollar_val, 1))
         prospect_payout += ' | Sum surplus: $' + str(round(preseason_present_surplus, 1))
 
-        print prospect_payout
+        # print prospect_payout
 
         prospect_war_val = preseason_war_val
         prospect_dollar_val = preseason_dollar_val
