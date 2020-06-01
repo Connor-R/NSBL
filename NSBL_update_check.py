@@ -34,7 +34,7 @@ def initiate():
 
     date_since_update = db.query(qry)[0][0]
 
-    if (date_since_update >= 0 or date_since_update is None):
+    if (date_since_update >= 4 or date_since_update is None):
         standings_update = scrape_cur_standings()
 
         if standings_update == True:
@@ -139,7 +139,7 @@ def scrape_cur_standings():
                         if int(wins)+int(losses) != prev_gp:
                             standings_changed = True
 
-                        print full_name, int(wins)+int(losses), prev_gp, standings_changed
+                        # print full_name, int(wins)+int(losses), prev_gp, standings_changed
 
     return standings_changed
 
