@@ -49,6 +49,7 @@ def initiate():
         SELECT MAX(update_date) AS update_date
         FROM update_log
         WHERE type = 'weekly'
+        AND DATEDIFF(NOW(), update_date) < 6
     ) a USING (update_date);
     """
 

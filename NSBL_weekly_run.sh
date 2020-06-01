@@ -66,7 +66,7 @@ python team_strength/team_strength.py --year "$year"
 
 wait
 
-# # python team_strength/playoff_probabilities.py --year "$year"
+python team_strength/playoff_probabilities.py --year "$year"
 
 wait
 
