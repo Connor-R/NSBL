@@ -83,7 +83,7 @@ if __name__ == "__main__":
     "Brock Holt!":"Brock Holt",
     "Tyler Holt?!?":"Tyler Holt",
     "Ronald Acua":"Ronald Acuna",
-    "Ronald Acua Jr.":"Ronald Acuna",
+    "Ronald Acua Jr.":"Ronald Acuna Jr.",
     "Kik Hernandez":"Kike Hernandez",
     "Chris B. Young Jr.":"Chris B. Young",
     }      
