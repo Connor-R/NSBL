@@ -34,8 +34,8 @@ def process(year):
 
 
 def player_values(year):
-    clear_current = db.query("DELETE FROM _trade_value WHERE year = %s" % (year))
-    db.conn.commit()
+    # clear_current = db.query("DELETE FROM _trade_value WHERE year = %s" % (year))
+    # db.conn.commit()
 
     season_gp = db.query("SELECT gs FROM processed_league_averages_pitching WHERE year = %s" % (year))
     if season_gp == ():
@@ -103,7 +103,7 @@ def player_values(year):
             ) pd USING (player, post_date)
             JOIN NSBL.zips_fangraphs_batters_counting zbc USING (player, post_date)
             LEFT JOIN NSBL.zips_offense zr ON (zfg.year = zr.year
-                AND replace(zfg.Player, "!", "") = replace(replace(replace(zr.player_name, "'", ""), " Acuna", " Acua"), "Kike ", "Kik ")
+                AND replace(zfg.Player, "!", "") = replace(zr.player_name, "'", "")
             )
         ) zh ON (1
             AND r.position != 'p'
@@ -129,7 +129,7 @@ def player_values(year):
             ) pd USING (player, post_date)
             JOIN NSBL.zips_fangraphs_pitchers_counting zfc USING (player, post_date)
             LEFT JOIN NSBL.zips_pitching zr  ON (zfg.year = zr.year
-                AND replace(zfg.Player, "!", "") = replace(replace(replace(zr.player_name, "'", ""), " Acuna", " Acua"), "Kike ", "Kik ")
+                AND replace(zfg.Player, "!", "") = replace(zr.player_name, "'", "")
             )
         ) zp ON (1
             AND r.position = 'p'

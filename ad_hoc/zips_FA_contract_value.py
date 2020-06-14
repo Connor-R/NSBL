@@ -38,8 +38,34 @@ def batters():
             ELSE WAR
         END
     AS ScaledWAR
-    FROM zips_fangraphs_batters_counting c
-    JOIN zips_fangraphs_batters_rate r USING (year, Player, team_abb)
+    FROM(
+        SELECT *
+        FROM zips_fangraphs_batters_counting a
+        LEFT JOIN NSBL.name_mapper nm ON (1
+            AND a.player = nm.wrong_name
+            AND (nm.start_year IS NULL OR nm.start_year <= a.year)
+            AND (nm.end_year IS NULL OR nm.end_year >= a.year)
+            AND (nm.position = '' OR nm.position = a.PO)
+            AND (nm.rl_team = '' OR nm.rl_team = a.team_abb)
+            # AND (nm.nsbl_team = '' OR nm.nsbl_team = rbp.team_abb)
+        )
+    ) c
+    JOIN (
+        SELECT *
+        FROM zips_fangraphs_batters_rate b
+        LEFT JOIN NSBL.name_mapper nm ON (1
+            AND b.player = nm.wrong_name
+            AND (nm.start_year IS NULL OR nm.start_year <= b.year)
+            AND (nm.end_year IS NULL OR nm.end_year >= b.year)
+            # AND (nm.position = '' OR nm.position = b.PO)
+            AND (nm.rl_team = '' OR nm.rl_team = b.team_abb)
+            # AND (nm.nsbl_team = '' OR nm.nsbl_team = rbp.team_abb)
+        )
+    ) r ON (1
+        AND c.year = r.year
+        AND c.team_abb = r.team_abb
+        AND IFNULL(CONCAT(c.right_fname, ' ', c.right_lname), c.player) = IFNULL(CONCAT(r.right_fname, ' ', r.right_lname), r.player) 
+    )
     ;"""
 
     res = db.query(query)
@@ -86,8 +112,34 @@ def pitchers():
     , c.GS
     , r.WAR
     , IF(GS/G >= 0.80 OR GS >= 20, 32*r.WAR/c.GS, r.WAR) AS ScaledWAR
-    from zips_fangraphs_pitchers_counting c
-    JOIN zips_fangraphs_pitchers_rate r USING (year, Player, team_abb)
+    FROM(
+        SELECT *
+        FROM zips_fangraphs_pitchers_counting a
+        LEFT JOIN NSBL.name_mapper nm ON (1
+            AND a.player = nm.wrong_name
+            AND (nm.start_year IS NULL OR nm.start_year <= a.year)
+            AND (nm.end_year IS NULL OR nm.end_year >= a.year)
+            # AND (nm.position = '' OR nm.position = a.PO)
+            AND (nm.rl_team = '' OR nm.rl_team = a.team_abb)
+            # AND (nm.nsbl_team = '' OR nm.nsbl_team = rbp.team_abb)
+        )
+    ) c
+    JOIN (
+        SELECT *
+        FROM zips_fangraphs_pitchers_rate b
+        LEFT JOIN NSBL.name_mapper nm ON (1
+            AND b.player = nm.wrong_name
+            AND (nm.start_year IS NULL OR nm.start_year <= b.year)
+            AND (nm.end_year IS NULL OR nm.end_year >= b.year)
+            # AND (nm.position = '' OR nm.position = b.PO)
+            AND (nm.rl_team = '' OR nm.rl_team = b.team_abb)
+            # AND (nm.nsbl_team = '' OR nm.nsbl_team = rbp.team_abb)
+        )
+    ) r ON (1
+        AND c.year = r.year
+        AND c.team_abb = r.team_abb
+        AND IFNULL(CONCAT(c.right_fname, ' ', c.right_lname), c.player) = IFNULL(CONCAT(r.right_fname, ' ', r.right_lname), r.player) 
+    )
     ;"""
 
     res = db.query(query)

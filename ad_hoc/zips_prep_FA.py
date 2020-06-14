@@ -9,70 +9,6 @@ db = db('NSBL')
 
 # find potential FA
 
-names_dict = {'foo': 'temp'
-    , 'AJ Reed': 'A.J. Reed'
-    , 'Chi Chi Gonzalez': 'Chi-Chi Gonzalez'
-    , 'Christian Coln': 'Christian Colon'
-    , 'Csar Puello': 'Cesar Puello' 
-    , 'Darren ODay': "Darren O'Day"
-    , 'DJ Stewart': 'D.J. Stewart'
-    , 'Eugenio Surez': 'Eugenio Suarez'
-    , 'Gary Snchez': 'Gary Sanchez'
-    , 'Gio Urshela': 'Giovanny Urshela'
-    , 'Joe Jimnez': 'Joe Jimenez'
-    , 'Kik Hernandez': 'Kike Hernandez'
-    , 'Lance McCullers Jr.': 'Lance McCullers'
-    , 'Miguel Andjar': 'Miguel Andujar'
-    , 'Pete Alonso': 'Peter Alonso'
-    , 'Ronald Acua Jr.': 'Ronald Acuna'
-    , 'Seunghwan Oh': 'Seung-hwan Oh'
-    , 'Gnesis Cabrera': 'Genesis Cabrera'
-    , 'Williams Prez': 'Williams Perez'
-    , 'Tyler ONeill': "Tyler O'Neill"
-    , 'Ramn Uras': 'Ramon Urias'
-    , 'Travis dArnaud': "Travis d'Arnaud"
-    , 'Dom Nunez': 'Dominic Nunez'
-    , 'LaMonte Wade Jr': 'Lamonte Wade'
-    , 'Tyler ONeill': "Tyler O'Neill"
-    , 'Brock Holt!': 'Brock Holt'
-    , 'Mauricio Dubn': 'Mauricio Dubon'
-    , 'Hctor Neris': 'Hector Neris'
-    , 'Vctor Arano': 'Victor Arano'
-    , 'Seranthony Domnguez': 'Seranthony Dominguez'
-    , 'Hctor Noesi': 'Hector Noesi'
-    , 'Jhoulys Chacn': 'Jhoulys Chacin'
-    , 'Martn Prez': 'Martin Perez'
-    , 'Jos Godoy': 'Jose Godoy'
-    , 'Yairo Muoz': 'Yairo Munoz'
-    , 'Jos Peraza': 'Jose Peraza'
-    , 'Brian OKeefe': "Brian O'Keefe"
-    , 'Jos Osuna': 'Jose Osuna'
-    , 'Austin L. Adams': 'Austin Adams'
-    , 'Albert Almora Jr.': 'Albert Almora'
-    , 'Hernn Prez': 'Hernan Perez'
-    , 'Javier Bez': 'Javier Baez'
-    , 'Steven Souza Jr.': 'Steven Souza'
-    , 'Ryan OHearn': "Ryan O'Hearn"
-    , 'Kaai Tom': "Ka'ai Tom"
-    , 'Mike Clevinger': 'Michael Clevinger'
-    , 'Oliver Prez': 'Oliver Perez'
-    , 'Jose Garcia': 'Jose Israel Garcia'
-    , 'Ramn Laureano': 'Ramon Laureano'
-    , 'Ronald Guzmn': 'Ronald Guzman'
-    , 'Yohander Mndez': 'Yohander Mendez'
-    , 'Jos Leclerc': 'Jose Leclerc'
-    , 'Andy Ibez': 'Andy Ibanez'
-    , 'Jeanmar Gmez': 'Jeanmar Gomez'
-    , 'Riley OBrien': "Riley O'Brien"
-    , 'Lourdes Gurriel Jr.': 'Lourdes Gurriel'
-    , 'Daniel Vogelbach': 'Dan Vogelbach'
-    , 'Asdrbal Cabrera': 'Asdrubal Cabrera'
-    , 'Yandy Daz': 'Yandy Diaz'
-    , 'Jess Aguilar': 'Jesus Aguilar'
-    , 'Scrates Brito': 'Socrates Brito'
-    , 'Toms Telis': 'Tomas Telis'
-}
-
 # SELECT * FROM zips_fangraphs_prep_FA_batters WHERE year = 2020;
 # SELECT * FROM zips_fangraphs_prep_FA_pitchers WHERE year = 2020;
 # SELECT b.*
@@ -378,7 +314,7 @@ def batters(year):
 
 
     player_q = """SELECT a.year
-    , a.Player
+    , IFNULL(CONCAT(nm.right_fname, ' ', nm.right_lname), a.Player) AS player
     , a.team_abb
     , a.age
     , a.B as hand
@@ -427,8 +363,26 @@ def batters(year):
         GROUP BY year, Player
     ) b USING (year,Player,post_date)
     JOIN zips_fangraphs_batters_rate c USING (year, Player, team_abb)
-    JOIN zips_FA_contract_value_batters cv USING (year, Player, team_abb)
-    """
+    LEFT JOIN name_mapper nm ON (1
+        AND a.Player = nm.wrong_name
+        AND (nm.start_year IS NULL OR nm.start_year <= a.year)
+        AND (nm.end_year IS NULL OR nm.end_year >= a.year)
+        AND (nm.position = '' OR nm.position = a.PO)
+        AND (nm.rl_team = '' OR nm.rl_team = a.team_abb)
+        # AND (nm.nsbl_team = '' OR nm.nsbl_team = rbp.team_abb)
+    )
+    LEFT JOIN name_mapper nm2 ON (nm.right_fname = nm2.right_fname
+        AND nm.right_lname = nm2.right_lname
+        AND (nm.start_year IS NULL OR nm2.start_year = nm2.start_year)
+        AND (nm.end_year IS NULL OR nm2.end_year = nm2.end_year)
+        AND (nm.position = '' OR nm2.position = nm2.position)
+        AND (nm.rl_team = '' OR nm2.rl_team = nm2.rl_team)
+    )
+    JOIN zips_FA_contract_value_batters cv ON (a.year = cv.year 
+        AND a.team_abb = cv.team_abb
+        AND IFNULL(nm2.wrong_name, a.Player) = cv.Player
+    ) 
+    ;"""
     player_qry = player_q % (year)
     # raw_input(player_qry)
     player_data = db.query(player_qry)
@@ -452,10 +406,6 @@ def batters(year):
             scaledWAR = 600*(float(WAR)/float(pa))
         else:
             scaledWAR = 450*(float(WAR)/float(pa))
-        
-
-        if player_name in names_dict:
-            player_name = names_dict.get(player_name)
 
         ops, wOBA, park_wOBA, OPS_plus, wrc, wrc27, wRC_plus, raa, oWAR = helper.get_zips_offensive_metrics(year-1, pf, pa, ab, bb2, hbp, _1, _2, _3, hr, sb, cs)
 
@@ -509,7 +459,7 @@ def batters(year):
 
 def pitchers(year):
     player_q = """SELECT a.year
-    , a.Player
+    , IFNULL(CONCAT(nm.right_fname, ' ', nm.right_lname), a.Player) AS player
     , a.team_abb
     , a.age
     , T as hand
@@ -559,8 +509,27 @@ def pitchers(year):
         GROUP BY year, Player
     ) b USING (year,Player,post_date)
     JOIN zips_fangraphs_pitchers_rate c USING (year, Player, team_abb)
-    JOIN zips_FA_contract_value_pitchers cv USING (year, Player, team_abb)
-    """
+    LEFT JOIN name_mapper nm ON (1
+        AND a.Player = nm.wrong_name
+        AND (nm.start_year IS NULL OR nm.start_year <= a.year)
+        AND (nm.end_year IS NULL OR nm.end_year >= a.year)
+        # AND (nm.position = '' OR nm.position = a.PO)
+        AND (nm.rl_team = '' OR nm.rl_team = a.team_abb)
+        # AND (nm.nsbl_team = '' OR nm.nsbl_team = rbp.team_abb)
+    )
+    LEFT JOIN name_mapper nm2 ON (nm.right_fname = nm2.right_fname
+        AND nm.right_lname = nm2.right_lname
+        AND (nm.start_year IS NULL OR nm2.start_year = nm2.start_year)
+        AND (nm.end_year IS NULL OR nm2.end_year = nm2.end_year)
+        AND (nm.position = '' OR nm2.position = nm2.position)
+        AND (nm.rl_team = '' OR nm2.rl_team = nm2.rl_team)
+    )
+    JOIN zips_FA_contract_value_pitchers cv ON (a.year = cv.year 
+        AND a.team_abb = cv.team_abb
+        AND IFNULL(nm2.wrong_name, a.Player) = cv.Player
+    )
+    ;"""
+    
     player_qry = player_q % (year)
     # raw_input(player_qry)
     player_data = db.query(player_qry)
@@ -569,9 +538,6 @@ def pitchers(year):
     for row in player_data:
         entry = {}
         year, player_name, team_abb, age, hand, era, g, gs, ip, h, er, hr, bb, k, k_9, bb_9, hr_9, bb_pct, k_pct, babip, zera_plus, zera_minus, zfip, zwar, yr1_WAR, yr1_value, yr2_WAR, yr2_value, yr3_WAR, yr3_value, yr4_WAR, yr4_value, yr5_WAR, yr5_value, yr6_WAR, yr6_value, yr7_WAR, yr7_value, yr8_WAR, yr8_value = row
-
-        if player_name in names_dict:
-            player_name = names_dict.get(player_name)
 
         r = er
         if (gs >= 20 or float(gs)/float(g) > 0.8):

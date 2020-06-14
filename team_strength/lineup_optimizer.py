@@ -74,17 +74,17 @@ def get_player_matrix(team_abb, year):
     LEFT JOIN processed_WAR_hitters w USING (YEAR, player_name, age)
     LEFT JOIN current_rosters c USING (player_name, year)
     LEFT JOIN teams t USING (team_id, year)
-    LEFT JOIN(
-        SELECT *
-        FROM excel_rosters
-        JOIN (
-            SELECT year
-            , MAX(gp) AS gp
-            FROM excel_rosters
-            WHERE 1
-                AND year = %s
-        ) cur USING (year, gp)
-    ) cre USING (player_name)
+    -- LEFT JOIN(
+    --     SELECT *
+    --     FROM excel_rosters
+    --     JOIN (
+    --         SELECT year
+    --         , MAX(gp) AS gp
+    --         FROM excel_rosters
+    --         WHERE 1
+    --             AND year = %s
+    --     ) cur USING (year, gp)
+    -- ) cre USING (player_name)
     WHERE z.year = %s
     AND player_name NOT IN ('Player Name', 'Harrison Bader', 'Luis Arraez', 'Willy Adames')
     # AND (cre.salary_counted IS NULL OR cre.salary_counted != 'N' OR w.player_name IS NOT NULL)

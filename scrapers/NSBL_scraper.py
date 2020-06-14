@@ -22,8 +22,6 @@ invalid_names = {
 
 
 player_mapper = {
-    'Jyung Ho Kang':'Jung Ho Kang',
-    'Michael Al Taylor':'Michael A. Taylor',
 }
 
 
