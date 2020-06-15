@@ -80,6 +80,16 @@ def initiate(yr, _type, player_mapper):
 
 if __name__ == "__main__":  
     player_mapper = {
-    }      
+    }
+
+    qry = """SELECT wrong_name
+    , CONCAT(right_fname, ' ', right_lname) AS right_name
+    FROM name_mapper nm
+    ;"""
+
+    res = db.query(qry)
+    for row in res:
+        wrong, right = row
+        player_mapper[wrong] = right
 
     process(player_mapper)

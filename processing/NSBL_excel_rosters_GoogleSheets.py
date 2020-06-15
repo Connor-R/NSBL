@@ -200,6 +200,18 @@ def name_parser(reverse_name):
     player_mapper = {
     }
 
+    qry = """SELECT wrong_name
+    , right_fname
+    , right_lname
+    FROM name_mapper nm
+    ;"""
+
+    res = db.query(qry)
+    for row in res:
+        wrong, right_fname, right_lname = row
+        player_mapper[wrong] = [right_fname, right_lname]
+
+    
     first_name = reverse_name.split(', ')[1:]
     last_name = reverse_name.split(', ')[0]
     player_name = ' '.join(reversed(reverse_name.split(', ')))

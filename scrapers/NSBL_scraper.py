@@ -24,6 +24,16 @@ invalid_names = {
 player_mapper = {
 }
 
+qry = """SELECT wrong_name
+, CONCAT(right_fname, ' ', right_lname) AS right_name
+FROM name_mapper nm
+;"""
+
+res = db.query(qry)
+for row in res:
+    wrong, right = row
+    player_mapper[wrong] = right
+
 
 def initiate(end_year, scrape_length):
     if scrape_length == "All":
