@@ -50,8 +50,9 @@ def process(year):
 
 def get_player_matrix(team_abb, year):
 
-    tq_add = "AND t.team_abb = '%s'" % team_abb
-    # tq_add = "AND cre.team_abb = '%s'" % team_abb
+    tq_add = "AND team_abb = '%s'" % team_abb
+    tq_add2 = "AND t.team_abb = '%s'" % team_abb
+    # tq_add2 = "AND cre.team_abb = '%s'" % team_abb
 
 
     for lu_type in ('all', 'r', 'l'):
@@ -65,15 +66,39 @@ def get_player_matrix(team_abb, year):
             
             matrix = []
 
-            q = """SELECT *
+            base_q = """
     FROM (
-    SELECT DISTINCT player_name, t.team_abb, (zo.ab+zo.bb+zo.hbp+zo.sh+zo.sf) as 'zips_pa'
+    SELECT DISTINCT IFNULL(CONCAT(nm2.right_fname, ' ', nm2.right_lname), z.player_name) AS real_name
+    , z.player_name AS player_name
+    , t.team_abb
+    -- , cre.team_abb
+    , (zo.ab+zo.bb+zo.hbp+zo.sh+zo.sf) as 'zips_pa'
     -- SELECT DISTINCT player_name, COALESCE(t.team_abb, cre.team_abb) AS team_abb, (zo.ab+zo.bb+zo.hbp+zo.sh+zo.sf) as 'zips_pa'
     FROM zips_WAR_hitters z
     JOIN zips_offense zo USING (player_name, year, team_abb, age)
     LEFT JOIN processed_WAR_hitters w USING (YEAR, player_name, age)
-    LEFT JOIN current_rosters c USING (player_name, year)
-    LEFT JOIN teams t USING (team_id, year)
+    LEFT JOIN name_mapper nm ON (1
+        AND z.player_name = nm.wrong_name
+        AND (nm.start_year IS NULL OR nm.start_year <= z.year)
+        AND (nm.end_year IS NULL OR nm.end_year >= z.year)
+        AND (nm.position = '' OR nm.position = z.position)
+        AND (nm.rl_team = '' OR nm.rl_team = z.team_abb)
+        # AND (nm.nsbl_team = '' OR nm.nsbl_team = rbp.team_abb)
+    )
+    LEFT JOIN name_mapper nm2 ON (nm.right_fname = nm2.right_fname
+        AND nm.right_lname = nm2.right_lname
+        AND (nm.start_year IS NULL OR nm.start_year = nm2.start_year)
+        AND (nm.end_year IS NULL OR nm.end_year = nm2.end_year)
+        AND (nm.position = '' OR nm.position = nm2.position)
+        AND (nm.rl_team = '' OR nm.rl_team = nm2.rl_team)
+    )
+    LEFT JOIN current_rosters c ON (IFNULL(nm2.wrong_name, z.player_name) = c.player_name
+        AND z.year = c.year
+        AND c.position NOT IN ('SP', 'MR', 'CL')
+    )
+    LEFT JOIN teams t ON (c.team_id = t.team_id 
+        AND z.year = t.year
+    )
     -- LEFT JOIN(
     --     SELECT *
     --     FROM excel_rosters
@@ -84,19 +109,35 @@ def get_player_matrix(team_abb, year):
     --         WHERE 1
     --             AND year = %s
     --     ) cur USING (year, gp)
-    -- ) cre USING (player_name)
-    WHERE z.year = %s
-    AND player_name NOT IN ('Player Name', 'Harrison Bader', 'Luis Arraez', 'Willy Adames')
-    # AND (cre.salary_counted IS NULL OR cre.salary_counted != 'N' OR w.player_name IS NOT NULL)
-    %s
+    -- ) cre ON (IFNULL(nm2.wrong_name, z.player_name) = cre.player_name)
+    WHERE 1
+        AND z.year = %s
+    --    AND (cre.salary_counted IS NULL OR cre.salary_counted != 'N' OR w.player_name IS NOT NULL)
+    HAVING 1
+        %s
+        AND player_name NOT IN ('Player Name', 'Harrison Bader', 'Luis Arraez', 'Willy Adames')
     ) base"""
 
-            q = q % (year, year, tq_add)
+            base_q = base_q % (year, year, tq_add)
 
-            # raw_input(q)
+            # raw_input(base_q)
             positions = ('dh', 'c', '1b', '2b', '3b', 'ss', 'lf', 'cf', 'rf')
             a = 0
             position_map = {}
+            q_sel = """SELECT real_name AS player_name
+            , team_abb
+            , zips_pa
+            , dh_WAR
+            , c_WAR
+            , 1b_WAR
+            , 2b_WAR
+            , 3b_WAR
+            , ss_WAR
+            , lf_WAR
+            , cf_WAR
+            , rf_WAR
+            """
+            q = q_sel+base_q
             for pos in positions:
                 position_map[a]=pos
                 a += 1
@@ -115,30 +156,18 @@ def get_player_matrix(team_abb, year):
 
                 q += qry_add
 
-            cnt_q = """SELECT COUNT(DISTINCT player_name)
-    FROM zips_WAR_hitters z
-    LEFT JOIN current_rosters c USING (player_name, YEAR)
-    LEFT JOIN teams t USING (team_id, YEAR)
-    LEFT JOIN(
-        SELECT *
-        FROM excel_rosters
-        JOIN (
-            SELECT year
-            , MAX(gp) AS gp
-            FROM excel_rosters
-            WHERE 1
-                AND year = %s
-        ) cur USING (year, gp)
-    ) cre USING (player_name)
-    WHERE z.year = %s
-    %s"""
+            cnt_q = """SELECT COUNT(*)
+            FROM(
+                %s
+            ) a
+            """
 
-            cnt_qry = cnt_q % (year, year, tq_add)
+            cnt_qry = cnt_q % (q)
             # print(cnt_qry)
             cnt = db.query(cnt_qry)[0][0]
 
             # if team_abb.upper() == 'TAM':
-            #     raw_input(q)
+                # raw_input(q)
             # raw_input(q)
             res = db.query(q)
             j = 0

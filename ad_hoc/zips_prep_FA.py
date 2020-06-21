@@ -373,10 +373,10 @@ def batters(year):
     )
     LEFT JOIN name_mapper nm2 ON (nm.right_fname = nm2.right_fname
         AND nm.right_lname = nm2.right_lname
-        AND (nm.start_year IS NULL OR nm2.start_year = nm2.start_year)
-        AND (nm.end_year IS NULL OR nm2.end_year = nm2.end_year)
-        AND (nm.position = '' OR nm2.position = nm2.position)
-        AND (nm.rl_team = '' OR nm2.rl_team = nm2.rl_team)
+        AND (nm.start_year IS NULL OR nm.start_year = nm2.start_year)
+        AND (nm.end_year IS NULL OR nm.end_year = nm2.end_year)
+        AND (nm.position = '' OR nm.position = nm2.position)
+        AND (nm.rl_team = '' OR nm.rl_team = nm2.rl_team)
     )
     JOIN zips_FA_contract_value_batters cv ON (a.year = cv.year 
         AND a.team_abb = cv.team_abb

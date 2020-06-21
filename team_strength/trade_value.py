@@ -48,8 +48,31 @@ def player_values(year):
     # print season_pct_multiplier
 
 
-    qry = """
-    SELECT r.*
+    qry = """SELECT year
+    , gp
+    , date
+    , player_name
+    , fname
+    , lname
+    , team_abb
+    , position
+    , salary
+    , contract_year
+    , expires
+    , opt
+    , NTC
+    , salary_counted
+    , entered_name
+    , MAX(age) as age
+    , MAX(p_TEAM) AS p_team
+    , MAX(adj_FV) AS adj_FV
+    , MAX(z_TEAM) AS z_TEAM
+    , MAX(z_usage) AS z_usage
+    , MAX(zWAR) AS z_WAR
+    , MAX(ScaledWAR) AS ScaledWAR
+    , MAX(pos2) AS pos2
+    FROM(
+        SELECT r.*
         , COALESCE(p.age, zh.age, zp.age) AS age
         , COALESCE(p.FG_Team, p.MLB_Team) AS p_Team
         , p.adj_FV
@@ -75,7 +98,30 @@ def player_values(year):
             WHERE 1
                 AND year = %s
         ) cur USING (year, gp)
-        LEFT JOIN mlb_prospects._master_current p ON (1
+        LEFT JOIN name_mapper nm ON (1
+            AND r.player_name = nm.wrong_name
+            AND (nm.start_year IS NULL OR nm.start_year <= r.year)
+            AND (nm.end_year IS NULL OR nm.end_year >= r.year)
+            AND (nm.position = '' OR nm.position = r.position)
+            # AND (nm.rl_team = '' OR nm.rl_team = a.team_abb)
+            AND (nm.nsbl_team = '' OR nm.nsbl_team = r.team_abb)
+        )
+        LEFT JOIN name_mapper nm2 ON (nm.right_fname = nm2.right_fname
+            AND nm.right_lname = nm2.right_lname
+            AND (nm.start_year IS NULL OR nm.start_year = nm2.start_year)
+            AND (nm.end_year IS NULL OR nm.end_year = nm2.end_year)
+            AND (nm.position = '' OR nm.position = nm2.position)
+            AND (nm.rl_team = '' OR nm.rl_team = nm2.rl_team)
+        )
+        LEFT JOIN (
+            SELECT mc.*
+            , pp.mlb_fname
+            , pp.mlb_lname
+            , pp.fg_fname
+            , pp.fg_lname
+            FROM mlb_prospects._master_current mc
+            JOIN mlb_prospects.professional_prospects pp ON (mc.prospect_id = pp.prospect_id)
+        )p ON (1
             AND IF(r.position = 'p'
                 , p.position LIKE "%%p%%"
                 , p.position LIKE "%%b%%" 
@@ -83,9 +129,14 @@ def player_values(year):
                     OR p.position LIKE "%%dh%%"
                     OR p.position LIKE "%%f%%"
                     OR p.position LIKE "%%ss%%"
+                    OR p.position LIKE "%%util%%"
             )
-            AND find_in_set(replace(r.fname, ".", ""), replace(p.fnames, ".", "")) >= 1
-            AND find_in_set(replace(r.lname, ".", ""), replace(p.lnames, ".", "")) >= 1
+            AND (0
+                OR CONCAT(p.mlb_fname, ' ', p.mlb_lname) = IFNULL(nm2.wrong_name, r.player_name)
+                OR CONCAT(p.mlb_fname, ' ', p.fg_lname) = IFNULL(nm2.wrong_name, r.player_name)
+                OR CONCAT(p.fg_fname, ' ', p.mlb_lname) = IFNULL(nm2.wrong_name, r.player_name)
+                OR CONCAT(p.fg_fname, ' ', p.fg_lname) = IFNULL(nm2.wrong_name, r.player_name)
+            )
         )
         LEFT JOIN (
             SELECT zr.player_name
@@ -107,8 +158,9 @@ def player_values(year):
             )
         ) zh ON (1
             AND r.position != 'p'
-            AND (replace(replace(zh.player, ".", ""), "-", " ") LIKE CONCAT("%%", replace(replace(r.fname, ".", ""), "-", " "), "%%") OR replace(replace(zh.player_name, ".", ""), "-", " ") LIKE CONCAT("%%", replace(replace(r.fname, ".", ""), "-", " "), "%%"))
-            AND (replace(replace(zh.player, ".", ""), "-", " ") LIKE CONCAT("%%", replace(replace(r.lname, ".", ""), "-", " "), "%%") OR replace(replace(zh.player_name, ".", ""), "-", " ") LIKE CONCAT("%%", replace(replace(r.lname, ".", ""), "-", " "), "%%"))
+            AND (IFNULL(nm2.wrong_name, r.player_name) = zh.player_name 
+                OR IFNULL(nm2.wrong_name, r.player_name) = zh.player
+            )
         )
         LEFT JOIN (
             SELECT zr.player_name
@@ -133,10 +185,14 @@ def player_values(year):
             )
         ) zp ON (1
             AND r.position = 'p'
-            AND (replace(replace(zp.player, ".", ""), "-", " ") LIKE CONCAT("%%", replace(replace(r.fname, ".", ""), "-", " "), "%%") OR replace(replace(zp.player_name, ".", ""), "-", " ") LIKE CONCAT("%%", replace(replace(r.fname, ".", ""), "-", " "), "%%"))
-            AND (replace(replace(zp.player, ".", ""), "-", " ") LIKE CONCAT("%%", replace(replace(r.lname, ".", ""), "-", " "), "%%") OR replace(replace(zp.player_name, ".", ""), "-", " ") LIKE CONCAT("%%", replace(replace(r.lname, ".", ""), "-", " "), "%%"))
+            AND (IFNULL(nm2.wrong_name, r.player_name) = zp.player_name 
+                OR IFNULL(nm2.wrong_name, r.player_name) = zp.player
+            )
         )
-    ;"""
+    ) a
+    GROUP BY year, gp, date, player_name, team_abb, position, salary, contract_year, expires
+    ;
+    """
     query = qry % (year, year, year)
 
     print 'querying...'

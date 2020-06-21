@@ -48,33 +48,60 @@ def process(year):
 def get_pitchers(team_abb, year):
     entry = {}
 
-    tq_add = "AND t.team_abb = '%s'" % team_abb
-    # tq_add = "AND cre.team_abb = '%s'" % team_abb
+    tq_add = "AND team_abb = '%s'" % team_abb
+    tq_add2 = "AND t.team_abb = '%s'" % team_abb
+    # tq_add2 = "AND cre.team_abb = '%s'" % team_abb
 
     entry['team_abb'] = team_abb
 
-    starter_qry = """SELECT player_name, p.ip as zips_ip, (z.FIP_WAR/p.ip) AS WAR_per_ip
+    starter_qry = """SELECT DISTINCT IFNULL(CONCAT(nm2.right_fname, ' ', nm2.right_lname), z.player_name) AS real_name
+    , z.player_name AS player_name
+    , t.team_abb
+    -- , cre.team_abb
+    , p.ip as zips_ip
+    , (z.FIP_WAR/p.ip) AS WAR_per_ip
     FROM zips_pitching p
     LEFT JOIN zips_WAR_pitchers z USING (YEAR, player_name, team_abb)
-    LEFT JOIN current_rosters c USING (YEAR, player_name)
-    LEFT JOIN processed_WAR_pitchers w USING (YEAR, player_name, team_abb)
-    LEFT JOIN teams t USING (YEAR, team_id)
-    LEFT JOIN(
-        SELECT *
-        FROM excel_rosters
-        JOIN (
-            SELECT year
-            , MAX(gp) AS gp
-            FROM excel_rosters
-            WHERE 1
-                AND year = %s
-        ) cur USING (year, gp)
-    ) cre USING (player_name)
-    WHERE z.year = %s
-    AND gs >= 3
-    AND player_name NOT IN ('Player Name', 'Dustin May', 'Nick Pivetta', 'Jeff Hoffman')
-    # AND (cre.salary_counted IS NULL OR cre.salary_counted != 'N' OR w.player_name IS NOT NULL)
-    %s
+    LEFT JOIN name_mapper nm ON (1
+        AND z.player_name = nm.wrong_name
+        AND (nm.start_year IS NULL OR nm.start_year <= z.year)
+        AND (nm.end_year IS NULL OR nm.end_year >= z.year)
+    --     AND (nm.position = '' OR nm.position = z.position)
+        AND (nm.rl_team = '' OR nm.rl_team = z.team_abb)
+        # AND (nm.nsbl_team = '' OR nm.nsbl_team = rbp.team_abb)
+    )
+    LEFT JOIN name_mapper nm2 ON (nm.right_fname = nm2.right_fname
+        AND nm.right_lname = nm2.right_lname
+        AND (nm.start_year IS NULL OR nm.start_year = nm2.start_year)
+        AND (nm.end_year IS NULL OR nm.end_year = nm2.end_year)
+        AND (nm.position = '' OR nm.position = nm2.position)
+        AND (nm.rl_team = '' OR nm.rl_team = nm2.rl_team)
+    )    
+    LEFT JOIN current_rosters c ON (IFNULL(nm2.wrong_name, z.player_name) = c.player_name
+        AND z.year = c.year
+        AND c.position IN ('SP', 'MR', 'CL')
+    )
+    LEFT JOIN teams t ON (c.team_id = t.team_id 
+        AND z.year = t.year
+    )
+    -- LEFT JOIN(
+    --     SELECT *
+    --     FROM excel_rosters
+    --     JOIN (
+    --         SELECT year
+    --         , MAX(gp) AS gp
+    --         FROM excel_rosters
+    --         WHERE 1
+    --             AND year = %s
+    --     ) cur USING (year, gp)
+    -- ) cre ON (IFNULL(nm2.wrong_name, z.player_name) = cre.player_name)
+    WHERE 1
+        AND z.year = %s
+        AND gs >= 3
+        # AND (cre.salary_counted IS NULL OR cre.salary_counted != 'N' OR w.player_name IS NOT NULL)
+    HAVING 1
+        %s
+        AND player_name NOT IN ('Player Name', 'Dustin May', 'Nick Pivetta', 'Jeff Hoffman')
     ORDER BY WAR_per_ip DESC
     LIMIT 6;"""
 
@@ -96,7 +123,7 @@ def get_pitchers(team_abb, year):
         sp_cnt += 1
         sp_ip = starter_ip.get(str(sp_cnt))
 
-        sp_name, zips_ip, WAR_per_ip = row
+        sp_name, foo, foo2, zips_ip, WAR_per_ip = row
         sp_WAR = float(WAR_per_ip)*float(sp_ip)
         # fip_std formula from the NSBL_std_research.py script
         fip_std = -0.000169247*float(zips_ip) + 0.3625156228
@@ -124,28 +151,54 @@ def get_pitchers(team_abb, year):
 
     entry['starter_var'] = starter_var
 
-    reliever_qry = """SELECT player_name, p.ip as zips_ip, (z.FIP_WAR/p.ip) AS WAR_per_ip
+    reliever_qry = """SELECT DISTINCT IFNULL(CONCAT(nm2.right_fname, ' ', nm2.right_lname), z.player_name) AS real_name
+    , z.player_name AS player_name
+    , t.team_abb
+    -- , cre.team_abb
+    , p.ip as zips_ip
+    , (z.FIP_WAR/p.ip) AS WAR_per_ip
     FROM zips_pitching p
     LEFT JOIN zips_WAR_pitchers z USING (YEAR, player_name, team_abb)
-    LEFT JOIN current_rosters c USING (YEAR, player_name)
-    LEFT JOIN processed_WAR_pitchers w USING (YEAR, player_name, team_abb)
-    LEFT JOIN teams t USING (YEAR, team_id)
-    LEFT JOIN(
-        SELECT *
-        FROM excel_rosters
-        JOIN (
-            SELECT year
-            , MAX(gp) AS gp
-            FROM excel_rosters
-            WHERE 1
-                AND year = %s
-        ) cur USING (year, gp)
-    ) cre USING (player_name)
-    WHERE z.year = %s
-    AND player_name NOT IN %s
-    AND player_name NOT IN ('Player Name', 'Dustin May', 'Nick Pivetta', 'Jeff Hoffman')
-    # AND (cre.salary_counted IS NULL OR cre.salary_counted != 'N' OR w.player_name IS NOT NULL)
-    %s
+    LEFT JOIN name_mapper nm ON (1
+        AND z.player_name = nm.wrong_name
+        AND (nm.start_year IS NULL OR nm.start_year <= z.year)
+        AND (nm.end_year IS NULL OR nm.end_year >= z.year)
+    --     AND (nm.position = '' OR nm.position = z.position)
+        AND (nm.rl_team = '' OR nm.rl_team = z.team_abb)
+        # AND (nm.nsbl_team = '' OR nm.nsbl_team = rbp.team_abb)
+    )
+    LEFT JOIN name_mapper nm2 ON (nm.right_fname = nm2.right_fname
+        AND nm.right_lname = nm2.right_lname
+        AND (nm.start_year IS NULL OR nm.start_year = nm2.start_year)
+        AND (nm.end_year IS NULL OR nm.end_year = nm2.end_year)
+        AND (nm.position = '' OR nm.position = nm2.position)
+        AND (nm.rl_team = '' OR nm.rl_team = nm2.rl_team)
+    )    
+    LEFT JOIN current_rosters c ON (IFNULL(nm2.wrong_name, z.player_name) = c.player_name
+        AND z.year = c.year
+        AND c.position IN ('SP', 'MR', 'CL')
+    )
+    LEFT JOIN teams t ON (c.team_id = t.team_id 
+        AND z.year = t.year
+    )
+    -- LEFT JOIN(
+    --     SELECT *
+    --     FROM excel_rosters
+    --     JOIN (
+    --         SELECT year
+    --         , MAX(gp) AS gp
+    --         FROM excel_rosters
+    --         WHERE 1
+    --             AND year = %s
+    --     ) cur USING (year, gp)
+    -- ) cre ON (IFNULL(nm2.wrong_name, z.player_name) = cre.player_name)
+    WHERE 1
+        AND z.year = %s
+        # AND (cre.salary_counted IS NULL OR cre.salary_counted != 'N' OR w.player_name IS NOT NULL)
+    HAVING 1
+       AND player_name NOT IN %s
+        %s
+        AND player_name NOT IN ('Player Name', 'Dustin May', 'Nick Pivetta', 'Jeff Hoffman')
     ORDER BY WAR_per_ip DESC
     LIMIT 7;"""
 
@@ -163,7 +216,7 @@ def get_pitchers(team_abb, year):
         rp_cnt += 1
         rp_ip = reliever_ip.get(str(rp_cnt))
 
-        rp_name, zips_ip, WAR_per_ip = row
+        rp_name, foo, foo2, zips_ip, WAR_per_ip = row
         rp_WAR = float(WAR_per_ip)*float(rp_ip)
         # fip_std formula from the NSBL_std_research.py script
         fip_std = -0.0005925607*float(zips_ip) + 0.5332422101
