@@ -8,12 +8,6 @@ def process():
     db.query("TRUNCATE TABLE `historical_stats_hitters_primary`")
     db.query("TRUNCATE TABLE `historical_stats_pitchers_primary`")
 
-#     multi_entry_q = """
-# SELECT *
-# FROM register_batting_primary
-# JOIN register_batting_primary USING (year, player_name, position, age)
-# """
-
     hit_q = """
 SELECT COALESCE(CONCAT(nm.right_fname, ' ', nm.right_lname), o.player_name) AS player_name
 , GROUP_CONCAT(DISTINCT team_abb ORDER BY YEAR DESC SEPARATOR '/') AS teams
