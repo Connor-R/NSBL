@@ -11,9 +11,10 @@ db = db('NSBL')
 
 
 def process(year):
+    print "processed_compWAR_defensive", year
     offensive_war(year)
 
-    # for year in range (2006, 2019):
+    # for year in range (2005, 2021):
     #     offensive_war(year)
 
 

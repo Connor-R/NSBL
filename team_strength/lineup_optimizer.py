@@ -212,7 +212,7 @@ def get_player_matrix(team_abb, year):
                     war_val = 100.0-matrix[v][i]
                     zips_pa = player_map.get(v)[1]
                     # woba_std formula from the NSBL_std_research.py script
-                    woba_std = -0.0000083283*float(zips_pa) + 0.0277557512
+                    woba_std = -0.0000028765*float(zips_pa) + 0.0251773378
                     
                     # add defensive variance??? ##### TODO
 

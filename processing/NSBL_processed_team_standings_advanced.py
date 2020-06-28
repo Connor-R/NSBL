@@ -9,6 +9,7 @@ db = db('NSBL')
 
 
 def process():
+    print "processed_team_standings_advanced"
     table = 'processed_team_standings_advanced'
     db.query("TRUNCATE TABLE `"+table+"`")
 
@@ -68,7 +69,7 @@ def process():
             pythag_wins = (w+l)*pythag_win_pct
             pythag_losses = games_played - (pythag_wins)
 
-            rep_team_win_pct = 0.333
+            rep_team_win_pct = 0.315
             rep_team_wins = rep_team_win_pct*games_played
 
             # f_wins = (pos_WAR/repWAR)*17.0 + float(FIP_WAR) + rep_team_wins

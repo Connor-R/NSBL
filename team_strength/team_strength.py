@@ -109,8 +109,8 @@ def get_optimal_lineups(year, season_gp):
 
         # for the total amount of variance for the team, we first take the total amount of variance from team projections (based on the variance in each individual player's projection)
         total_roster_var = float(roster_var) 
-        # then we add a measure of variance based on the difference between true talent record (pythag record) and observed record (see /variance_research/Full Season Pythag Standings Variance research.png)
-        total_roster_var += -0.0052542947*(ros_pct*162) + 3.4279721907
+        # then we add a measure of variance based on the difference between true talent record (pythag record) and observed record (see /variance_research/Full Season Pythag Standings std research.png)
+        total_roster_var += -0.0055021865*(ros_pct*162) + 3.4706743014
         # Finally we add a value of 5.0 to the STANDARD DEVIATION (not variance). We can express the amount of variance desired to add in the set of equations {std = sqrt(v), std+5.0 = sqrt(v+c)}, and then solving for c (https://tinyurl.com/y8tk64ez)
         # NB. the value of 5.0 is a guess (~0.33 win for each starter plus a small amount for bench players and relief pitchers) and hack-y and should be cleaned up, or at least weighted more towards defensive #s over wOBA numbers) wins to the variance due to my uncertain nature (mostly from defense) of my conversion from raw ZiPS to DMB WAR (i.e., I think if my projection says the team is a true talent 90 win team, I think there is +/- 5.0 wins of standard deviation in that projection)
         total_roster_var += 10*math.sqrt(total_roster_var) + 25

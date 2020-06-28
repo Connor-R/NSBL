@@ -3,7 +3,7 @@ from py_db import db
 db = db('NSBL')
 
 
-
+# TODO
 def get_team_abb(team_name):
     team_abb_dict = {
     "Baltimore Orioles": "Bal",
@@ -45,6 +45,7 @@ def get_team_abb(team_name):
 
     return team_abb
 
+# TODO
 def get_team_abb2(team_name):
     team_abb_dict = {
     "2006Anaheim Angels": "ANA",
@@ -503,6 +504,7 @@ def get_team_abb2(team_name):
 
     return team_abb
 
+# TODO
 def get_division(team_name):
 
     division_dict = {
@@ -553,6 +555,7 @@ def get_division(team_name):
 
     return division, divisional_teams, conference_teams, non_conference_teams
 
+# TODO
 def get_team_name(city_name):
     team_names_dict = {
     "Baltimore": "Baltimore Orioles",
@@ -591,6 +594,7 @@ def get_team_name(city_name):
 
     return team_name
 
+# TODO
 def get_mascot_names(team_abb):
     mascot_names_dict = {
     "ANA": "Angels",
@@ -646,6 +650,7 @@ def get_mascot_names(team_abb):
 
     return mascot_name
 
+# TODO
 def get_team_abbs(team_name):
     team_abbreviations =[
     {"ANGELS":("LAA", "ANA", "", "")},
@@ -691,6 +696,7 @@ def get_team_abbs(team_name):
 
     return team_abbs, primary_abb
 
+# TODO
 def get_park_factors(team_abb):
     """"
     Scaled park factors (by a factor of 1/3) from fangraphs
@@ -757,6 +763,7 @@ def get_park_factors(team_abb):
 
     return park_factor
 
+# TODO
 def get_pos_adj(position):
     pos_adj_dict = {
     "P":60.0,
@@ -771,6 +778,7 @@ def get_pos_adj(position):
     "DH":-17.5,
     "PH":-17.5,
     "IF":2.5,
+    "SP":2.5,
     "":0
     }
 
@@ -778,6 +786,7 @@ def get_pos_adj(position):
 
     return pos_adj
 
+# TODO
 def get_pos_formula(position):
     """
     Returns coefficients for error/range/arm/passed ball values according to http://www.ontonova.com/floodstudy/4647-5.html.
@@ -786,6 +795,11 @@ def get_pos_formula(position):
     # [range, error, arm, passed ball]
     pos_formula_dict = {
     "P":[0.0,0.0,0.0,0.0],
+    "SP":[0.0,0.0,0.0,0.0],
+    "RP":[0.0,0.0,0.0,0.0],
+    "OF":[0.0,0.0,0.0,0.0],
+    "IF":[0.0,0.0,0.0,0.0],
+    "DH":[0.0,0.0,0.0,0.0],
     "C":[2.0,0.0,2.33,1.0],
     "1B":[9.46,7.78,0.0,0.0],
     "2B":[7.92,14.06,0.0,0.0],
@@ -800,6 +814,11 @@ def get_pos_formula(position):
     pos_formula = pos_formula_dict.get(position)
 
     return pos_formula
+
+
+
+
+
 
 def get_league_average_hitters(year, category):
     q = """SELECT
@@ -1028,7 +1047,7 @@ def get_def_values(search_name, position, year):
         arm = 'of_arm'
 
     try:
-        if p not in ('p','dh'):
+        if p not in ('p','dh', 'ph', 'if', 'sp', 'rp', 'of'):
             rtg_q = """SELECT
     %s,
     %s,

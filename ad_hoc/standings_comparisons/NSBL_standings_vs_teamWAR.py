@@ -39,12 +39,13 @@ def process(f_wins_list, r_wins_list, pythag_wins_list, wins_list):
 year,
 team_name,
 games_played,
-f_wins,
-r_wins,
+f_wins-0.25*dwar,
+r_wins-0.25*dwar,
 py_wins,
 w
 FROM processed_team_standings_advanced
 JOIN (SELECT YEAR, team_name, MAX(games_played) AS 'games_played'  FROM processed_team_standings_advanced GROUP BY YEAR, team_name) a USING (YEAR, team_name, games_played)
+where games_played > 150
 """
     team_WAR_qry = teamWAR_q
 

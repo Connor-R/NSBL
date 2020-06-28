@@ -10,9 +10,10 @@ db = db('NSBL')
 
 
 def process(year):
+    print "processed_WAR_hitters", year
     calculate_war(year)
 
-    # for year in range(2006,2019):
+    # for year in range(2005,2021):
     #     calculate_war(year)
 
 
@@ -80,7 +81,7 @@ def calculate_war(year):
             entry['defense'] = defense
 
             pa_games = 162*(float(pa)/700)
-            if year >= 2012:
+            if year >= 2017:
                 ip_games = float(inn)/9
                 dh_adj = -17.5*((pa_games - ip_games)/150.0)
             else:

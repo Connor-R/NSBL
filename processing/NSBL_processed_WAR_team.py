@@ -10,10 +10,11 @@ db = db('NSBL')
 
 
 def initiate(year):
+    print "processed_WAR_team", year
     process(year)
 
-    # for year in range(2006,2019):
-    #     process(year)
+    # for year in range(2005,2021):
+        # process(year)
 
 
 def process(year):

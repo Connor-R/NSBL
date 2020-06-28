@@ -126,7 +126,7 @@ def get_pitchers(team_abb, year):
         sp_name, foo, foo2, zips_ip, WAR_per_ip = row
         sp_WAR = float(WAR_per_ip)*float(sp_ip)
         # fip_std formula from the NSBL_std_research.py script
-        fip_std = -0.000169247*float(zips_ip) + 0.3625156228
+        fip_std = -0.0004363641*float(zips_ip) + 0.4162951615
         # scaling the fip variance to a run value and then to a war value
         run_std = (sp_ip/9.0)*fip_std
         sp_std = run_std/10.0
@@ -219,7 +219,7 @@ def get_pitchers(team_abb, year):
         rp_name, foo, foo2, zips_ip, WAR_per_ip = row
         rp_WAR = float(WAR_per_ip)*float(rp_ip)
         # fip_std formula from the NSBL_std_research.py script
-        fip_std = -0.0005925607*float(zips_ip) + 0.5332422101
+        fip_std = -0.0010847169*float(zips_ip) + 0.588715073
         # scaling the fip variance to a run value and then to a war value
         run_std = (rp_ip/9.0)*fip_std
         rp_std = run_std/10.0

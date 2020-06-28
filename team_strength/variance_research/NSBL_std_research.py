@@ -17,7 +17,7 @@ import seaborn as sns
 from time import time
 
 
-# Recall, std = sqrt(E[(X-µ)^2]), or abs(E(X-µ))
+# Recall, std = sqrt(E[(X-mu)^2]), or abs(E(X-mu))
 
 
 db = db("NSBL")
@@ -67,7 +67,7 @@ def process_hitters(x_list, y_list):
     FROM processed_compWAR_offensive n
     JOIN zips_WAR_hitters_comp z USING (YEAR, player_name)
     WHERE YEAR >= 2011
-    AND YEAR < 2018
+    AND YEAR < 2020
     AND n.pa > 400;"""
 
     res = db.query(qry)
@@ -103,7 +103,7 @@ def process_pitchers(x_list, y_list, role):
         JOIN zips_pitching z_bas USING (YEAR, player_name)
         JOIN register_pitching_primary n_bas USING (YEAR, player_name)
         WHERE YEAR >= 2011
-        AND YEAR < 2018
+        AND YEAR < 2020
     ) a
     WHERE proj_role = '%s'
     AND sim_role = '%s'

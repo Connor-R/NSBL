@@ -5,6 +5,7 @@ from py_db import db
 db = db('NSBL')
 
 def process():
+    print "historical_stats_hitters_primary"
     db.query("TRUNCATE TABLE `historical_stats_hitters_primary`")
     db.query("TRUNCATE TABLE `historical_stats_pitchers_primary`")
 

@@ -4,10 +4,11 @@ from bs4 import BeautifulSoup
 import argparse
 from time import sleep # be nice
 import re
+import os
 import NSBL_helpers as helper
 
 
-# Scrapes the yearly registers from the home page and writes the data to a MySQL db
+# Parses the yearly registers from the html files from Joe and writes the data to a MySQL db
 
 
 db = db('NSBL')
@@ -16,35 +17,18 @@ db = db('NSBL')
 base_url = "http://thensbl.com/"
 
 
-# We want to make sure that the season is valid before trying to grab the data
-def initiate(end_year, scrape_length):
-
-    if scrape_length == 'All':
-        current = False
-        for year in range (2006, end_year):
-            url_index = "http://thensbl.com/%sseason.htm" % year
-            try:
-                html_ind = urllib2.urlopen(url_index)
-                soup_ind = BeautifulSoup(html_ind,"lxml")
-                print year
-            except urllib2.HTTPError:
-                print str(year) + " - not a valid year"
-                continue
-
-            process(year, current)
-    else:
-        current = True
-        year = end_year
+def initiate():
+    for year in range (2005, 2017):
         print year
-        process(year,current)
+        process(year)
 
-def process(year, current):
-    scrape_standings(year, current)
-    scrape_registers(year, current)
+
+def process(year):
+    scrape_registers(year)
 
 
 def get_row_data(table, field=False, hand=""):
-    sleep(0.5)
+    # sleep(0.5)
     players = []
     rosters = table.find_all('tr', class_ = re.compile('dmrptbody'))
     
@@ -83,7 +67,7 @@ def get_row_data(table, field=False, hand=""):
 
 
 def get_tables(table_url):
-    sleep(0.5)
+    # sleep(0.5)
     html_team = urllib2.urlopen(table_url)
     soup_team = BeautifulSoup(html_team, "lxml")
 
@@ -131,18 +115,16 @@ def input_data(ratings, sql_table, cats, year):
     db.conn.commit() 
 
 
-def scrape_registers(year, current):
+def scrape_registers(year):
     for _type in ('batting', 'pitching'):
         if _type == 'batting':
-            ext = 'bat'
+            ext = 'batting'
 
         elif _type == 'pitching':
-            ext = 'pch'
+            ext = 'pitching'
 
-        if current == False:
-            table_url = 'http://thensbl.com/Stats/org%sreg%s.htm' % (ext, year)
-        else:
-            table_url = 'http://thensbl.com/org%sreg.htm' % (ext)
+        table_url = 'file://'+os.getcwd()+'/NSBL_registers/%s_%s_register.htm' % (year, ext)
+        print '\t', _type, '\t', table_url
 
         tables = get_tables(table_url)
 
@@ -202,38 +184,11 @@ def scrape_registers(year, current):
             input_data(ratings, sql_table, cats, year)
 
 
-def scrape_standings(year, current):
-    if current == False:
-        # print year, current
-        return None
-    else:
-        table_url = 'http://thensbl.com/orgstand.htm'
-
-    tables = get_tables(table_url)
-
-
-    for table in tables:
-
-        titles = table.find_all('tr', class_ = re.compile('dmrptsecttitle'))
-
-        for title in titles:
-            tit = title.get_text()
-            if tit == 'Divisional':
-                sql_table = 'team_standings'
-                ratings = get_row_data(table)
-                cats = ['foo','team_name','w','l','foo','foo','foo','foo','foo','foo','RF','RA','foo','foo']
-                input_data(ratings, sql_table, cats, year)
-            else:
-                pass
-
-
 if __name__ == "__main__":     
     parser = argparse.ArgumentParser()
-    parser.add_argument('--end_year',type=int,default=2020)
-    parser.add_argument('--scrape_length',type=str,default='All')
 
     args = parser.parse_args()
     
-    initiate(args.end_year, args.scrape_length)
+    initiate()
 
 

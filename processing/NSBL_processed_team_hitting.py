@@ -9,9 +9,13 @@ db = db('NSBL')
 
 
 def process():
+    print "processed_team_hitting"
     db.query("TRUNCATE TABLE `processed_team_hitting_basic`")
     db.query("TRUNCATE TABLE `processed_team_hitting_advanced`")
-    for year in range(2006, 2021):
+
+    yr_min, yr_max = db.query("SELECT MIN(year), MAX(year) FROM processed_league_averages_pitching")[0]
+
+    for year in range(yr_min, yr_max):
         for _type in ('basic', 'advanced'):
             print str(year) + "\thitting\t" + _type
             table = 'processed_team_hitting_%s' % (_type)
