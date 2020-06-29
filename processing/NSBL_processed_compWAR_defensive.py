@@ -18,7 +18,7 @@ def process(year):
     else:
         statistics_war(year)
 
-    # for year in range(2005,2017):
+    # for year in range(2006,2017):
     #     register_war(year)
 
     # for year in range(2017,2021):

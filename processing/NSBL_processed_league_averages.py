@@ -6,7 +6,7 @@ db = db('NSBL')
 
 print "processed_league_averages"
 
-for y in range(2005,2021):
+for y in range(2006,2021):
     year = str(y)
     print '\t', year
     hit_q = """

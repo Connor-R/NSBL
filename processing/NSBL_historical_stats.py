@@ -70,7 +70,7 @@ def process():
 
         DROP TABLE IF EXISTS historical_stats_hitters;
         CREATE TABLE historical_stats_hitters AS
-        SELECT 'season_by_team'
+        SELECT 'season_by_team' AS group_type
         , IF(MIN(t.year) = MAX(t.year), t.year, CONCAT(MIN(t.year), ' - ', MAX(t.year))) AS year_span
         , COUNT(DISTINCT t.year) AS player_seasons
         , t.player_name
@@ -111,7 +111,7 @@ def process():
         FROM temp t
         GROUP BY player_name, listed_position, year, franchise_name
         UNION ALL
-        SELECT 'full_season'
+        SELECT 'full_season' AS group_type
         , IF(MIN(t.year) = MAX(t.year), t.year, CONCAT(MIN(t.year), ' - ', MAX(t.year))) AS year_span
         , COUNT(DISTINCT t.year) AS player_seasons
         , t.player_name
@@ -152,7 +152,7 @@ def process():
         FROM temp t
         GROUP BY player_name, listed_position, year
         UNION ALL
-        SELECT 'career_by_team'
+        SELECT 'career_by_team' AS group_type
         , IF(MIN(t.year) = MAX(t.year), t.year, CONCAT(MIN(t.year), ' - ', MAX(t.year))) AS year_span
         , COUNT(DISTINCT t.year) AS player_seasons
         , t.player_name
@@ -193,7 +193,7 @@ def process():
         FROM temp t
         GROUP BY player_name, franchise_name
         UNION ALL
-        SELECT 'full_career'
+        SELECT 'full_career' AS group_type
         , IF(MIN(t.year) = MAX(t.year), t.year, CONCAT(MIN(t.year), ' - ', MAX(t.year))) AS year_span
         , COUNT(DISTINCT t.year) AS player_seasons
         , t.player_name
@@ -293,7 +293,7 @@ def process():
         
         DROP TABLE IF EXISTS historical_stats_pitchers;
         CREATE TABLE historical_stats_pitchers AS
-        SELECT 'season_by_team'
+        SELECT 'season_by_team' AS group_type
         , IF(MIN(t.year) = MAX(t.year), t.year, CONCAT(MIN(t.year), ' - ', MAX(t.year))) AS year_span
         , COUNT(DISTINCT t.year) AS player_seasons
         , t.player_name
@@ -330,7 +330,7 @@ def process():
         FROM temp t
         GROUP BY player_name, year, franchise_name
         UNION ALL
-        SELECT 'full_season'
+        SELECT 'full_season' AS group_type
         , IF(MIN(t.year) = MAX(t.year), t.year, CONCAT(MIN(t.year), ' - ', MAX(t.year))) AS year_span
         , COUNT(DISTINCT t.year) AS player_seasons
         , t.player_name
@@ -367,7 +367,7 @@ def process():
         FROM temp t
         GROUP BY player_name, year
         UNION ALL
-        SELECT 'career_by_team'
+        SELECT 'career_by_team' AS group_type
         , IF(MIN(t.year) = MAX(t.year), t.year, CONCAT(MIN(t.year), ' - ', MAX(t.year))) AS year_span
         , COUNT(DISTINCT t.year) AS player_seasons
         , t.player_name
@@ -404,7 +404,7 @@ def process():
         FROM temp t
         GROUP BY player_name, franchise_name
         UNION ALL
-        SELECT 'full_career'
+        SELECT 'full_career' AS group_type
         , IF(MIN(t.year) = MAX(t.year), t.year, CONCAT(MIN(t.year), ' - ', MAX(t.year))) AS year_span
         , COUNT(DISTINCT t.year) AS player_seasons
         , t.player_name

@@ -13,7 +13,7 @@ def process(year):
     print "processed_WAR_hitters", year
     calculate_war(year)
 
-    # for year in range(2005,2021):
+    # for year in range(2006,2021):
     #     calculate_war(year)
 
 

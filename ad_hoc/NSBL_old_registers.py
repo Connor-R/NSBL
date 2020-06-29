@@ -18,7 +18,7 @@ base_url = "http://thensbl.com/"
 
 
 def initiate():
-    for year in range (2005, 2017):
+    for year in range (2006, 2017):
         print year
         process(year)
 

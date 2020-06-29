@@ -13,7 +13,7 @@ def initiate(year):
     print "processed_WAR_team", year
     process(year)
 
-    # for year in range(2005,2021):
+    # for year in range(2006,2021):
     #     process(year)
 
 
