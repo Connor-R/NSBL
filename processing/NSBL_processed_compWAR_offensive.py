@@ -11,7 +11,8 @@ db = db('NSBL')
 
 
 def process(year):
-    print "processed_compWAR_defensive", year
+    print "processed_compWAR_offensive", year
+
     offensive_war(year)
 
     # for year in range (2005, 2021):
@@ -89,7 +90,7 @@ def offensive_war(year):
 
 if __name__ == "__main__":        
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',type=int,default=2018)
+    parser.add_argument('--year',type=int,default=2020)
     args = parser.parse_args()
     
     process(args.year)

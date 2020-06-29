@@ -69,7 +69,10 @@ def process():
             pythag_wins = (w+l)*pythag_win_pct
             pythag_losses = games_played - (pythag_wins)
 
-            rep_team_win_pct = 0.315
+            if year < 2017:
+                rep_team_win_pct = 0.300
+            else:
+                rep_team_win_pct = 0.325
             rep_team_wins = rep_team_win_pct*games_played
 
             # f_wins = (pos_WAR/repWAR)*17.0 + float(FIP_WAR) + rep_team_wins

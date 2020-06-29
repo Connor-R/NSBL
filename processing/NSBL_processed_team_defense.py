@@ -14,7 +14,7 @@ def process():
 
     yr_min, yr_max = db.query("SELECT MIN(year), MAX(year) FROM processed_league_averages_pitching")[0]
 
-    for year in range(yr_min, yr_max):
+    for year in range(yr_min, yr_max+1):
             print str(year) + "\tdefense"
             table = 'processed_team_defense'
 

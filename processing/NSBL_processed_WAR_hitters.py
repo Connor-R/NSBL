@@ -80,7 +80,7 @@ def calculate_war(year):
             defense, inn, d_pa, position_adj, dWAR = def_query[0]
             entry['defense'] = defense
 
-            pa_games = 162*(float(pa)/700)
+            pa_games = 162*(float(pa)/600)
             if year >= 2017:
                 ip_games = float(inn)/9
                 dh_adj = -17.5*((pa_games - ip_games)/150.0)
@@ -99,19 +99,19 @@ def calculate_war(year):
             entry['dWAR'] = dWAR_adj
 
             if inn is not None:
-                replacement = 20.0*(float(pa)/700)
+                replacement = 20.0*(float(pa)/600)
             else:
-                replacement = 20.0*(float(d_pa)/700)
+                replacement = 20.0*(float(d_pa)/600)
 
             entry['replacement'] = replacement
         else:
             # if a player hasn't played defense, we treat them as a full-time DH
             entry['defense'] = 0.0
-            position_adj = (float(pa)/700)*(-17.5)
+            position_adj = (float(pa)/600)*(-17.5)
             entry['position_adj'] = position_adj
             dWAR_adj = float(position_adj)/10.0
             entry['dWAR'] = dWAR_adj
-            replacement = 20.0*(float(pa)/700)
+            replacement = 20.0*(float(pa)/600)
             entry['replacement'] = replacement 
 
         repWAR = float(replacement)/10.0

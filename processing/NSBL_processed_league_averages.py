@@ -8,7 +8,7 @@ print "processed_league_averages"
 
 for y in range(2005,2021):
     year = str(y)
-    print year
+    print '\t', year
     hit_q = """
 SELECT
 """+year+""",

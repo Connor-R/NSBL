@@ -813,6 +813,10 @@ def get_pos_formula(position):
 
     pos_formula = pos_formula_dict.get(position)
 
+    for i, v in enumerate(pos_formula):
+        # research from http://dmbo.net/smf/index.php?topic=4883.0 and ad_hoc/defensive_value_analysis.xlsx shows that the original defensive values should be regressed back ~72.5%
+        pos_formula[i] = 0.725 * v
+
     return pos_formula
 
 

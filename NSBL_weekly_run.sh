@@ -5,7 +5,7 @@
 SHELL=/bin/bash
 source "/Users/connordog/.bash_profile"
 
-year=2015
+year=2020
 date=$( date +"%b %d, %Y" )
 
 
@@ -24,7 +24,7 @@ wait
 cd processing
 python NSBL_excel_rosters_GoogleSheets.py
 cd ..
-# python processing/NSBL_excel_rosters.py --year "$year"
+# # python processing/NSBL_excel_rosters.py --year "$year"
 
 wait 
 
@@ -42,8 +42,7 @@ python processing/NSBL_processed_WAR_hitters.py --year "$year"
 wait
 
 python processing/NSBL_processed_WAR_team.py --year "$year"
-python processing/NSBL_historical_stats_primary.py
-python processing/NSBL_historical_stats_advanced.py
+python processing/NSBL_historical_stats.py
 
 wait
 

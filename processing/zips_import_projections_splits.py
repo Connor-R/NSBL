@@ -18,7 +18,7 @@ def process(player_mapper):
     for _type in ('offense','pitching'):
         initiate(year, _type, player_mapper)
     
-    # for year in range(2014,2018):
+    # for year in range(2014,2021):
     #     for _type in ('offense','pitching'):
     #         initiate(year, _type, player_mapper)
 

@@ -19,7 +19,7 @@ def process(player_mapper):
     for _type in ('offense','pitching','defense'):
         initiate(year, _type, player_mapper)
     
-    # for year in range(2011,2018):
+    # for year in range(2011,2021):
     #     for _type in ('offense','pitching','defense'):
     #         initiate(year, _type, player_mapper)
 
@@ -53,7 +53,7 @@ def initiate(yr, _type, player_mapper):
                     year, player_name, team_abb, age, bats, g, ab, r, h, _2b, _3b, hr, rbi , bb, so , hbp, sb, cs, sh, sf, ibb, war = row 
                     if player_name in player_mapper:
                         player_name = player_mapper.get(player_name)
-                    print player_name
+                    # print player_name
                     entry = {"year":yr, "player_name":player_name, "team_abb":team_abb, "age":age, "bats":bats, "g":g, "ab":ab, "r":r, "h":h, "2b":_2b, "3b":_3b, "hr":hr, "rbi":rbi, "bb":bb, "so":so, "hbp":hbp, "sb":sb, "cs":cs, "sh":sh, "sf":sf, "ibb":ibb, "zWAR":war}
                     entries.append(entry)
 

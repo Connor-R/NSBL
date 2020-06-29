@@ -4,7 +4,7 @@ from decimal import Decimal
 import NSBL_helpers as helper
 
 
-# Calculates the defense only portion of WAR for every player in a years hitting register (pre-2011), or every player in `statistics_fielding` (2011 forward)
+# Calculates the defense only portion of WAR for every player in a years hitting register (pre-2017), or every player in `statistics_fielding` (2017 & forward)
 
 
 db = db('NSBL')
@@ -12,6 +12,7 @@ db = db('NSBL')
 
 def process(year):
     print "processed_compWAR_defensive", year
+    
     if year <= 2016:
         register_war(year)
     else:
@@ -67,7 +68,7 @@ def register_war(year):
             entry['defense'] = defense
 
             adj = float(helper.get_pos_adj(position.upper()))
-            position_adj = adj*(pa/700)
+            position_adj = adj*(pa/600)
             entry['position_adj'] = position_adj
 
         else:
@@ -75,12 +76,12 @@ def register_war(year):
             search_name = s_name.replace("'","''")
             rn_val, err_val, arm_val, pb_val = helper.get_def_values(search_name, position, year)
 
-            #700 pa is a full season
-            defense = float(pa)*(rn_val + err_val + arm_val + pb_val)/700
+            #600 pa is a full season
+            defense = float(pa)*(rn_val + err_val + arm_val + pb_val)/600
 
             entry['defense'] = defense
             adj = float(helper.get_pos_adj(position.upper()))
-            position_adj = adj*(float(pa)/700)
+            position_adj = adj*(float(pa)/600)
             entry['position_adj'] = position_adj
             
 
@@ -168,7 +169,7 @@ def statistics_war(year):
 
 if __name__ == "__main__":  
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',type=int,default=2018)
+    parser.add_argument('--year',type=int,default=2020)
     args = parser.parse_args()
     
     process(args.year)

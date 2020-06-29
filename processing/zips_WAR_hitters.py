@@ -69,7 +69,7 @@ def calculate_war():
             else:
 
                 #defensive runs added per 600 pa
-                defense = 600*(rn_val + err_val + arm_val + pb_val)/700
+                defense = 600*(rn_val + err_val + arm_val + pb_val)/600
 
                 position_adj = float(helper.get_pos_adj(pos.upper()))
 
@@ -193,8 +193,9 @@ def get_zips_def_ratings(search_name, position, year):
     %s,
     %s,
     %s
-    FROM zips_defense
-    WHERE player_name = '%s'
+    FROM zips_defense d
+    WHERE 1
+    AND d.player_name = '%s'
     AND year = %s"""
         
             rtg_qry = rtg_q % (rn, er, arm, pb, search_name, year)

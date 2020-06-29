@@ -14,7 +14,7 @@ def initiate(year):
     process(year)
 
     # for year in range(2005,2021):
-        # process(year)
+    #     process(year)
 
 
 def process(year):
@@ -108,7 +108,7 @@ def team_war(team_abb, year):
 
 if __name__ == "__main__":        
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',type=int,default=2018)
+    parser.add_argument('--year',type=int,default=2020)
     args = parser.parse_args()
     
     initiate(args.year)

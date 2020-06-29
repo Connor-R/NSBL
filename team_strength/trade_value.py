@@ -225,6 +225,9 @@ def player_values(year):
         entry['rl_team'] = rl_team
 
         if expires == 0 and contract_year.upper() != 'MLI':
+            if player_name in ('Hudson Head'):
+                contract_year = 'XXX'
+                entry['contract_year'] = 'XXX'
             years_remaining = years_map.get(contract_year.replace("-G",""))[0]
         elif contract_year.upper() == 'MLI' and expires == 0:
             years_remaining = 1

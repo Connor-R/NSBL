@@ -147,10 +147,10 @@ FROM(
         SELECT 
         YEAR, player_name, team_abb, SUM(inn) AS defensive_innings,
         IF(
-            (o.pa/700)*162/(SUM(inn)/9)<1.2,
+            (o.pa/600)*162/(SUM(inn)/9)<1.2,
             GROUP_CONCAT(d.position ORDER BY inn DESC SEPARATOR '/'),
             IF(
-                (o.pa/700)*162/(SUM(inn)/9)>2.0,
+                (o.pa/600)*162/(SUM(inn)/9)>2.0,
                 CONCAT('dh/', GROUP_CONCAT(d.position ORDER BY inn DESC SEPARATOR '/')),
                 CONCAT(GROUP_CONCAT(d.position ORDER BY inn DESC SEPARATOR '/'), '/dh')
             )
