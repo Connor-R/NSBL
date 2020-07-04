@@ -400,7 +400,7 @@ def batters(year):
 
         team_abb = team_abb.upper()
 
-        pf = float(helper.get_park_factors(team_abb))/float(100)
+        pf = float(helper.get_park_factors(team_abb, year-1))/float(100)
 
         if po.lower() != 'c':
             scaledWAR = 600*(float(WAR)/float(pa))
@@ -547,7 +547,7 @@ def pitchers(year):
 
         team_abb = team_abb.upper()
 
-        pf = float(helper.get_park_factors(team_abb))/float(100)
+        pf = float(helper.get_park_factors(team_abb, year-1))/float(100)
 
         if float(bb) == 0:
             if float(k) > 0:

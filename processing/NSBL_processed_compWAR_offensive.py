@@ -57,7 +57,7 @@ def offensive_war(year):
         entry['pa'] = pa
 
         team_abb = team_abb.upper()
-        pf = float(helper.get_park_factors(team_abb))/float(100)
+        pf = float(helper.get_park_factors(team_abb, year))/float(100)
         entry['pf'] = pf
         entry['ops'] = ops
         entry['babip'] = babip

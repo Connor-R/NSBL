@@ -42,7 +42,7 @@ def calculate_war():
         bb2 = bb+ibb
 
         team_abb = team_abb.upper()
-        pf = float(helper.get_park_factors(team_abb))/float(100)
+        pf = float(helper.get_park_factors(team_abb, year-1))/float(100)
 
         ops, wOBA, park_wOBA, OPS_plus, wrc, wrc27, wRC_plus, raa, oWAR = helper.get_zips_offensive_metrics(year-1, pf, pa, ab, bb2, hbp, _1, _2, _3, hr, sb, cs)
 
@@ -164,7 +164,7 @@ def get_split_offense(year, player_name, vs_hand):
     bb2 = bb+ibb
 
     team_abb = team_abb.upper()
-    pf = float(helper.get_park_factors(team_abb))/float(100)
+    pf = float(helper.get_park_factors(team_abb, year-1))/float(100)
 
     ops, wOBA, park_wOBA, OPS_plus, wrc, wrc27, wRC_plus, raa, oWAR = helper.get_zips_offensive_metrics(year-1, pf, pa, ab, bb2, hbp, _1, _2, _3, hr, 0, 0)
 

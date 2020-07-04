@@ -44,7 +44,7 @@ def calculate_war():
         _1 = h - _2 - _3 - hr
 
         team_abb = team_abb.upper()
-        pf = float(helper.get_park_factors(team_abb))/float(100)
+        pf = float(helper.get_park_factors(team_abb, year-1))/float(100)
 
         babip = float((h-hr))/float((ab+sh+sf-so-hr))
 

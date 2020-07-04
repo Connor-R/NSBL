@@ -111,29 +111,25 @@ def scrape_cur_standings():
                             #strip takes white space away from the front and end of a text string
                             element.append(data.get_text().strip()) 
                     
+                    year = element[0]
                     team_location_name = element[1]
                     wins = element[2]
                     losses = element[3]
 
                     if team_location_name is not None:
-                        full_name = helper.get_team_name(team_location_name)
+                        full_name = helper.get_team_name(team_location_name, year)
 
 
                         qry = """SELECT ts.year
                         , ts.team_name
                         , MAX(ts.games_played) AS gp
                         FROM team_standings ts
-                        JOIN(
-                            SELECT ts.team_name
-                            , MAX(ts.year) AS year
-                            FROM team_standings ts
-                            WHERE 1
-                                AND ts.team_name = '%s'
-                            GROUP BY ts.team_name
-                        ) a USING (team_name, year)
-                        GROUP BY ts.team_name"""
+                        WHERE 1
+                            AND ts.team_name = '%s'
+                            AND ts.year = %s
+                        GROUP BY ts.team_name, ts.year"""
 
-                        prev_gp = db.query(qry % full_name)
+                        prev_gp = db.query(qry % full_name, year)
                         prev_gp = prev_gp[0][2]
 
                         if int(wins)+int(losses) != prev_gp:

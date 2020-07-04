@@ -50,7 +50,7 @@ def pitching_war(year):
         entry['ip'] = ip
 
         team_abb = team_abb.upper()
-        pf = float(helper.get_park_factors(team_abb))/float(100)
+        pf = float(helper.get_park_factors(team_abb, year))/float(100)
         entry['pf'] = pf
 
         if ip == 0:

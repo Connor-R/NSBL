@@ -71,7 +71,7 @@ def process_basic(year):
             projected_std =  max(0.001, math.sqrt(float(overall_var))*(games_remaining/162.0))
 
 
-            division, div_teams, conf_teams, non_conf_teams = helper.get_division(team_name)
+            division, div_teams, conf_teams, non_conf_teams = helper.get_division(team_name, year)
 
             if _type == 'roster':
                 p_95 = float(roster_W) + 1.96*math.sqrt(float(overall_var))
@@ -206,7 +206,7 @@ def process_division(year):
                 else:
                     strength_pct = float(strength_pct)
 
-                division, div_teams, conf_teams, non_conf_teams = helper.get_division(team_name)
+                division, div_teams, conf_teams, non_conf_teams = helper.get_division(team_name, year)
 
                 win_division_prob = np.prod(get_probabilities(team_name, div_teams, strength_pct, games_played, float(var), _type, year)[0])
 
@@ -245,7 +245,7 @@ def process_top_seed(year):
                 else:
                     strength_pct = float(strength_pct)
 
-                division, div_teams, conf_teams, non_conf_teams = helper.get_division(team_name)
+                division, div_teams, conf_teams, non_conf_teams = helper.get_division(team_name, year)
 
                 top_seed_prob = np.prod(get_probabilities(team_name, conf_teams, strength_pct, games_played, float(var), _type, year)[0])
 
@@ -277,7 +277,7 @@ def process_wc1(year):
                 else:
                     strength_pct = float(strength_pct)
 
-                division, div_teams, conf_teams, non_conf_teams = helper.get_division(team_name)
+                division, div_teams, conf_teams, non_conf_teams = helper.get_division(team_name, year)
 
                 div_winners_qry = """SELECT 
                 p1.team_name,
@@ -348,7 +348,7 @@ def process_wc2(year):
                 else:
                     strength_pct = float(strength_pct)
 
-                division, div_teams, conf_teams, non_conf_teams = helper.get_division(team_name)
+                division, div_teams, conf_teams, non_conf_teams = helper.get_division(team_name, year)
 
                 div_winners_qry = """SELECT 
                 p1.team_name,

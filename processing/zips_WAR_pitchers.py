@@ -47,7 +47,7 @@ def calculate_war():
 
 
         team_abb = team_abb.upper()
-        pf = float(helper.get_park_factors(team_abb))/float(100)
+        pf = float(helper.get_park_factors(team_abb, year-1))/float(100)
 
         if ip == 0:
             k_9 = 0.0

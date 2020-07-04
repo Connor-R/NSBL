@@ -60,8 +60,6 @@ def process():
         sheet_name = tm[1]
 
         print team_name
-        team_abb = helper.get_team_abb(team_name)
-
         team_abb = tm[1]
 
         active_rng = sheet_name + '!A:H'

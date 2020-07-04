@@ -3,542 +3,32 @@ from py_db import db
 db = db('NSBL')
 
 
-# TODO
-def get_team_abb(team_name):
-    team_abb_dict = {
-    "Baltimore Orioles": "Bal",
-    "Boston Red Sox": "Bos",
-    "New York Yankees": "NYA",
-    "Tampa Bay Rays": "Tam",
-    "Toronto Blue Jays": "Tor",
-    "Chicago White Sox": "ChA",
-    "Cleveland Indians": "Cle",
-    "Detroit Tigers": "Det",
-    "Kansas City Royals": "KC",
-    "Minnesota Twins": "Min",
-    "Houston Astros": "Hou",
-    "Los Angeles Angels of Anaheim": "LAA",
-    "Los Angeles Angels": "LAA",
-    "Oakland Athletics": "Oak",
-    "Seattle Mariners": "Sea",
-    "Texas Rangers": "Tex",
-    "Atlanta Braves": "Atl",
-    "Miami Marlins": "Mia",
-    "New York Mets": "NYN",
-    "Philadelphia Phillies": "Phi",
-    "Washington Nationals": "Was",
-    "Chicago Cubs": "ChN",
-    "Cincinnati Reds": "Cin",
-    "Milwaukee Brewers": "Mil",
-    "Pittsburgh Pirates": "Pit",
-    "St. Louis Cardinals": "StL",
-    "Arizona Diamondbacks": "Ari",
-    "Colorado Rockies": "Col",
-    "Los Angeles Dodgers": "LAN",
-    "San Diego Padres": "SD",
-    "San Francisco Giants": "SF",
-    "Florida Marlins": "Mia",
-    "World Champion Cardinals": "STL"
-    }
 
-    team_abb = team_abb_dict.get(team_name)
+def get_team_abb(team_name, year):
+    qry = db.query("SELECT team_abb FROM teams WHERE year = %s AND team_name = '%s';" % (year, team_name))
+    if qry != ():
+        team_abb = qry[0][0]
+    else:
+        print "\n\n!!!!ERROR!!!! - no team_abb for %s, %s" % (year, team_name)
+        team_abb = None
 
     return team_abb
 
-# TODO
-def get_team_abb2(team_name):
-    team_abb_dict = {
-    "2006Anaheim Angels": "ANA",
-    "2006Arizona Diamondbacks": "AZ",
-    "2006Atlanta Braves": "ATL",
-    "2006Baltimore Orioles": "BAL",
-    "2006Boston Red Sox": "BOS",
-    "2006Chicago Cubs": "CHC",
-    "2006Chicago White Sox": "CWS",
-    "2006Cincinnati Reds": "CIN",
-    "2006Cleveland Indians": "CLV",
-    "2006Colorado Rockies": "COL",
-    "2006Detroit Tigers": "DET",
-    "2006Florida Marlins": "FLA",
-    "2006Houston Astros": "HOU",
-    "2006Kansas City Royals": "KC",
-    "2006Los Angeles Dodgers": "LA",
-    "2006Milwaukee Brewers": "MIL",
-    "2006Minnesota Twins": "MIN",
-    "2006New York Mets": "NYM",
-    "2006New York Yankees": "NYY",
-    "2006Oakland Athletics": "OAK",
-    "2006Philadelphia Phillies": "PHI",
-    "2006Pittsburgh Pirates": "PIT",
-    "2006San Diego Padres": "SD",
-    "2006San Francisco Giants": "SF",
-    "2006Seattle Mariners": "SEA",
-    "2006St. Louis Cardinals": "STL",
-    "2006Tampa Bay Rays": "TB",
-    "2006Texas Rangers": "TEX",
-    "2006Toronto Blue Jays": "TOR",
-    "2006Washington Nationals": "WAS",
-    "2007Arizona Diamondbacks": "Ari",
-    "2007Atlanta Braves": "Atl",
-    "2007Baltimore Orioles": "Bal",
-    "2007Boston Red Sox": "Bos",
-    "2007Chicago Cubs": "ChN",
-    "2007Chicago White Sox": "ChA",
-    "2007Cincinnati Reds": "Cin",
-    "2007Cleveland Indians": "Cle",
-    "2007Colorado Rockies": "Col",
-    "2007Detroit Tigers": "Det",
-    "2007Florida Marlins": "Flo",
-    "2007Houston Astros": "Hou",
-    "2007Kansas City Royals": "KC",
-    "2007Los Angeles Angels": "LAA",
-    "2007Los Angeles Dodgers": "LAN",
-    "2007Milwaukee Brewers": "Mil",
-    "2007Minnesota Twins": "Min",
-    "2007New York Mets": "NYN",
-    "2007New York Yankees": "NYA",
-    "2007Oakland Athletics": "Oak",
-    "2007Philadelphia Phillies": "Phi",
-    "2007Pittsburgh Pirates": "Pit",
-    "2007San Diego Padres": "SD",
-    "2007San Francisco Giants": "SF",
-    "2007Seattle Mariners": "Sea",
-    "2007St. Louis Cardinals": "StL",
-    "2007Tampa Bay Rays": "Tam",
-    "2007Texas Rangers": "Tex",
-    "2007Toronto Blue Jays": "Tor",
-    "2007Washington Nationals": "Was",
-    "2008Arizona Diamondbacks": "AZD",
-    "2008Atlanta Braves": "ATL",
-    "2008Baltimore Orioles": "BAL",
-    "2008Boston Red Sox": "BOS",
-    "2008Chicago Cubs": "CHC",
-    "2008Chicago White Sox": "CWS",
-    "2008Cincinnati Reds": "CIN",
-    "2008Cleveland Indians": "CLV",
-    "2008Colorado Rockies": "COL",
-    "2008Detroit Tigers": "DET",
-    "2008Florida Marlins": "FLA",
-    "2008Houston Astros": "HOU",
-    "2008Kansas City Royals": "KCR",
-    "2008Los Angeles Angels": "LAA",
-    "2008Los Angeles Dodgers": "LAD",
-    "2008Milwaukee Brewers": "MIL",
-    "2008Minnesota Twins": "MIN",
-    "2008New York Mets": "NYM",
-    "2008New York Yankees": "NYY",
-    "2008Oakland Athletics": "OAK",
-    "2008Philadelphia Phillies": "PHI",
-    "2008Pittsburgh Pirates": "PIT",
-    "2008San Diego Padres": "SDP",
-    "2008San Francisco Giants": "SFG",
-    "2008Seattle Mariners": "SEA",
-    "2008St. Louis Cardinals": "STL",
-    "2008Tampa Bay Rays": "TBR",
-    "2008Texas Rangers": "TEX",
-    "2008Toronto Blue Jays": "TOR",
-    "2008Washington Nationals": "WAS",
-    "2009Anaheim Angels": "ANA",
-    "2009Arizona Diamondbacks": "ARI",
-    "2009Atlanta Braves": "ATL",
-    "2009Baltimore Orioles": "BAL",
-    "2009Boston Red Sox": "BOS",
-    "2009Chicago Cubs": "CHN",
-    "2009Chicago White Sox": "CHA",
-    "2009Cincinnati Reds": "CIN",
-    "2009Cleveland Indians": "CLE",
-    "2009Colorado Rockies": "COL",
-    "2009Detroit Tigers": "DET",
-    "2009Florida Marlins": "FLA",
-    "2009Houston Astros": "HOU",
-    "2009Kansas City Royals": "KC",
-    "2009Los Angeles Dodgers": "LAD",
-    "2009Milwaukee Brewers": "MIL",
-    "2009Minnesota Twins": "MIN",
-    "2009New York Mets": "NYN",
-    "2009New York Yankees": "NYA",
-    "2009Oakland Athletics": "OAK",
-    "2009Philadelphia Phillies": "PHI",
-    "2009Pittsburgh Pirates": "PIT",
-    "2009San Diego Padres": "SD",
-    "2009San Francisco Giants": "SF",
-    "2009Seattle Mariners": "SEA",
-    "2009St. Louis Cardinals": "STL",
-    "2009Tampa Bay Rays": "TB",
-    "2009Texas Rangers": "TEX",
-    "2009Toronto Blue Jays": "TOR",
-    "2009Washington Nationals": "WAS",
-    "2010Arizona Diamondbacks": "ARI",
-    "2010Atlanta Braves": "ATL",
-    "2010Baltimore Orioles": "BAL",
-    "2010Boston Red Sox": "BOS",
-    "2010Chicago Cubs": "CHN",
-    "2010Chicago White Sox": "CHA",
-    "2010Cincinnati Reds": "CIN",
-    "2010Cleveland Indians": "CLE",
-    "2010Colorado Rockies": "COL",
-    "2010Detroit Tigers": "DET",
-    "2010Florida Marlins": "FLA",
-    "2010Houston Astros": "HOU",
-    "2010Kansas City Royals": "KC",
-    "2010Los Angeles Angels": "LAA",
-    "2010Los Angeles Dodgers": "LAD",
-    "2010Milwaukee Brewers": "MIL",
-    "2010Minnesota Twins": "MIN",
-    "2010New York Mets": "NYN",
-    "2010New York Yankees": "NYA",
-    "2010Oakland Athletics": "OAK",
-    "2010Philadelphia Phillies": "PHI",
-    "2010Pittsburgh Pirates": "PIT",
-    "2010San Diego Padres": "SD",
-    "2010San Francisco Giants": "SF",
-    "2010Seattle Mariners": "SEA",
-    "2010St. Louis Cardinals": "STL",
-    "2010Tampa Bay Rays": "TB",
-    "2010Texas Rangers": "TEX",
-    "2010Toronto Blue Jays": "TOR",
-    "2010Washington Nationals": "WAS",
-    "2011Arizona Diamondbacks": "Ari",
-    "2011Atlanta Braves": "Atl",
-    "2011Baltimore Orioles": "Bal",
-    "2011Boston Red Sox": "Bos",
-    "2011Chicago Cubs": "ChN",
-    "2011Chicago White Sox": "ChA",
-    "2011Cincinnati Reds": "Cin",
-    "2011Cleveland Indians": "Cle",
-    "2011Colorado Rockies": "Col",
-    "2011Detroit Tigers": "Det",
-    "2011Florida Marlins": "Flo",
-    "2011Houston Astros": "Hou",
-    "2011Kansas City Royals": "KC",
-    "2011Los Angeles Angels": "LAA",
-    "2011Los Angeles Dodgers": "LAN",
-    "2011Milwaukee Brewers": "Mil",
-    "2011Minnesota Twins": "Min",
-    "2011New York Mets": "NYN",
-    "2011New York Yankees": "NYA",
-    "2011Oakland Athletics": "Oak",
-    "2011Philadelphia Phillies": "Phi",
-    "2011Pittsburgh Pirates": "Pit",
-    "2011San Diego Padres": "SD",
-    "2011San Francisco Giants": "SF",
-    "2011Seattle Mariners": "Sea",
-    "2011St. Louis Cardinals": "StL",
-    "2011Tampa Bay Rays": "Tam",
-    "2011Texas Rangers": "Tex",
-    "2011Toronto Blue Jays": "Tor",
-    "2011Washington Nationals": "Was",
-    "2012Arizona Diamondbacks": "Ari",
-    "2012Atlanta Braves": "Atl",
-    "2012Baltimore Orioles": "Bal",
-    "2012Boston Red Sox": "Bos",
-    "2012Chicago Cubs": "ChN",
-    "2012Chicago White Sox": "ChA",
-    "2012Cincinnati Reds": "Cin",
-    "2012Cleveland Indians": "Cle",
-    "2012Colorado Rockies": "Col",
-    "2012Detroit Tigers": "Det",
-    "2012Houston Astros": "Hou",
-    "2012Kansas City Royals": "KC",
-    "2012Los Angeles Angels": "LAA",
-    "2012Los Angeles Dodgers": "LAN",
-    "2012Miami Marlins": "Mia",
-    "2012Milwaukee Brewers": "Mil",
-    "2012Minnesota Twins": "Min",
-    "2012New York Mets": "NYN",
-    "2012New York Yankees": "NYA",
-    "2012Oakland Athletics": "Oak",
-    "2012Philadelphia Phillies": "Phi",
-    "2012Pittsburgh Pirates": "Pit",
-    "2012San Diego Padres": "SD",
-    "2012San Francisco Giants": "SF",
-    "2012Seattle Mariners": "Sea",
-    "2012St. Louis Cardinals": "StL",
-    "2012Tampa Bay Rays": "Tam",
-    "2012Texas Rangers": "Tex",
-    "2012Toronto Blue Jays": "Tor",
-    "2012Washington Nationals": "Was",
-    "2013Arizona Diamondbacks": "Ari",
-    "2013Atlanta Braves": "Atl",
-    "2013Baltimore Orioles": "Bal",
-    "2013Boston Red Sox": "Bos",
-    "2013Chicago Cubs": "ChN",
-    "2013Chicago White Sox": "ChA",
-    "2013Cincinnati Reds": "Cin",
-    "2013Cleveland Indians": "Cle",
-    "2013Colorado Rockies": "Col",
-    "2013Detroit Tigers": "Det",
-    "2013Houston Astros": "Hou",
-    "2013Kansas City Royals": "KC",
-    "2013Los Angeles Angels": "LAA",
-    "2013Los Angeles Dodgers": "LAN",
-    "2013Miami Marlins": "Mia",
-    "2013Milwaukee Brewers": "Mil",
-    "2013Minnesota Twins": "Min",
-    "2013New York Mets": "NYN",
-    "2013New York Yankees": "NYA",
-    "2013Oakland Athletics": "Oak",
-    "2013Philadelphia Phillies": "Phi",
-    "2013Pittsburgh Pirates": "Pit",
-    "2013San Diego Padres": "SD",
-    "2013San Francisco Giants": "SF",
-    "2013Seattle Mariners": "Sea",
-    "2013St. Louis Cardinals": "StL",
-    "2013Tampa Bay Rays": "Tam",
-    "2013Texas Rangers": "Tex",
-    "2013Toronto Blue Jays": "Tor",
-    "2013Washington Nationals": "Was",
-    "2014Arizona Diamondbacks": "Ari",
-    "2014Atlanta Braves": "Atl",
-    "2014Baltimore Orioles": "Bal",
-    "2014Boston Red Sox": "Bos",
-    "2014Chicago Cubs": "ChN",
-    "2014Chicago White Sox": "ChA",
-    "2014Cincinnati Reds": "Cin",
-    "2014Cleveland Indians": "Cle",
-    "2014Colorado Rockies": "Col",
-    "2014Detroit Tigers": "Det",
-    "2014Houston Astros": "Hou",
-    "2014Kansas City Royals": "KC",
-    "2014Los Angeles Angels": "LAA",
-    "2014Los Angeles Dodgers": "LAN",
-    "2014Miami Marlins": "Mia",
-    "2014Milwaukee Brewers": "Mil",
-    "2014Minnesota Twins": "Min",
-    "2014New York Mets": "NYN",
-    "2014New York Yankees": "NYA",
-    "2014Oakland Athletics": "Oak",
-    "2014Philadelphia Phillies": "Phi",
-    "2014Pittsburgh Pirates": "Pit",
-    "2014San Diego Padres": "SD",
-    "2014San Francisco Giants": "SF",
-    "2014Seattle Mariners": "Sea",
-    "2014St. Louis Cardinals": "StL",
-    "2014Tampa Bay Rays": "Tam",
-    "2014Texas Rangers": "Tex",
-    "2014Toronto Blue Jays": "Tor",
-    "2014Washington Nationals": "Was",
-    "2015Arizona Diamondbacks": "Ari",
-    "2015Atlanta Braves": "Atl",
-    "2015Baltimore Orioles": "Bal",
-    "2015Boston Red Sox": "Bos",
-    "2015Chicago Cubs": "ChN",
-    "2015Chicago White Sox": "ChA",
-    "2015Cincinnati Reds": "Cin",
-    "2015Cleveland Indians": "Cle",
-    "2015Colorado Rockies": "Col",
-    "2015Detroit Tigers": "Det",
-    "2015Houston Astros": "Hou",
-    "2015Kansas City Royals": "KC",
-    "2015Los Angeles Angels": "LAA",
-    "2015Los Angeles Dodgers": "LAN",
-    "2015Miami Marlins": "Mia",
-    "2015Milwaukee Brewers": "Mil",
-    "2015Minnesota Twins": "Min",
-    "2015New York Mets": "NYN",
-    "2015New York Yankees": "NYA",
-    "2015Oakland Athletics": "Oak",
-    "2015Philadelphia Phillies": "Phi",
-    "2015Pittsburgh Pirates": "Pit",
-    "2015San Diego Padres": "SD",
-    "2015San Francisco Giants": "SF",
-    "2015Seattle Mariners": "Sea",
-    "2015St. Louis Cardinals": "StL",
-    "2015Tampa Bay Rays": "Tam",
-    "2015Texas Rangers": "Tex",
-    "2015Toronto Blue Jays": "Tor",
-    "2015Washington Nationals": "Was",
-    "2016Arizona Diamondbacks": "Ari",
-    "2016Atlanta Braves": "Atl",
-    "2016Baltimore Orioles": "Bal",
-    "2016Boston Red Sox": "Bos",
-    "2016Chicago Cubs": "ChN",
-    "2016Chicago White Sox": "ChA",
-    "2016Cincinnati Reds": "Cin",
-    "2016Cleveland Indians": "Cle",
-    "2016Colorado Rockies": "Col",
-    "2016Detroit Tigers": "Det",
-    "2016Houston Astros": "Hou",
-    "2016Kansas City Royals": "KC",
-    "2016Los Angeles Angels": "LAA",
-    "2016Los Angeles Dodgers": "LAN",
-    "2016Miami Marlins": "Mia",
-    "2016Milwaukee Brewers": "Mil",
-    "2016Minnesota Twins": "Min",
-    "2016New York Mets": "NYN",
-    "2016New York Yankees": "NYA",
-    "2016Oakland Athletics": "Oak",
-    "2016Philadelphia Phillies": "Phi",
-    "2016Pittsburgh Pirates": "Pit",
-    "2016San Diego Padres": "SD",
-    "2016San Francisco Giants": "SF",
-    "2016Seattle Mariners": "Sea",
-    "2016St. Louis Cardinals": "StL",
-    "2016Tampa Bay Rays": "Tam",
-    "2016Texas Rangers": "Tex",
-    "2016Toronto Blue Jays": "Tor",
-    "2016Washington Nationals": "Was",
-    "2017Arizona Diamondbacks": "Ari",
-    "2017Atlanta Braves": "Atl",
-    "2017Baltimore Orioles": "Bal",
-    "2017Boston Red Sox": "Bos",
-    "2017Chicago Cubs": "ChN",
-    "2017Chicago White Sox": "ChA",
-    "2017Cincinnati Reds": "Cin",
-    "2017Cleveland Indians": "Cle",
-    "2017Colorado Rockies": "Col",
-    "2017Detroit Tigers": "Det",
-    "2017Houston Astros": "Hou",
-    "2017Kansas City Royals": "KC",
-    "2017Los Angeles Angels": "LAA",
-    "2017Los Angeles Dodgers": "LAN",
-    "2017Miami Marlins": "Mia",
-    "2017Milwaukee Brewers": "Mil",
-    "2017Minnesota Twins": "Min",
-    "2017New York Mets": "NYN",
-    "2017New York Yankees": "NYA",
-    "2017Oakland Athletics": "Oak",
-    "2017Philadelphia Phillies": "Phi",
-    "2017Pittsburgh Pirates": "Pit",
-    "2017San Diego Padres": "SD",
-    "2017San Francisco Giants": "SF",
-    "2017Seattle Mariners": "Sea",
-    "2017St. Louis Cardinals": "StL",
-    "2017Tampa Bay Rays": "Tam",
-    "2017Texas Rangers": "Tex",
-    "2017Toronto Blue Jays": "Tor",
-    "2017Washington Nationals": "Was",
-    "2018Arizona Diamondbacks": "Ari",
-    "2018Atlanta Braves": "Atl",
-    "2018Baltimore Orioles": "Bal",
-    "2018Boston Red Sox": "Bos",
-    "2018Chicago Cubs": "ChN",
-    "2018Chicago White Sox": "ChA",
-    "2018Cincinnati Reds": "Cin",
-    "2018Cleveland Indians": "Cle",
-    "2018Colorado Rockies": "Col",
-    "2018Detroit Tigers": "Det",
-    "2018Houston Astros": "Hou",
-    "2018Kansas City Royals": "KC",
-    "2018Los Angeles Angels": "LAA",
-    "2018Los Angeles Dodgers": "LAN",
-    "2018Miami Marlins": "Mia",
-    "2018Milwaukee Brewers": "Mil",
-    "2018Minnesota Twins": "Min",
-    "2018New York Mets": "NYN",
-    "2018New York Yankees": "NYA",
-    "2018Oakland Athletics": "Oak",
-    "2018Philadelphia Phillies": "Phi",
-    "2018Pittsburgh Pirates": "Pit",
-    "2018San Diego Padres": "SD",
-    "2018San Francisco Giants": "SF",
-    "2018Seattle Mariners": "Sea",
-    "2018St. Louis Cardinals": "StL",
-    "2018Tampa Bay Rays": "Tam",
-    "2018Texas Rangers": "Tex",
-    "2018Toronto Blue Jays": "Tor",
-    "2018Washington Nationals": "Was",
-    "2019Arizona Diamondbacks": "Ari",
-    "2019Atlanta Braves": "Atl",
-    "2019Baltimore Orioles": "Bal",
-    "2019Boston Red Sox": "Bos",
-    "2019Chicago Cubs": "ChN",
-    "2019Chicago White Sox": "ChA",
-    "2019Cincinnati Reds": "Cin",
-    "2019Cleveland Indians": "Cle",
-    "2019Colorado Rockies": "Col",
-    "2019Detroit Tigers": "Det",
-    "2019Houston Astros": "Hou",
-    "2019Kansas City Royals": "KC",
-    "2019Los Angeles Angels": "LAA",
-    "2019Los Angeles Dodgers": "LAN",
-    "2019Miami Marlins": "Mia",
-    "2019Milwaukee Brewers": "Mil",
-    "2019Minnesota Twins": "Min",
-    "2019New York Mets": "NYN",
-    "2019New York Yankees": "NYA",
-    "2019Oakland Athletics": "Oak",
-    "2019Philadelphia Phillies": "Phi",
-    "2019Pittsburgh Pirates": "Pit",
-    "2019San Diego Padres": "SD",
-    "2019San Francisco Giants": "SF",
-    "2019Seattle Mariners": "Sea",
-    "2019St. Louis Cardinals": "StL",
-    "2019Tampa Bay Rays": "Tam",
-    "2019Texas Rangers": "Tex",
-    "2019Toronto Blue Jays": "Tor",
-    "2019Washington Nationals": "Was",
-    "2020Arizona Diamondbacks": "Ari",
-    "2020Atlanta Braves": "Atl",
-    "2020Baltimore Orioles": "Bal",
-    "2020Boston Red Sox": "Bos",
-    "2020Chicago Cubs": "ChN",
-    "2020Chicago White Sox": "ChA",
-    "2020Cincinnati Reds": "Cin",
-    "2020Cleveland Indians": "Cle",
-    "2020Colorado Rockies": "Col",
-    "2020Detroit Tigers": "Det",
-    "2020Houston Astros": "Hou",
-    "2020Kansas City Royals": "KC",
-    "2020Los Angeles Angels": "LAA",
-    "2020Los Angeles Dodgers": "LAN",
-    "2020Miami Marlins": "Mia",
-    "2020Milwaukee Brewers": "Mil",
-    "2020Minnesota Twins": "Min",
-    "2020New York Mets": "NYN",
-    "2020New York Yankees": "NYA",
-    "2020Oakland Athletics": "Oak",
-    "2020Philadelphia Phillies": "Phi",
-    "2020Pittsburgh Pirates": "Pit",
-    "2020San Diego Padres": "SD",
-    "2020San Francisco Giants": "SF",
-    "2020Seattle Mariners": "Sea",
-    "2020St. Louis Cardinals": "StL",
-    "2020Tampa Bay Rays": "Tam",
-    "2020Texas Rangers": "Tex",
-    "2020Toronto Blue Jays": "Tor",
-    "2020Washington Nationals": "Was",
-    }
-
-    team_abb = team_abb_dict.get(team_name)
-
-    return team_abb
-
-# TODO
-def get_division(team_name):
-
+def get_division(team_name, year):
     division_dict = {
-    "Arizona Diamondbacks": "NL West",
-    "Atlanta Braves": "NL East",
-    "Baltimore Orioles": "AL East",
-    "Boston Red Sox": "AL East",
-    "Chicago Cubs": "NL Central",
-    "Chicago White Sox": "AL Central",
-    "Cincinnati Reds": "NL Central",
-    "Cleveland Indians": "AL Central",
-    "Colorado Rockies": "NL West",
-    "Detroit Tigers": "AL Central",
-    "Houston Astros": "AL West",
-    "Kansas City Royals": "AL Central",
-    "Los Angeles Angels": "AL West",
-    "Los Angeles Dodgers": "NL West",
-    "Miami Marlins": "NL East",
-    "Milwaukee Brewers": "NL Central",
-    "Minnesota Twins": "AL Central",
-    "New York Mets": "NL East",
-    "New York Yankees": "AL East",
-    "Oakland Athletics": "AL West",
-    "Philadelphia Phillies": "NL East",
-    "Pittsburgh Pirates": "NL Central",
-    "San Diego Padres": "NL West",
-    "San Francisco Giants": "NL West",
-    "Seattle Mariners": "AL West",
-    "St. Louis Cardinals": "NL Central",
-    "Tampa Bay Rays": "AL East",
-    "Texas Rangers": "AL West",
-    "Toronto Blue Jays": "AL East",
-    "Washington Nationals": "NL East"
     }
+
+    qry = """SELECT team_name
+    , division
+    FROM teams
+    WHERE 1
+        AND year = %s
+    ;""" % (year)
+
+    res = db.query(qry)
+    for row in res:
+        tm, div = row
+        player_mapper[tm] = div
 
     division = division_dict.get(team_name)
 
@@ -555,274 +45,73 @@ def get_division(team_name):
 
     return division, divisional_teams, conference_teams, non_conference_teams
 
-# TODO
-def get_team_name(city_name):
-    team_names_dict = {
-    "Baltimore": "Baltimore Orioles",
-    "Tampa Bay": "Tampa Bay Rays",
-    "New York (A)": "New York Yankees",
-    "Toronto": "Toronto Blue Jays",
-    "Boston": "Boston Red Sox",
-    "Minnesota": "Minnesota Twins",
-    "Detroit": "Detroit Tigers",
-    "Chicago (A)": "Chicago White Sox",
-    "Cleveland": "Cleveland Indians",
-    "Kansas City": "Kansas City Royals",
-    "Seattle": "Seattle Mariners",
-    "Texas": "Texas Rangers",
-    "Oakland": "Oakland Athletics",
-    "Los Angeles (A)": "Los Angeles Angels",
-    "Houston": "Houston Astros",
-    "New York (N)": "New York Mets",
-    "Miami": "Miami Marlins",
-    "Atlanta": "Atlanta Braves",
-    "Washington": "Washington Nationals",
-    "Philadelphia": "Philadelphia Phillies",
-    "Pittsburgh": "Pittsburgh Pirates",
-    "Cincinnati": "Cincinnati Reds",
-    "St. Louis": "St. Louis Cardinals",
-    "Chicago (N)": "Chicago Cubs",
-    "Milwaukee": "Milwaukee Brewers",
-    "Colorado": "Colorado Rockies",
-    "San Diego": "San Diego Padres",
-    "Los Angeles (N)": "Los Angeles Dodgers",
-    "San Francisco": "San Francisco Giants",
-    "Arizona": "Arizona Diamondbacks",
-    }
-
-    team_name = team_names_dict.get(city_name)
+def get_team_name(city_name, year):
+    qry = db.query("SELECT team_name FROM teams WHERE year = %s AND city_name = '%s';" % (year, city_name))
+    if qry != ():
+        team_name = qry[0][0]
+    else:
+        print "\n\n!!!!ERROR!!!! - no team_name for %s, %s" % (year, city_name)
+        team_name = None
 
     return team_name
 
-# TODO
-def get_mascot_names(team_abb):
-    mascot_names_dict = {
-    "ANA": "Angels",
-    "ARI": "Diamondbacks",
-    "ATL": "Braves",
-    "AZ": "Diamondbacks",
-    "AZD": "Diamondbacks",
-    "BAL": "Orioles",
-    "BOS": "Red Sox",
-    "CHA": "White Sox",
-    "CHC": "Cubs",
-    "CHN": "Cubs",
-    "CIN": "Reds",
-    "CLE": "Indians",
-    "CLV": "Indians",
-    "COL": "Rockies",
-    "CWS": "White Sox",
-    "DET": "Tigers",
-    "FLA": "Marlins",
-    "FLO": "Marlins",
-    "HOU": "Astros",
-    "KC": "Royals",
-    "KCR": "Royals",
-    "LA": "Dodgers",
-    "LAA": "Angels",
-    "LAD": "Dodgers",
-    "LAN": "Dodgers",
-    "MIA": "Marlins",
-    "MIL": "Brewers",
-    "MIN": "Twins",
-    "NYA": "Yankees",
-    "NYM": "Mets",
-    "NYN": "Mets",
-    "NYY": "Yankees",
-    "OAK": "Athletics",
-    "PHI": "Phillies",
-    "PIT": "Pirates",
-    "SD": "Padres",
-    "SDP": "Padres",
-    "SEA": "Mariners",
-    "SF": "Giants",
-    "SFG": "Giants",
-    "STL": "Cardinals",
-    "TAM": "Rays",
-    "TB": "Rays",
-    "TBR": "Rays",
-    "TEX": "Rangers",
-    "TOR": "Blue Jays",
-    "WAS": "Nationals"
-    }
-
-    mascot_name = mascot_names_dict.get(team_abb)
+def get_mascot_names(team_abb, year):
+    qry = db.query("SELECT mascot_name FROM teams WHERE year = %s AND team_abb = '%s';" % (year, team_abb))
+    if qry != ():
+        mascot_name = qry[0][0]
+    else:
+        print "\n\n!!!!ERROR!!!! - no mascot_name for %s, %s" % (year, team_abb)
+        mascot_name = None
 
     return mascot_name
 
-# TODO
-def get_team_abbs(team_name):
-    team_abbreviations =[
-    {"ANGELS":("LAA", "ANA", "", "")},
-    {"ASTROS":("HOU", "", "", "")},
-    {"ATHLETICS":("OAK", "", "", "")},
-    {"BLUE JAYS":("TOR", "", "", "")},
-    {"BLUEJAYS":("TOR", "", "", "")},
-    {"BRAVES":("ATL", "", "", "")},
-    {"BREWERS":("MIL", "", "", "")},
-    {"CARDINALS":("STL", "", "", "")},
-    {"CUBS":("CHC", "CHN", "", "")},
-    {"DIAMONDBACKS":("ARI", "AZ", "AZD", "")},
-    {"DODGERS":("LAN", "LAD", "LA", "")},
-    {"GIANTS":("SF", "SFG", "", "")},
-    {"INDIANS":("CLE", "CLV", "", "")},
-    {"MARINERS":("SEA", "", "", "")},
-    {"MARLINS":("MIA", "FLO", "FLA", "")},
-    {"METS":("NYM", "NYN", "", "")},
-    {"NATIONALS":("WAS", "WAN", "", "")},
-    {"ORIOLES":("BAL", "BALT", "", "")},
-    {"PADRES":("SD", "SAN", "SDP", "")},
-    {"PHILLIES":("PHI", "", "", "")},
-    {"PIRATES":("PIT", "", "", "")},
-    {"RANGERS":("TEX", "", "", "")},
-    {"RAYS":("TAM", "TB", "TBA", "TBR")},
-    {"RED SOX":("BOS", "", "", "")},
-    {"REDSOX":("BOS", "", "", "")},
-    {"REDS":("CIN", "", "", "")},
-    {"ROCKIES":("COL", "", "", "")},
-    {"ROYALS":("KC", "KCR", "", "")},
-    {"TIGERS":("DET", "", "", "")},
-    {"TWINS":("MIN", "", "", "")},
-    {"WHITE SOX":("CHA", "CHW", "CWS", "")},
-    {"WHITESOX":("CHA", "CHW", "CWS", "")},
-    {"YANKEES":("NYA", "NYY", "", "")}
-    ]
-
-    team_abbs = []
-    for i in team_abbreviations:
-        if i.keys()[0] == team_name.upper():
-            team_abbs = i.get(team_name.upper())
-    primary_abb = team_abbs[0]
-
-    return team_abbs, primary_abb
-
-# TODO
-def get_park_factors(team_abb):
+def get_park_factors(team_abb, year):
     """"
     Scaled park factors (by a factor of 1/3) from fangraphs
     """
-    park_factors_dict = {
-    "ANA":98.33,
-    "LAA":98.33,
-    "HOU":98.33,
-    "OAK":100,
-    "TOR":99,
-    "ATL":99.67,
-    "MIL":101,
-    "STL":99.33,
-    "CHC":100.67,
-    "CHN":100.67,
-    "ARI":101.33,
-    "AZ":101.33,
-    "AZD":101.33,
-    "LA":98.67,
-    "LAD":98.67,
-    "LAN":98.67,
-    "SF":97.67,
-    "SFG":97.67,
-    "CLE":99,
-    "CLV":99,
-    "SEA":99,
-    "FLA":100.33,
-    "FLO":100.33,
-    "MIA":100.33,
-    "NYM":98.33,
-    "NYN":98.33,
-    "WAN":100,
-    "WAS":100,
-    "WSN":100,
-    "BAL":100.67,
-    "BALT":100.67,
-    "SAN":98,
-    "SD":98,
-    "SDP":98,
-    "PHI":100,
-    "PIT":99,
-    "TEX":102,
-    "TAM":98.33,
-    "TB":98.33,
-    "TBA":98.33,
-    "TBR":98.33,
-    "BOS":101.33,
-    "CIN":100.33,
-    "COL":105.67,
-    "KC":100.33,
-    "KCR":100.33,
-    "DET":100.67,
-    "MIN":100.33,
-    "CHA":101.33,
-    "CHW":101.33,
-    "CWS":101.33,
-    "NYA":101,
-    "NYY":101,
-    "NONE":100,
-    "":100,
-    }
-
-    park_factor = park_factors_dict.get(team_abb)
+    qry = db.query("""SELECT park_factor
+    FROM teams_current_franchise tcf
+    JOIN teams t ON (tcf.team_name = t.team_name)
+    WHERE 1
+        AND (tcf.team_abb = '%s' OR t.team_abb = '%s')
+        AND year = 2020;""" % (team_team, team_abb, year))
+    if qry != ():
+        park_factor = qry[0][0]
+    else:
+        print "\n\n!!!!ERROR!!!! - no park_factor for %s, %s" % (year, team_abb)
+        park_factor = 100.0
 
     return park_factor
 
-# TODO
 def get_pos_adj(position):
-    pos_adj_dict = {
-    "P":60.0,
-    "C":12.5,
-    "1B":-12.5,
-    "2B":2.5,
-    "3B":2.5,
-    "SS":7.5,
-    "LF":-7.5,
-    "CF":2.5,
-    "RF":-7.5,
-    "DH":-17.5,
-    "PH":-17.5,
-    "IF":2.5,
-    "SP":2.5,
-    "":0
-    }
-
-    pos_adj = pos_adj_dict.get(position)
+    qry = db.query("SELECT adjustment FROM helper_positional_adjustment WHERE position = '%s';" % (position))
+    if qry != ():
+        pos_adj = qry[0][0]
+    else:
+        print "\n\n!!!!ERROR!!!! - no position adjustment for %s" % (position)
+        pos_adj = 0.0
 
     return pos_adj
 
-# TODO
 def get_pos_formula(position):
     """
     Returns coefficients for error/range/arm/passed ball values according to http://www.ontonova.com/floodstudy/4647-5.html.
     This should possibly be scaled down?
     """
     # [range, error, arm, passed ball]
-    pos_formula_dict = {
-    "P":[0.0,0.0,0.0,0.0],
-    "SP":[0.0,0.0,0.0,0.0],
-    "RP":[0.0,0.0,0.0,0.0],
-    "OF":[0.0,0.0,0.0,0.0],
-    "IF":[0.0,0.0,0.0,0.0],
-    "DH":[0.0,0.0,0.0,0.0],
-    "C":[2.0,0.0,2.33,1.0],
-    "1B":[9.46,7.78,0.0,0.0],
-    "2B":[7.92,14.06,0.0,0.0],
-    "3B":[15.25,14.22,0.0,0.0],
-    "SS":[6.83,19.61,0.0,0.0],
-    "LF":[15.46,5.94,5.17,0.0],
-    "CF":[15.46,6.39,8.0,0.0],
-    "RF":[15.75,6.44,6.83,0.0],
-    "DH":[0.0,0.0,0.0,0.0]
-    }
 
-    pos_formula = pos_formula_dict.get(position)
+    qry = db.query("SELECT rng, err, arm, passed_ball FROM helper_zips_positions WHERE position = '%s';" % (position))
+    if qry != ():
+        pos_formula = [qry[0][1], qry[0][2], qry[0][3], qry[0][4]]
+    else:
+        print "\n\n!!!!ERROR!!!! - no position formula for %s" % (position)
+        pos_formula = [0,0,0,0]
 
-    for i, v in enumerate(pos_formula):
-        # research from http://dmbo.net/smf/index.php?topic=4883.0 and ad_hoc/defensive_value_analysis.xlsx shows that the original defensive values should be regressed back ~72.5%
-        pos_formula[i] = 0.725 * v
+    # for i, v in enumerate(pos_formula):
+    #     # research from http://dmbo.net/smf/index.php?topic=4883.0 and ad_hoc/defensive_value_analysis.xlsx shows that the original defensive values should be regressed back ~72.5%
+    #     pos_formula[i] = 0.725 * v
 
     return pos_formula
-
-
-
-
-
 
 def get_league_average_hitters(year, category):
     q = """SELECT

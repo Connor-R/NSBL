@@ -30,7 +30,7 @@ def process():
     for team in team_WAR_list:
         year, team_abb, dWAR, oWAR, repWAR, FIP_WAR, ERA_WAR = team
 
-        mascot_name = helper.get_mascot_names(team_abb.upper())
+        mascot_name = helper.get_mascot_names(team_abb.upper(), year)
 
         #a full season is ~17 replacement wins?
         repWAR = float(repWAR)

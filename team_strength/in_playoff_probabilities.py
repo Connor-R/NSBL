@@ -112,8 +112,8 @@ def current_series(year, timestamp):
         games_dict = {'WC':1, 'DS':5, 'CS':7, 'WS':7}
         series_games = games_dict.get(series_type)
 
-        team_abb = helper.get_team_abb(team)
-        oppn_abb = helper.get_team_abb(opponent)
+        team_abb = helper.get_team_abb(team, year)
+        oppn_abb = helper.get_team_abb(opponent, year)
 
         team_winProb = get_single_game_win_prob(team_abb, oppn_abb, strength_type, year)
 
