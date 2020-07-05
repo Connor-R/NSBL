@@ -73,8 +73,8 @@ def get_park_factors(team_abb, year):
     FROM teams_current_franchise tcf
     JOIN teams t ON (tcf.team_name = t.team_name)
     WHERE 1
-        AND (tcf.team_abb = '%s' OR t.team_abb = '%s')
-        AND year = 2020;""" % (team_team, team_abb, year))
+        AND (tcf.primary_abb = '%s' OR tcf.secondary_abb = '%s' OR tcf.tertiary_abb = '%s' OR t.team_abb = '%s')
+        AND year = %s;""" % (team_abb, team_abb, team_abb, team_abb, year))
     if qry != ():
         park_factor = qry[0][0]
     else:
@@ -102,7 +102,7 @@ def get_pos_formula(position):
 
     qry = db.query("SELECT rng, err, arm, passed_ball FROM helper_zips_positions WHERE position = '%s';" % (position))
     if qry != ():
-        pos_formula = [qry[0][1], qry[0][2], qry[0][3], qry[0][4]]
+        pos_formula = [qry[0][0], qry[0][1], qry[0][2], qry[0][3]]
     else:
         print "\n\n!!!!ERROR!!!! - no position formula for %s" % (position)
         pos_formula = [0,0,0,0]
@@ -398,10 +398,10 @@ def get_def_values(search_name, position, year):
 
     weights = get_pos_formula(pos)
 
-    rn_val = weights[0]*num_rn
+    rn_val = float(weights[0])*num_rn
     #100 is average error rating. we want the amount above/below this number
-    err_val = weights[1]*((100-float(error))/100)
-    arm_val = weights[2]*num_arm
-    pb_val = weights[3]*(2-passed_ball)
+    err_val = float(weights[1])*((100-float(error))/100)
+    arm_val = float(weights[2])*num_arm
+    pb_val = float(weights[3])*(2-passed_ball)
 
     return rn_val, err_val, arm_val, pb_val

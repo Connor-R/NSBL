@@ -4,7 +4,7 @@ from py_db import db
 db = db('NSBL')
 
 def process(year):
-    print "NSBL_Draft_FA_HOD"
+    print "NSBL_Draft_FA_HOF"
 
     print "\thistorical_draft_pick_performance"
     dp_qries ="""
@@ -21,14 +21,18 @@ def process(year):
         , MIN(hfa.year) AS FA
         , nm2.position AS map_position
         FROM historical_draft_picks hdp
-        JOIN teams_current_franchise tcf ON (REPLACE(hdp.team_abb, '*', '') = tcf.team_abb)
+        JOIN teams_current_franchise tcf ON (REPLACE(hdp.team_abb, '*', '') = tcf.primary_abb
+            OR REPLACE(hdp.team_abb, '*', '') = tcf.secondary_abb
+            OR REPLACE(hdp.team_abb, '*', '') = tcf.tertiary_abb
+        )
+        JOIN teams t ON (tcf.team_name = t.team_name AND hdp.year = t.year)
         LEFT JOIN name_mapper nm ON (1
             AND hdp.player_name = nm.wrong_name
             AND (nm.start_year IS NULL OR nm.start_year <= hdp.year)
             AND (nm.end_year IS NULL OR nm.end_year >= hdp.year)
-            AND (nm.position = '' OR IF(nm.position = 'P', hdp.position LIKE "%P%", hdp.position NOT LIKE "%P%"))
+            AND (nm.position = '' OR IF(nm.position = 'P', hdp.position LIKE "%%P%%", hdp.position NOT LIKE "%%P%%"))
             # AND (nm.rl_team = '' OR nm.rl_team = a.team_abb)
-            AND (nm.nsbl_team = '' OR nm.nsbl_team = tcf.team_abb)
+            AND (nm.nsbl_team = '' OR nm.nsbl_team = t.team_abb)
         )
         LEFT JOIN name_mapper nm2 ON (nm.right_fname = nm2.right_fname
             AND nm.right_lname = nm2.right_lname
@@ -46,10 +50,10 @@ def process(year):
         DROP TABLE IF EXISTS historical_draft_pick_performance;
         CREATE TABLE historical_draft_pick_performance AS
          SELECT draft_year
-        , draft_type
         , overall
         , round
         , pick
+        , draft_type
         , player_name
         , drafted_by
         , teams
@@ -83,14 +87,14 @@ def process(year):
         , MAX(`ip`) AS `IP`
         , MAX(`ERA`) AS `ERA`
         , MAX(`FIP`) AS `FIP`
-        , MAX(`ERA_minus`) AS `ERA_MINUS`
-        , MAX(`FIP_minus`) AS `FIP_MINUS`
+        , MAX(`ERA_minus`) AS `ERA-`
+        , MAX(`FIP_minus`) AS `FIP-`
         FROM(
             SELECT a.player_name
             , a.draft_year
             , a.draft_type
             , a.franchise_name AS drafted_by
-            , GROUP_CONCAT(DISTINCT abb.team_abb ORDER BY hh.year_span ASC SEPARATOR '/') AS teams
+            , GROUP_CONCAT(DISTINCT abb.primary_abb ORDER BY hh.year_span ASC SEPARATOR '/') AS teams
             , a.round
             , a.pick
             , a.overall
@@ -153,7 +157,7 @@ def process(year):
             , a.draft_year
             , a.draft_type
             , a.franchise_name AS drafted_by
-            , GROUP_CONCAT(DISTINCT abb.team_abb ORDER BY hp.year_span ASC SEPARATOR '/') AS teams
+            , GROUP_CONCAT(DISTINCT abb.primary_abb ORDER BY hp.year_span ASC SEPARATOR '/') AS teams
             , a.round
             , a.pick
             , a.overall
@@ -214,8 +218,11 @@ def process(year):
                 AND ip IS NOT NULL OR a.position IN ('P', 'RP', 'SP')
         ) a
         GROUP BY a.player_name, a.draft_year, a.draft_type, a.overall
+        ORDER BY draft_year, draft_type, overall
+        ;
 
         DROP TABLE IF EXISTS temp;
+        
         """
  
     for qry in dp_qries.split(";")[:-1]:
@@ -239,14 +246,18 @@ def process(year):
         , MIN(hfa2.year) AS FA
         , nm2.position AS map_position
         FROM historical_free_agency hfa
-        JOIN teams_current_franchise tcf ON (REPLACE(hfa.signing_team, '*', '') = tcf.team_abb)
+        JOIN teams_current_franchise tcf ON (REPLACE(hfa.signing_team, '*', '') = tcf.primary_abb
+            OR REPLACE(hfa.signing_team, '*', '') = tcf.secondary_abb
+            OR REPLACE(hfa.signing_team, '*', '') = tcf.tertiary_abb
+        )
+        JOIN teams t ON (tcf.team_name = t.team_name AND hfa.year = t.year)
         LEFT JOIN name_mapper nm ON (1
             AND hfa.player_name = nm.wrong_name
             AND (nm.start_year IS NULL OR nm.start_year <= hfa.year)
             AND (nm.end_year IS NULL OR nm.end_year >= hfa.year)
-            AND (nm.position = '' OR nm.position != 'P')
+            AND (nm.position = '' OR IF(nm.position = 'P', hfa.position LIKE "%%P%%", hfa.position NOT LIKE "%%P%%"))
             # AND (nm.rl_team = '' OR nm.rl_team = a.team_abb)
-            AND (nm.nsbl_team = '' OR nm.nsbl_team = tcf.team_abb)
+            AND (nm.nsbl_team = '' OR nm.nsbl_team = t.team_abb)
         )
         LEFT JOIN name_mapper nm2 ON (nm.right_fname = nm2.right_fname
             AND nm.right_lname = nm2.right_lname
@@ -314,13 +325,13 @@ def process(year):
         , MAX(`ip`) AS `IP`
         , MAX(`ERA`) AS `ERA`
         , MAX(`FIP`) AS `FIP`
-        , MAX(`ERA_minus`) AS `ERA_MINUS`
-        , MAX(`FIP_minus`) AS `FIP_MINUS`
+        , MAX(`ERA_minus`) AS `ERA-`
+        , MAX(`FIP_minus`) AS `FIP-`
         FROM(
             SELECT a.player_name
             , a.signing_year
             , a.franchise_name AS signed_by
-            , GROUP_CONCAT(DISTINCT abb.team_abb ORDER BY hh.year_span ASC SEPARATOR '/') AS teams
+            , GROUP_CONCAT(DISTINCT abb.primary_abb ORDER BY hh.year_span ASC SEPARATOR '/') AS teams
             , a.signing_day
             , a.rights
             , a.contract_years
@@ -390,7 +401,7 @@ def process(year):
             SELECT a.player_name
             , a.signing_year
             , a.franchise_name AS signed_by
-            , GROUP_CONCAT(DISTINCT abb.team_abb ORDER BY hp.year_span ASC SEPARATOR '/') AS teams
+            , GROUP_CONCAT(DISTINCT abb.primary_abb ORDER BY hp.year_span ASC SEPARATOR '/') AS teams
             , a.signing_day
             , a.rights
             , a.contract_years
@@ -451,6 +462,7 @@ def process(year):
                 AND ip IS NOT NULL OR a.position IN ('P', 'RP', 'SP')
         ) a
         GROUP BY a.player_name, a.signing_year, a.signing_day
+        ORDER BY signing_year, signing_day, player_name
         ;
 
         DROP TABLE IF EXISTS temp;
@@ -468,11 +480,11 @@ def process(year):
         CREATE TABLE historical_hall_of_fame AS
         SELECT HOF_Class
         , Player_Name
+        , HOF_Team
         , Career_Span
         , Total_Seasons
         , Position
         , All_Teams
-        , HOF_Team
         , Age_Span
 
         , SUM(`WAR/ERA_WAR`) AS `WAR/ERA_WAR`
@@ -502,8 +514,8 @@ def process(year):
         , MAX(`ip`) AS `IP`
         , MAX(`ERA`) AS `ERA`
         , MAX(`FIP`) AS `FIP`
-        , MAX(`ERA_minus`) AS `ERA_MINUS`
-        , MAX(`FIP_minus`) AS `FIP_MINUS`
+        , MAX(`ERA_minus`) AS `ERA-`
+        , MAX(`FIP_minus`) AS `FIP-`
         FROM(
             SELECT CONCAT("Class of ", RIGHT(year_span,4)+2) AS HOF_Class
             , hsh.player_name AS Player_Name
@@ -568,7 +580,7 @@ def process(year):
             ) b ON (hsh.player_name = b.player_name)
             WHERE 1
                 AND group_type = 'full_career'
-                AND RIGHT(year_span,4) <= 2020-2
+                AND RIGHT(year_span,4) <= %s-2
                 AND (0
                     OR WAR >= 40
                     OR noDRS_WAR >= 40
@@ -644,7 +656,7 @@ def process(year):
             ) b ON (hsp.player_name = b.player_name)
             WHERE 1
                 AND group_type = 'full_career'
-                AND RIGHT(year_span,4) <= 2020-2
+                AND RIGHT(year_span,4) <= %s-2
                 AND (0
                     OR FIP_WAR >= 40
                     OR ERA_WAR >= 40
@@ -657,8 +669,11 @@ def process(year):
                 )
         ) a
         GROUP BY player_name
+        ORDER BY HOF_Class, Player_Name
+        ;
         """
 
+    hof_qries = hof_qries % (year, year)
     for qry in hof_qries.split(";")[:-1]:
         db.query(qry)
         db.conn.commit()

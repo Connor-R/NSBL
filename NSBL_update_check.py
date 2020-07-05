@@ -129,7 +129,7 @@ def scrape_cur_standings():
                             AND ts.year = %s
                         GROUP BY ts.team_name, ts.year"""
 
-                        prev_gp = db.query(qry % full_name, year)
+                        prev_gp = db.query(qry % (full_name, year))
                         prev_gp = prev_gp[0][2]
 
                         if int(wins)+int(losses) != prev_gp:

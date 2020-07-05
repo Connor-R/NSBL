@@ -15,6 +15,7 @@ db = db('NSBL')
 
 
 def process():
+    print 'zips_FA_contract_value'
     batters()
     pitchers()
 

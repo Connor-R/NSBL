@@ -13,7 +13,7 @@ def process():
         , COALESCE(CONCAT(nm.right_fname, ' ', nm.right_lname), o.player_name) AS player_name
         , t.team_name as full_team
         , tcf.franchise_name
-        , tcf.team_abb as tcf_team_abb
+        , tcf.primary_abb as tcf_team_abb
         , o.position AS listed_position
         , CASE
             WHEN o.year < 2011
@@ -40,7 +40,7 @@ def process():
         , o.cs
         , wo.babip
         , ROUND( IF(s.pa = 0, 0, o.bb / s.pa), 3) AS bb_pct
-        , ROUND( IF(s.ab = 0, 0, o.k / s.ab), 3) AS k_pct
+        , ROUND( IF(o.ab = 0, 0, o.k / o.ab), 3) AS k_pct
         , wh.defense
         , wh.position_adj
         , wh.dWAR
@@ -226,6 +226,8 @@ def process():
         , SUM(t.sb) AS sb
         , SUM(t.cs) AS cs
         , ROUND( IF(SUM(t.ab) = 0, 0, SUM(t.babip*t.pa)/SUM(t.pa)) , 3) AS babip
+        , ROUND( IF(SUM(t.pa) = 0, 0, SUM(t.bb)/SUM(t.pa)), 3) AS bb_pct
+        , ROUND( IF(SUM(t.ab) = 0, 0, SUM(t.k)/SUM(t.ab)), 3) AS k_pct
         , ROUND( SUM(t.defense) , 1) AS defense
         , ROUND( SUM(t.position_adj) , 1) AS position_adj
         , ROUND( SUM(t.dWAR) , 1) AS dWAR
@@ -257,7 +259,7 @@ def process():
         , COALESCE(CONCAT(nm.right_fname, ' ', nm.right_lname), o.player_name) AS player_name
         , t.team_name as full_team
         , tcf.franchise_name
-        , tcf.team_abb as tcf_team_abb
+        , tcf.primary_abb as tcf_team_abb
         , o.position AS listed_position
         , o.age
         , o.w

@@ -19,6 +19,7 @@ years_map = {'6th':[1, 0.8, 5, 17.500, 2.00], '5th':[2, .6, 4, 9, 1.50], '4th':[
 
 
 def process(year):
+    print "trade_value.py"
     start_time = time()
 
     player_values(year)
