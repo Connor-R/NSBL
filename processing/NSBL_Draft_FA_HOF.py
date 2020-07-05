@@ -45,14 +45,14 @@ def process(year):
         
         DROP TABLE IF EXISTS historical_draft_pick_performance;
         CREATE TABLE historical_draft_pick_performance AS
-         SELECT player_name
-        , draft_year
+         SELECT draft_year
         , draft_type
-        , drafted_by
-        , teams
+        , overall
         , round
         , pick
-        , overall
+        , player_name
+        , drafted_by
+        , teams
         , position
         , seasons
         , SUM(`WAR/ERA_WAR`) AS `WAR/ERA_WAR`
@@ -214,7 +214,6 @@ def process(year):
                 AND ip IS NOT NULL OR a.position IN ('P', 'RP', 'SP')
         ) a
         GROUP BY a.player_name, a.draft_year, a.draft_type, a.overall
-        ORDER BY draft_year ASC, draft_type ASC, overall ASC;
 
         DROP TABLE IF EXISTS temp;
         """
@@ -264,16 +263,16 @@ def process(year):
 
         DROP TABLE IF EXISTS historical_free_agent_performance;
         CREATE TABLE historical_free_agent_performance AS
-        SELECT player_name
-        , signing_year
+        SELECT signing_year
         , signing_day
+        , player_name
         , signed_by
-        , teams
         , rights
         , contract_years
         , opt
         , aav
         , position
+        , teams
         , seasons
         , ROUND( IF(seasons>contract_years, seasons, LEAST(%s+1-signing_year,contract_years))*aav, 3) AS `Total_$`
         , homegrown_seasons
@@ -452,7 +451,6 @@ def process(year):
                 AND ip IS NOT NULL OR a.position IN ('P', 'RP', 'SP')
         ) a
         GROUP BY a.player_name, a.signing_year, a.signing_day
-        ORDER BY signing_year ASC, signing_day ASC, player_name ASC
         ;
 
         DROP TABLE IF EXISTS temp;
@@ -507,7 +505,7 @@ def process(year):
         , MAX(`ERA_minus`) AS `ERA_MINUS`
         , MAX(`FIP_minus`) AS `FIP_MINUS`
         FROM(
-            SELECT RIGHT(year_span,4)+2 AS HOF_Class
+            SELECT CONCAT("Class of ", RIGHT(year_span,4)+2) AS HOF_Class
             , hsh.player_name AS Player_Name
             , year_span AS Career_Span
             , player_seasons AS Total_Seasons
@@ -582,7 +580,7 @@ def process(year):
             
             UNION ALL
             
-            SELECT RIGHT(year_span,4)+2 AS HOF_Class
+            SELECT CONCAT("Class of ", RIGHT(year_span,4)+2) AS HOF_Class
             , hsp.player_name AS Player_Name
             , year_span AS Career_Span
             , player_seasons AS Total_Seasons
@@ -659,7 +657,6 @@ def process(year):
                 )
         ) a
         GROUP BY player_name
-        ORDER BY HOF_Class, IF(position IN ('cl','sp','rp','mr'), 1, 0);
         """
 
     for qry in hof_qries.split(";")[:-1]:
