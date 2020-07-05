@@ -98,7 +98,7 @@ def process():
         , SUM(t.cs) AS cs
         , ROUND( IF(SUM(t.ab) = 0, 0, SUM(t.babip*t.pa)/SUM(t.pa)) , 3) AS babip
         , ROUND( IF(SUM(t.pa) = 0, 0, SUM(t.bb)/SUM(t.pa)), 3) AS bb_pct
-        , ROUND( IF(SUM(t.ab) = 0, 0, SUM(t.k)/SUM(t.ab)), 3) AS bb_pct
+        , ROUND( IF(SUM(t.ab) = 0, 0, SUM(t.k)/SUM(t.ab)), 3) AS k_pct
         , ROUND( SUM(t.defense) , 1) AS defense
         , ROUND( SUM(t.position_adj) , 1) AS position_adj
         , ROUND( SUM(t.dWAR) , 1) AS dWAR
@@ -141,7 +141,7 @@ def process():
         , SUM(t.cs) AS cs
         , ROUND( IF(SUM(t.ab) = 0, 0, SUM(t.babip*t.pa)/SUM(t.pa)) , 3) AS babip
         , ROUND( IF(SUM(t.pa) = 0, 0, SUM(t.bb)/SUM(t.pa)), 3) AS bb_pct
-        , ROUND( IF(SUM(t.ab) = 0, 0, SUM(t.k)/SUM(t.ab)), 3) AS bb_pct
+        , ROUND( IF(SUM(t.ab) = 0, 0, SUM(t.k)/SUM(t.ab)), 3) AS k_pct
         , ROUND( SUM(t.defense) , 1) AS defense
         , ROUND( SUM(t.position_adj) , 1) AS position_adj
         , ROUND( SUM(t.dWAR) , 1) AS dWAR
@@ -184,7 +184,7 @@ def process():
         , SUM(t.cs) AS cs
         , ROUND( IF(SUM(t.ab) = 0, 0, SUM(t.babip*t.pa)/SUM(t.pa)) , 3) AS babip
         , ROUND( IF(SUM(t.pa) = 0, 0, SUM(t.bb)/SUM(t.pa)), 3) AS bb_pct
-        , ROUND( IF(SUM(t.ab) = 0, 0, SUM(t.k)/SUM(t.ab)), 3) AS bb_pct
+        , ROUND( IF(SUM(t.ab) = 0, 0, SUM(t.k)/SUM(t.ab)), 3) AS k_pct
         , ROUND( SUM(t.defense) , 1) AS defense
         , ROUND( SUM(t.position_adj) , 1) AS position_adj
         , ROUND( SUM(t.dWAR) , 1) AS dWAR

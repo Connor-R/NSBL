@@ -42,7 +42,6 @@ python processing/NSBL_processed_WAR_hitters.py --year "$year"
 wait
 
 python processing/NSBL_processed_WAR_team.py --year "$year"
-python processing/NSBL_historical_stats.py
 
 wait
 
@@ -55,6 +54,13 @@ python processing/NSBL_processed_team_defense.py
 python processing/NSBL_processed_team_pitching.py
 
 wait
+
+python processing/NSBL_historical_stats.py
+
+wait
+
+python processing/NSBL_Draft_FA_HOF.py --year "$year"
+
 
 python team_strength/lineup_optimizer.py --year "$year"
 python team_strength/pitching_optimizer.py --year "$year"
