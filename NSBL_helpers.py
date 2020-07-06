@@ -28,7 +28,7 @@ def get_division(team_name, year):
     res = db.query(qry)
     for row in res:
         tm, div = row
-        player_mapper[tm] = div
+        division_dict[tm] = div
 
     division = division_dict.get(team_name)
 

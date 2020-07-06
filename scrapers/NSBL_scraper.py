@@ -72,13 +72,13 @@ def initiate(end_year, scrape_length):
 
 
 def initiate_names(team_name, team_id, year, current, url_base):
+    if team_name in invalid_names:
+        team_name = invalid_names[team_name]
 
     check = "SELECT COUNT(*) FROM teams WHERE year = %s AND team_name = '%s' AND team_id = '%s';" % (year, team_name, team_id)
     check_val = db.query(check)[0][0]
 
     if check_val == 0:
-        if team_name in invalid_names:
-            team_name = invalid_names[team_name]
         team_abb = raw_input('What is the team_abb for the %s %s? ' % (year, team_name))
         print str(year) + " - " + str(team_id) + " - " + team_name + " - " + team_abb
         team_entry = {"year":year,"team_id":team_id, "team_name": team_name, "team_abb": team_abb}
