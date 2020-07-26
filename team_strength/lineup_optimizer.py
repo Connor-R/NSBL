@@ -19,7 +19,7 @@ db = db('NSBL')
 def process(year):
     start_time = time()
 
-    #Each time we run this, we clear the pre-existing table
+    # Each time we run this, we clear the pre-existing table
     db.query("TRUNCATE TABLE `__optimal_lineups`")
 
     i = 0 
@@ -68,16 +68,19 @@ def get_player_matrix(team_abb, year):
 
             base_q = """
     FROM (
-    SELECT DISTINCT IFNULL(CONCAT(nm2.right_fname, ' ', nm2.right_lname), z.player_name) AS real_name
+    SELECT DISTINCT CONCAT(nm2.right_fname, ' ', nm2.right_lname) AS real_name
     , z.player_name AS player_name
     , t.team_abb
     -- , cre.team_abb
     , (zo.ab+zo.bb+zo.hbp+zo.sh+zo.sf) as 'zips_pa'
     -- SELECT DISTINCT player_name, COALESCE(t.team_abb, cre.team_abb) AS team_abb, (zo.ab+zo.bb+zo.hbp+zo.sh+zo.sf) as 'zips_pa'
     FROM zips_WAR_hitters z
-    JOIN zips_offense zo USING (player_name, year, team_abb, age)
-    LEFT JOIN processed_WAR_hitters w USING (YEAR, player_name, age)
-    LEFT JOIN name_mapper nm ON (1
+    JOIN zips_offense zo ON (z.player_name = zo.player_name 
+        AND z.year = zo.year 
+        AND z.team_abb = zo.team_abb 
+        AND z.age = zo.age
+    )
+    JOIN name_mapper nm ON (1
         AND z.player_name = nm.wrong_name
         AND (nm.start_year IS NULL OR nm.start_year <= z.year)
         AND (nm.end_year IS NULL OR nm.end_year >= z.year)
@@ -85,20 +88,20 @@ def get_player_matrix(team_abb, year):
         AND (nm.rl_team = '' OR nm.rl_team = z.team_abb)
         # AND (nm.nsbl_team = '' OR nm.nsbl_team = rbp.team_abb)
     )
-    LEFT JOIN name_mapper nm2 ON (nm.right_fname = nm2.right_fname
+    JOIN name_mapper nm2 ON (nm.right_fname = nm2.right_fname
         AND nm.right_lname = nm2.right_lname
         AND (nm.start_year IS NULL OR nm.start_year = nm2.start_year)
         AND (nm.end_year IS NULL OR nm.end_year = nm2.end_year)
         AND (nm.position = '' OR nm.position = nm2.position)
         AND (nm.rl_team = '' OR nm.rl_team = nm2.rl_team)
     )
-    LEFT JOIN current_rosters c ON (IFNULL(nm2.wrong_name, z.player_name) = c.player_name
-        AND z.year = c.year
+    JOIN current_rosters c ON (nm2.wrong_name = c.player_name
         AND c.position NOT IN ('SP', 'MR', 'CL')
     )
-    LEFT JOIN teams t ON (c.team_id = t.team_id 
+    JOIN teams t ON (c.team_id = t.team_id 
         AND z.year = t.year
     )
+    -- LEFT JOIN processed_WAR_hitters w ON (z.year = w.year AND z.age = w.age AND nm2.wrong_name = w.player_name)
     -- LEFT JOIN(
     --     SELECT *
     --     FROM excel_rosters
@@ -163,7 +166,7 @@ def get_player_matrix(team_abb, year):
             """
 
             cnt_qry = cnt_q % (q)
-            # print(cnt_qry)
+            # raw_input(cnt_qry)
             cnt = db.query(cnt_qry)[0][0]
 
             # if team_abb.upper() == 'TAM':
