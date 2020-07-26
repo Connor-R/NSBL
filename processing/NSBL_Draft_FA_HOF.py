@@ -476,17 +476,15 @@ def process(year):
 
     print "\thistorical_hall_of_fame"
     hof_qries = """
-        DROP TABLE IF EXISTS historical_hall_of_fame;
-        CREATE TABLE historical_hall_of_fame AS
         SELECT HOF_Class
-        , Player_Name
+        , a.Player_Name
         , HOF_Team
         , Career_Span
         , Total_Seasons
-        , Position
+        , a.Position
         , All_Teams
         , Age_Span
-
+        
         , SUM(`WAR/ERA_WAR`) AS `WAR/ERA_WAR`
         , SUM(`noDRS_WAR/FIP_WAR`) AS `noDRS_WAR/FIP_WAR`
 
@@ -516,6 +514,20 @@ def process(year):
         , MAX(`FIP`) AS `FIP`
         , MAX(`ERA_minus`) AS `ERA-`
         , MAX(`FIP_minus`) AS `FIP-`
+
+        , GROUP_CONCAT(DISTINCT CONCAT('#', hdp.overall, ' in ', hdp.year, ' ', hdp.season, ' by ', hdp.team_abb, ' (Round ', hdp.round, ' - Pick ', hdp.pick, ')')) AS Draft
+        
+        , GROUP_CONCAT(DISTINCT CONCAT(IF(hfa.opt='MLI','MLI'
+                ,CONCAT(hfa.contract_years, ' year-'
+                    , '$', FORMAT(hfa.aav*hfa.contract_years*1-(IFNULL(hfa.rights,0)),3)
+                    , ' MM'
+                    , IF(hfa.opt='yes', ' w/opt', '')
+                )
+            )
+            , ' w/', hfa.signing_team
+            , ' in ', hfa.year
+            ) ORDER BY hfa.year ASC SEPARATOR ' & '
+        ) AS FA_History
         FROM(
             SELECT CONCAT("Class of ", RIGHT(year_span,4)+2) AS HOF_Class
             , hsh.player_name AS Player_Name
@@ -581,15 +593,22 @@ def process(year):
             WHERE 1
                 AND group_type = 'full_career'
                 AND RIGHT(year_span,4) <= %s-2
-                AND (0
+                AND IF(RIGHT(year_span,4) <= 2018,
+                    (0
                     OR WAR >= 40
                     OR noDRS_WAR >= 40
                     OR HR >= 450
                     OR b.player_name IN ('Barry Bonds', 'Chipper Jones', 'Manny Ramirez', 'David Ortiz'
                     , 'Travis Hafner'
+                        )
+                    )
+                    , 
+                    (0
+                    OR WAR >= 50
+                    OR noDRS_WAR >= 50
+                    OR HR >= 500
                     )
                 )
-            
             UNION ALL
             
             SELECT CONCAT("Class of ", RIGHT(year_span,4)+2) AS HOF_Class
@@ -657,17 +676,43 @@ def process(year):
             WHERE 1
                 AND group_type = 'full_career'
                 AND RIGHT(year_span,4) <= %s-2
-                AND (0
+                AND IF(RIGHT(year_span,4) <= 2018,
+                    (0
                     OR FIP_WAR >= 40
                     OR ERA_WAR >= 40
                     OR W >= 200
                     OR SV >= 300
                     OR K >= 2500
                     OR b.player_name IN ('Roy Oswalt', 'Pedro Martinez', 'Randy Johnson', 'Roger Clemens'
-                    , 'John Smoltz', 'Mariano Rivera', 'Billy Wagner', 'Joe Nathan', 'Jonathan Papelbon'
+                        , 'John Smoltz', 'Mariano Rivera', 'Billy Wagner', 'Joe Nathan', 'Jonathan Papelbon'
+                        )
+                    )
+                    ,
+                    (0
+                    OR FIP_WAR >= 45
+                    OR ERA_WAR >= 45
+                    OR W >= 225
+                    OR SV >= 300
+                    OR K >= 2750
                     )
                 )
         ) a
+        LEFT JOIN name_mapper nm ON (a.Player_Name = nm.wrong_name
+            AND (nm.start_year IS NULL OR nm.start_year <= LEFT(a.Career_Span,4))
+            AND (nm.end_year IS NULL OR nm.end_year >= RIGHT(a.Career_Span,4))
+            AND (nm.position = '' OR IF(nm.position = 'P', a.position LIKE "%%P%%", a.position NOT LIKE "%%P%%"))
+            # AND (nm.rl_team = '' OR nm.rl_team = a.team_abb)
+            # AND (nm.nsbl_team = '' OR nm.nsbl_team = a.team_abb)
+        )
+        LEFT JOIN name_mapper nm2 ON (nm.right_fname = nm2.right_fname
+            AND nm.right_lname = nm2.right_lname
+            AND (nm.start_year IS NULL OR nm.start_year = nm2.start_year)
+            AND (nm.end_year IS NULL OR nm.end_year = nm2.end_year)
+            AND (nm.position = '' OR nm.position = nm2.position)
+            AND (nm.rl_team = '' OR nm.rl_team = nm2.rl_team)
+        )
+        LEFT JOIN historical_draft_picks hdp ON ((nm2.wrong_name) = hdp.player_name)
+        LEFT JOIN historical_free_agency hfa ON ((nm2.wrong_name) = hfa.player_name)
         GROUP BY player_name
         ORDER BY HOF_Class, Player_Name
         ;

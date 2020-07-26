@@ -9,7 +9,7 @@ from time import time, sleep, mktime
 import argparse
 from dateutil.parser import parse
 
-
+import NSBL_helpers as helper
 from py_db import db
 
 
@@ -114,6 +114,7 @@ def process_urls(urls, year):
 
                             # print '\t\t\t', entry
                             if entry["Player"] != "":
+                                helper.input_name(entry.get('Player'))
                                 entries.append(entry)
 
                 if entries != []:

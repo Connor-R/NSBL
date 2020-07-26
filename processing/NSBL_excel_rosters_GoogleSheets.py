@@ -184,6 +184,7 @@ def process_players(player_list, year, season_gp, team_name, team_abb, date):
                 # for i,v in entry.items():
                 #     print i, '\t', v
 
+                helper.input_name(entry.get('player_name'))
                 entries.append(entry)
 
         except (IndexError, ValueError):

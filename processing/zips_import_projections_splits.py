@@ -5,6 +5,8 @@ import csv
 from time import time
 import codecs
 
+import NSBL_helpers as helper
+
 # loading script for importing zips pitching/hitting splits from csv files
 
 
@@ -49,7 +51,9 @@ def initiate(yr, _type, player_mapper):
                 i += 1
                 year, player_name, vs_hand, ab, h, _2b, _3b, hr, rbi , bb, so , hbp, ibb, sh, sf = row
                 if player_name in player_mapper:
-                    player_name = player_mapper.get(player_name) 
+                    player_name = player_mapper.get(player_name)
+                else:
+                    helper.input_name(player_name)
                 entry = {"year":yr, "player_name":player_name, "vs_hand":vs_hand, "ab":ab, "h":h, "2b":_2b, "3b":_3b, "hr":hr, "rbi":rbi, "bb":bb, "so":so, "hbp":hbp, "ibb":ibb, "sh":sh, "sf":sf}
                 entries.append(entry)
 

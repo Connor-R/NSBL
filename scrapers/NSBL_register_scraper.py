@@ -118,6 +118,9 @@ def input_data(ratings, sql_table, cats, year):
                 entry['games_played'] = int(entry.get('w')) + int(entry.get('l'))
             entries.append(entry)
 
+        if 'player_name' in entry:
+            helper.input_name(entry.get('player_name'))
+
 
     # used for debugging
     # if entries != []:
@@ -230,7 +233,7 @@ def scrape_standings(year, current):
 if __name__ == "__main__":     
     parser = argparse.ArgumentParser()
     parser.add_argument('--end_year',type=int,default=2020)
-    parser.add_argument('--scrape_length',type=str,default='All')
+    parser.add_argument('--scrape_length',type=str,default='Current')
 
     args = parser.parse_args()
     

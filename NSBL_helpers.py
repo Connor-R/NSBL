@@ -405,3 +405,14 @@ def get_def_values(search_name, position, year):
     pb_val = float(weights[3])*(2-passed_ball)
 
     return rn_val, err_val, arm_val, pb_val
+
+def input_name(player_name):
+    chk_val = db.query('select count(*) from name_mapper where wrong_name = "%s"' % (player_name))[0][0]
+
+    if chk_val == 0:
+        right_fname = player_name.split(" ")[0]
+        right_lname = ' '.join(player_name.split(" ")[1:])
+        entry = {'wrong_name': player_name, 'right_fname': right_fname, 'right_lname': right_lname}
+        db.insertRowDict(entry, 'name_mapper', insertMany=False, replace=True, rid=0,debug=1)
+        db.conn.commit()
+        print "\t\tEntered new player %s --> '%s'+'%s'" % (player_name, right_fname, right_lname)
