@@ -199,7 +199,7 @@ def get_pitchers(team_abb, year):
        AND player_name NOT IN %s
         %s
         AND player_name NOT IN ('Player Name', 'Dustin May', 'Nick Pivetta', 'Jeff Hoffman')
-    ORDER BY WAR_per_ip DESC
+    ORDER BY z.FIP_minus ASC
     LIMIT 7;"""
 
     reliever_query = reliever_qry % (year, year, tuple(starter_names), tq_add)

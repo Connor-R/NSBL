@@ -303,7 +303,7 @@ def get_zips_pitching_metrics(metric_9, ip, year, pf,  g, gs, _type):
     lg_gs = float(get_zips_average_pitchers(year, 'lg_gs'))
     metric_RE = ((((18-(float(ip)/float(g)))*(float(lg_r)/float(lg_gs))+(float(ip)/float(g))*RApxMETRIC)/18)+2)*1.5
 
-    if (gs >= 4 or float(gs)/float(g) > 0.4):
+    if (gs >= 3 or float(gs)/float(g) > 0.4):
         METRIC_x_win = ((lg_metric-RApxMETRIC)/(metric_RE))+0.5
         METRIC_x_win_9 = METRIC_x_win - 0.38
     else:
