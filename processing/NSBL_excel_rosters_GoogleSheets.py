@@ -19,7 +19,7 @@ db = db('NSBL')
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 
 # The ID of the roster spreadsheet
-SAMPLE_SPREADSHEET_ID = '1Z9mjO4PLPs0WvAfWkcTTnoIqyI3vrRdATLJAvyCHiFk'
+SAMPLE_SPREADSHEET_ID = '1UJBVQadk2bgCT-ORkuvwGS8Nw6i_xPZqio44lqQkXO8'
 
 def process():
 

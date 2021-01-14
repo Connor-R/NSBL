@@ -80,12 +80,17 @@ def calculate_war(year):
             defense, inn, d_pa, position_adj, dWAR = def_query[0]
             entry['defense'] = defense
 
-            pa_games = 162*(float(pa)/600)
+            pa_games = (float(pa)/4)
             if year >= 2017:
                 ip_games = float(inn)/9
-                dh_adj = -17.5*((pa_games - ip_games)/150.0)
+
+                if (pa_games-ip_games)/150.0 > 0.33:
+                    dh_adj = -17.5*((pa_games - ip_games)/150.0)
+                else:
+                    dh_adj = 0.0
             else:
                 ip_games = pa_games
+
 
 
             try:

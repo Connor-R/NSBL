@@ -9,23 +9,57 @@ db = db('NSBL')
 
 # find potential FA
 
-# SELECT * FROM zips_fangraphs_prep_FA_batters WHERE year = 2020;
-# SELECT * FROM zips_fangraphs_prep_FA_pitchers WHERE year = 2020;
-# SELECT b.*
+# SELECT * FROM zips_fangraphs_prep_FA_batters WHERE year = 2021;
+# SELECT * FROM zips_fangraphs_prep_FA_pitchers WHERE year = 2021;
+# # fa targets
+# SELECT DISTINCT player_name
 # FROM(
-#     SELECT *
+#     SELECT player_name
 #     FROM(
-#         SELECT f.player_name
-#         /* , f.year
-#         , c.age
-#         , f.team_abb
-#         , f.pos
-#         , f.zOPS_Plus
-#         , f.DEF
-#         , f.wRC_plus
-#         , f.scaledWAR */
-#         FROM zips_fangraphs_prep_FA_batters f
-#         JOIN zips_fangraphs_batters_counting c on (f.year=c.year AND f.player_name=c.player AND f.team_abb=c.team_abb)
+#         SELECT CONCAT(nm.right_fname, ' ', nm.right_lname) AS player_name
+#         , SUM(IF(r.player_name IS NOT NULL, 1, 0)) AS roster_names
+#         FROM (
+#             SELECT p.year
+#             , p.player_name
+#             , p.age
+#             , p.team_abb
+#             , p.pos
+#             , IF((0
+#                 OR p.zERA_Plus >= 100
+#                 OR (p.GS >= 3 AND p.zERA_Plus >= 90)
+#                 )
+#             , 1, 0) AS threshold
+#             FROM zips_fangraphs_prep_FA_pitchers p
+#             UNION ALL
+#             SELECT b.year
+#             , b.player_name
+#             , b.age
+#             , b.team_abb
+#             , b.pos
+#             , IF((0
+#                 OR (600*b.def/b.pa) > 6
+#                 OR b.zops_plus >= 80
+#                 OR b.scaledWAR >= 1
+#                 OR b.wrc_plus >= 80
+#                 )
+#             , 1, 0) AS threshold
+#             FROM zips_fangraphs_prep_FA_batters b
+#         ) a
+#         LEFT JOIN name_mapper nm ON (1
+#             AND a.player_name = nm.wrong_name
+#             AND (nm.start_year IS NULL OR nm.start_year <= a.year)
+#             AND (nm.end_year IS NULL OR nm.end_year >= a.year)
+#             AND (nm.position = '' OR nm.position = a.pos)
+#             AND (nm.rl_team = '' OR nm.rl_team = a.team_abb)
+#             # AND (nm.nsbl_team = '' OR nm.nsbl_team = rbp.team_abb)
+#         )
+#         LEFT JOIN name_mapper nm2 ON (nm.right_fname = nm2.right_fname
+#             AND nm.right_lname = nm2.right_lname
+#             AND (nm.start_year IS NULL OR nm.start_year = nm2.start_year)
+#             AND (nm.end_year IS NULL OR nm.end_year = nm2.end_year)
+#             AND (nm.position = '' OR nm.position = nm2.position)
+#             AND (nm.rl_team = '' OR nm.rl_team = nm2.rl_team)
+#         )
 #         LEFT JOIN(
 #             SELECT *
 #             FROM excel_rosters
@@ -34,80 +68,38 @@ db = db('NSBL')
 #                 , MAX(gp) AS gp
 #                 FROM excel_rosters
 #                 WHERE 1
-#                     AND year = 2020
+#                     AND year = 2021
 #             ) cur USING (year, gp)
-#         ) r ON (f.player_name=r.player_name)
-#         where r.player_name is null
-#         and c.age >= 25
-#         -- and c.team_abb IN ('COL')
-#         and f.year = 2020
-#         and ( (600*f.def/f.pa) > 6 or f.zops_plus >= 80 or f.scaledWAR >= 1 or f.wrc_plus >= 80)
-#         -- order by f.scaledWAR DESC
-#         union
-#         select distinct player_name
-#         from excel_rosters
-#         where 1
-#             and year = 2019
-#             and position != 'p'
-#             and (contract_year = '6th'
-#                 or (expires = 2019 and opt = '')
-#             )
-#     ) a
+#         ) r ON (IFNULL(nm2.wrong_name, a.player_name) = r.player_name)
+#         WHERE 1 
+#             AND a.age >= 25
+#             AND a.year = 2021
+#             AND a.threshold = 1
+#         GROUP BY player_name
+#         HAVING 1
+#             AND roster_names = 0
+#     ) fa1
 #     UNION ALL
-#     SELECT *
-#     FROM(
-#         SELECT f.player_name
-#         /* , f.year
-#         , c.age
-#         , f.team_abb
-#         , f.pos
-#         , f.ip
-#         , f.zERA_plus
-#         , f.zERA_minus
-#         , f.zWAR
-#         , f.k_9
-#         , f.bb_9
-#         , f.k_bb
-#         , f.hr_9
-#         , f.FIP_minus
-#         , f.ERA_minus
-#         , f.FIP_WAR
-#         , f.ERA_WAR */
-#         FROM zips_fangraphs_prep_FA_pitchers f
-#         JOIN zips_fangraphs_pitchers_counting c on (f.year=c.year AND f.player_name=c.player AND f.team_abb=c.team_abb)
-#         LEFT JOIN(
-#             SELECT *
-#             FROM excel_rosters
-#             JOIN (
-#                 SELECT year
-#                 , MAX(gp) AS gp
-#                 FROM excel_rosters
-#                 WHERE 1
-#                     AND year = 2020
-#             ) cur USING (year, gp)
-#         ) r ON (f.player_name=r.player_name)
-#         where r.player_name is null
-#         and c.age >= 25
-#         -- and c.team_abb IN ('COL')
-#         and f.year = 2020
-#         and if(f.gs >= 3, zERA_plus >= 90, zERA_plus >= 100)
-#         -- order by f.FIP_WAR DESC
-#         union
-#         select distinct replace(player_name,'  ', ' ')
-#         from excel_rosters
-#         where 1
-#             and year = 2019
-#             and position = 'p'
-#             and (contract_year = '6th'
-#                 or (expires = 2019 and opt = '')
-#             )
-#     ) a
-# ) b
+#     SELECT DISTINCT CONCAT(nm.right_fname, ' ', nm.right_lname) AS player_name
+#     FROM excel_rosters a
+#     LEFT JOIN name_mapper nm ON (1
+#         AND a.player_name = nm.wrong_name
+#         AND (nm.start_year IS NULL OR nm.start_year <= a.year)
+#         AND (nm.end_year IS NULL OR nm.end_year >= a.year)
+#         AND (nm.position = '' OR nm.position = a.position)
+#         AND (nm.rl_team = '' OR nm.rl_team = a.team_abb)
+#         # AND (nm.nsbl_team = '' OR nm.nsbl_team = rbp.team_abb)
+#     )
+#     WHERE 1
+#         AND a.YEAR = 2020
+#         AND (a.contract_year = '6th' OR (a.expires = 2020 AND a.opt = ''))
+# ) fa2
 # WHERE 1
-#     AND player_name NOT IN ('Randy Dobnak', 'Kwang-hyun Kim', 'Sam Delaplane', 'Addison Russ', 'Bennett Sousa', 'Connor Brogdon', 'Corbin Clouse', 'Trevor Bettencourt', 'David Bednar', 'Ethan DeCaster', 'Evan Miller', 'Gabriel Moya', 'Ian Hamilton', 'Joel Kuhnel',  'Wyatt Mills',  'Marcel Renteria',  'Matt Foster',  'Nolan Blackwood', 'Phillip Diehl',  'Will Vest', 'Cole Stapler', 'Garrett Williams', 'Griffin Jax',  'Jeremy Walker',  'Michael King',  'Zack Kelly', 'John Schreiber', 'Kevin Ginkel', 'Miguel Sanchez', 'Jack Anderson', 'Penn Murfee', 'Will D. Smith', 'Shogo Akiyama', 'Brian Serven', 'Ivan Castillo', 'Jon Rosoff', 'Jonathan Morales', 'Arden Pabst', 'Ben DeLuzio', 'Thomas Milone', 'Chas McCormick', 'Danny Woodrow', 'Josh VanMeter', 'Rodrigo Orozco', 'Ryan Grotjohn', 'Vance Vizcaino', 'Jaylin Davis', 'Jake Fraley', 'Hunter Owen', 'Renae Martinez', 'Cole Billingsley', 'Jimmy Kerrigan', 'Chad Sedio', 'Josh Rojas', 'Luke Burch', 'Zach Reks', 'Alfredo Rodriguez', 'Jose Rojas', 'Robel Garcia', 'Tyler Zuber', 'Aaron Civale', 'Logan Ice', 'Zack Short', 'Wyatt Short', 'Daniel Castano', 'Dylan Lee', 'Sterling Sharp', 'Tommy Eveld', 'Alex Dunlap', 'Jonah Heim', "Riley O'Brien", 'Santiago Espinal', 'Tyler Zombro', 'Michael Brosseau', 'Shun Yamaguchi', 'Yoshitomo Tsutsugo', 'Yadiel Hernandez')
+#     AND player_name NOT IN ('Tyler J. Alexander',)
 # ORDER BY player_name ASC
 # ;
 
+# # best/worst contracts
 # SELECT a.*
 # , IF(opt = 'no', NULL, IF(base_value-base_salary > opt_value-opt_salary, 'no', 'yes')) as proj_opt
 # , ROUND(IF(opt = 'no', base_salary, IF(base_value-base_salary > opt_value-opt_salary, base_salary, opt_salary)), 3) as proj_salary
@@ -200,7 +192,7 @@ db = db('NSBL')
 #         AND hfa.year = fab.year
 #     )
 #     WHERE 1
-#         AND hfa.year = 2019
+#         AND hfa.year = 2021
 #         AND hfa.position NOT IN ('RP', 'SP')
 #     UNION ALL   
 #     SELECT hfa.year
@@ -289,7 +281,7 @@ db = db('NSBL')
 #         AND hfa.year = fab.year
 #     )
 #     WHERE 1
-#         AND hfa.year = 2019
+#         AND hfa.year = 2021
 #         AND hfa.position IN ('RP', 'SP')
 # ) a
 # ORDER BY proj_value DESC
@@ -637,7 +629,7 @@ def pitchers(year):
 if __name__ == "__main__":        
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--year",type=int,default=2020)
+    parser.add_argument("--year",type=int,default=2021)
     args = parser.parse_args()
     
     process(args.year)

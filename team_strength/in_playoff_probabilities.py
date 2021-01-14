@@ -158,7 +158,18 @@ def get_playoff_teams(year, timestamp):
     entries = []
     for strength_type in ('projected', 'roster'):
         qry = """SELECT 
-        team_abb, team_name, division, top_seed, win_division, (wc_1+wc_2)
+        team_abb
+        , team_name
+        , division
+        , CASE
+            WHEN year = 2020 AND team_abb = 'NYN'
+                THEN 0
+            WHEN year = 2020 AND team_abb = 'Ari'
+                THEN 1
+            ELSE top_seed
+        END AS top_seed
+        , win_division
+        , (wc_1+wc_2)
         FROM __playoff_probabilities
         JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb, year) t2 USING (team_abb, year, games_played)
         WHERE strength_type = 'projected' 
@@ -323,6 +334,7 @@ def process_cs(year, timestamp):
 
             series_prob = get_series_prob(series_games, series_wins, series_losses, team_winProb)
 
+            # print oppn_name, matchup1_prob, matchup2_prob, matchup3_prob, series_prob
             make_cs.append(matchup_prob*series_prob)
 
         make_cs = sum(make_cs)
@@ -493,7 +505,7 @@ def get_single_game_win_prob(team1_abb, team2_abb, strength_type, year):
 
 if __name__ == "__main__":  
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',type=int,default=2018)
+    parser.add_argument('--year',type=int,default=2020)
     args = parser.parse_args()
     
     process(args.year)

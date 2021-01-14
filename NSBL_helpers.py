@@ -2,7 +2,9 @@
 from py_db import db
 db = db('NSBL')
 
-
+def random_sql_helpers():
+    sql_dict = {
+    }
 
 def get_team_abb(team_name, year):
     qry = db.query("SELECT team_abb FROM teams WHERE year = %s AND team_name = '%s';" % (year, team_name))

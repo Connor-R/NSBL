@@ -2,7 +2,7 @@ SHELL=/bin/bash
 source "/Users/connordog/.bash_profile"
 
 updateDate=$( date +"%b %d, %Y" )
-year=2019
+year=2020
 
 python team_strength/in_playoff_probabilities.py --year "$year"
 

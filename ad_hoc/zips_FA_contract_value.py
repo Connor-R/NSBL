@@ -16,6 +16,8 @@ db = db('NSBL')
 
 def process():
     print 'zips_FA_contract_value'
+    db.query("DELETE FROM zips_FA_contract_value_batters;")
+    db.query("DELETE FROM zips_FA_contract_value_pitchers;")
     batters()
     pitchers()
 

@@ -17,7 +17,7 @@ db = db("NSBL")
 
 
 sleep_time = 5
-initial_url = "https://blogs.fangraphs.com/2020-zips-projections-arizona-diamondbacks/"
+initial_url = "https://blogs.fangraphs.com/2021-zips-projections-oakland-athletics/"
 
 
 start_time = time()
@@ -53,11 +53,11 @@ def process_urls(urls, year):
             print '\t', str(teamcnt+1), tm, '-', url
             
             tm_list = []
-            tm_query = db.query("SELECT DISTINCT team_abb FROM zips_fangraphs_batters_counting WHERE year = %s" % (year))
-            for t in tm_query:
-                tm_list.append(t[0])
-            if tm in tm_list:
-                continue
+            # tm_query = db.query("SELECT DISTINCT team_abb FROM zips_fangraphs_batters_counting WHERE year = %s" % (year))
+            # for t in tm_query:
+            #     tm_list.append(t[0])
+            # if tm in tm_list:
+            #     continue
 
             sleep(sleep_time)
             team_data = requests.get(url)
@@ -68,10 +68,15 @@ def process_urls(urls, year):
 
             tables = team_soup.findAll("table", {"class": ["sortable", "sortable table-equal-width", "table-equal-width"]})
             print len(tables)
+
+            if len(tables) == 0:
+                tables = team_soup.findAll("table")[11:]
+                print len(tables)
+
             for i, table in enumerate(tables):
                 entries = []
                 cats = []
-                if i == 0 :
+                if i == 0:
                     db_table = "zips_fangraphs_batters_counting"
                 elif i == 1:
                     db_table = "zips_fangraphs_batters_rate"
@@ -125,7 +130,7 @@ def process_urls(urls, year):
 if __name__ == "__main__":     
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--year",type=int,default=2020)
+    parser.add_argument("--year",type=int,default=2021)
     args = parser.parse_args()
     
     initiate(args.year)
