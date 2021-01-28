@@ -741,7 +741,7 @@ def team_values(year):
 
 if __name__ == "__main__":  
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',type=int,default=2020)
+    parser.add_argument('--year',type=int,default=2021)
     args = parser.parse_args()
     
     process(args.year)

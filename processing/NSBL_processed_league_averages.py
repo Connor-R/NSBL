@@ -6,7 +6,9 @@ db = db('NSBL')
 
 print "processed_league_averages"
 
-for y in range(2006,2021):
+start_year, end_year = db.query("SELECT MIN(year) AS start_year, MAX(year) AS end_year FROM register_batting_primary;")[0]
+
+for y in range(start_year,end_year):
     year = str(y)
     print '\t', year
     hit_q = """

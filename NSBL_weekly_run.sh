@@ -24,7 +24,6 @@ wait
 cd processing
 python NSBL_excel_rosters_GoogleSheets.py
 cd ..
-# # python processing/NSBL_excel_rosters.py --year "$year"
 
 wait 
 
