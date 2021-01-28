@@ -1,9 +1,11 @@
 import argparse
 from py_db import db
+from time import time
 
 db = db('NSBL')
 
 def process(year):
+
     print "NSBL_Draft_FA_HOF"
 
     print "\thistorical_draft_pick_performance"
@@ -728,9 +730,19 @@ def process(year):
         db.query(qry)
         db.conn.commit()
 
+
+
 if __name__ == "__main__":
+    start_time = time()
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',type=int,default=2020)
+    parser.add_argument('--year',type=int,default=2021)
     args = parser.parse_args()  
     
     process(args.year)
+
+    end_time = time()
+    elapsed_time = float(end_time - start_time)
+    print "zips_WAR_hitters.py"
+    print "time elapsed (in seconds): " + str(elapsed_time)
+    print "time elapsed (in minutes): " + str(elapsed_time/60.0)
