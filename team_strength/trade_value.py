@@ -94,11 +94,11 @@ def player_values(year):
         FROM NSBL.excel_rosters r
         JOIN (
             SELECT year
-            , MAX(gp) AS gp
+            , MAX(date) AS date
             FROM excel_rosters
             WHERE 1
                 AND year = %s
-        ) cur USING (year, gp)
+        ) cur USING (year, date)
         LEFT JOIN name_mapper nm ON (1
             AND r.player_name = nm.wrong_name
             AND (nm.start_year IS NULL OR nm.start_year <= r.year)

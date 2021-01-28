@@ -70,11 +70,11 @@ LEFT JOIN(
     FROM excel_rosters
     JOIN (
         SELECT year
-        , MAX(gp) AS gp
+        , MAX(date) AS date
         FROM excel_rosters
         WHERE 1
             AND year = %s
-    ) cur USING (year, gp)
+    ) cur USING (year, date)
 ) d USING (player_name)
 WHERE a.year = %s
 ORDER BY YEAR DESC, split_WAR DESC;"""
@@ -170,11 +170,11 @@ LEFT JOIN(
     FROM excel_rosters
     JOIN (
         SELECT year
-        , MAX(gp) AS gp
+        , MAX(date) AS date
         FROM excel_rosters
         WHERE 1
             AND year = %s
-    ) cur USING (year, gp)
+    ) cur USING (year, date)
 ) d USING (player_name)
 WHERE a.year = %s
 ORDER BY YEAR DESC, noD_WAR DESC;"""

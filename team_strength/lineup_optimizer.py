@@ -107,11 +107,11 @@ def get_player_matrix(team_abb, year):
     --     FROM excel_rosters
     --     JOIN (
     --         SELECT year
-    --         , MAX(gp) AS gp
+    --         , MAX(date) AS date
     --         FROM excel_rosters
     --         WHERE 1
     --             AND year = %s
-    --     ) cur USING (year, gp)
+    --     ) cur USING (year, date)
     -- ) cre ON (IFNULL(nm2.wrong_name, z.player_name) = cre.player_name)
     WHERE 1
         AND z.year = %s

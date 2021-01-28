@@ -476,47 +476,11 @@ def process(year):
 
     print "\thistorical_hall_of_fame"
     hof_qries = """
-        SELECT HOF_Class
-        , a.Player_Name
-        , HOF_Team
-        , Career_Span
-        , Total_Seasons
-        , a.Position
-        , All_Teams
-        , Age_Span
-        
-        , SUM(`WAR/ERA_WAR`) AS `WAR/ERA_WAR`
-        , SUM(`noDRS_WAR/FIP_WAR`) AS `noDRS_WAR/FIP_WAR`
-
-        , MAX(`pa`) AS `PA`
-        , MAX(`ab`) AS `AB`
-        , MAX(`h`) AS `H`
-        , MAX(`hr`) AS `HR`
-        , MAX(`sb`) AS `SB`
-        , MAX(`avg`) AS `AVG`
-        , MAX(`obp`) AS `OBP`
-        , MAX(`slg`) AS `SLG`
-        , MAX(`ops`) AS `OPS`
-        , MAX(`wOBA`) AS `wOBA`
-        , MAX(`OPS_plus`) AS `OPS+`
-        , MAX(`wRC_plus`) AS `wRC+`
-        , MAX(`rAA`) AS `rAA`
-        , MAX(`w`) AS `W`
-        , MAX(`l`) AS `L`
-        , MAX(`sv`) AS `SV`
-        , MAX(`g`) AS `G`
-        , MAX(`gs`) AS `GS`
-        , MAX(`cg`) AS `CG`
-        , MAX(`sho`) AS `SHO`
-        , MAX(`k`) AS `K`
-        , MAX(`ip`) AS `IP`
-        , MAX(`ERA`) AS `ERA`
-        , MAX(`FIP`) AS `FIP`
-        , MAX(`ERA_minus`) AS `ERA-`
-        , MAX(`FIP_minus`) AS `FIP-`
-
+        DROP TABLE IF EXISTS historical_hall_of_fame;
+        CREATE TABLE historical_hall_of_fame AS
+        SELECT a.*
         , GROUP_CONCAT(DISTINCT CONCAT('#', hdp.overall, ' in ', hdp.year, ' ', hdp.season, ' by ', hdp.team_abb, ' (Round ', hdp.round, ' - Pick ', hdp.pick, ')')) AS Draft
-        
+
         , GROUP_CONCAT(DISTINCT CONCAT(IF(hfa.opt='MLI','MLI'
                 ,CONCAT(hfa.contract_years, ' year-'
                     , '$', FORMAT(hfa.aav*hfa.contract_years*1-(IFNULL(hfa.rights,0)),3)
@@ -529,173 +493,214 @@ def process(year):
             ) ORDER BY hfa.year ASC SEPARATOR ' & '
         ) AS FA_History
         FROM(
-            SELECT CONCAT("Class of ", RIGHT(year_span,4)+2) AS HOF_Class
-            , hsh.player_name AS Player_Name
-            , year_span AS Career_Span
-            , player_seasons AS Total_Seasons
-            , listed_position AS Position
-            , team AS All_Teams
-            , IF(b.MOST_WAR_FRANCHISE=b.MOST_PA_FRANCHISE, b.MOST_WAR_FRANCHISE, CONCAT(b.MOST_WAR_FRANCHISE, ' & ', b.MOST_PA_FRANCHISE)) AS HOF_Team
-            , age AS Age_Span
+            SELECT HOF_Class
+            , stats.Player_Name
+            , HOF_Team
+            , Career_Span
+            , Total_Seasons
+            , stats.Position
+            , All_Teams
+            , Age_Span
             
-            
-            , WAR AS `WAR/ERA_WAR`
-            , noDRS_WAR AS `noDRS_WAR/FIP_WAR`
+            , SUM(`WAR/ERA_WAR`) AS `WAR/ERA_WAR`
+            , SUM(`noDRS_WAR/FIP_WAR`) AS `noDRS_WAR/FIP_WAR`
 
-            , PA
-            , AB
-            , H
-            , HR
-            , SB
-            , hsh.AVG
-            , OBP
-            , SLG
-            , OBP+SLG AS OPS
-            , wOBA
-            , OPS_plus
-            , wRC_plus
-            , rAA
-            
-            , NULL AS W
-            , NULL AS L
-            , NULL AS SV
-            , NULL AS G
-            , NULL AS GS
-            , NULL AS CG
-            , NULL AS SHO
-            , NULL AS K
-            , NULL AS IP
-            , NULL AS ERA
-            , NULL AS FIP
-            , NULL AS ERA_minus
-            , NULL AS FIP_minus
-            FROM historical_stats_hitters hsh
-            JOIN(
-                SELECT a.player_name
-                , GROUP_CONCAT(DISTINCT war.team) AS MOST_WAR_FRANCHISE
-                , GROUP_CONCAT(DISTINCT pa.team) AS MOST_PA_FRANCHISE
-                FROM(
-                    SELECT hsh.player_name
-                    , MAX(WAR) AS WAR
-                    , MAX(pa) AS PA
-                    FROM historical_stats_hitters hsh
+            , MAX(`pa`) AS `PA`
+            , MAX(`ab`) AS `AB`
+            , MAX(`h`) AS `H`
+            , MAX(`hr`) AS `HR`
+            , MAX(`sb`) AS `SB`
+            , MAX(`avg`) AS `AVG`
+            , MAX(`obp`) AS `OBP`
+            , MAX(`slg`) AS `SLG`
+            , MAX(`ops`) AS `OPS`
+            , MAX(`wOBA`) AS `wOBA`
+            , MAX(`OPS_plus`) AS `OPS+`
+            , MAX(`wRC_plus`) AS `wRC+`
+            , MAX(`rAA`) AS `rAA`
+            , MAX(`w`) AS `W`
+            , MAX(`l`) AS `L`
+            , MAX(`sv`) AS `SV`
+            , MAX(`g`) AS `G`
+            , MAX(`gs`) AS `GS`
+            , MAX(`cg`) AS `CG`
+            , MAX(`sho`) AS `SHO`
+            , MAX(`k`) AS `K`
+            , MAX(`ip`) AS `IP`
+            , MAX(`ERA`) AS `ERA`
+            , MAX(`FIP`) AS `FIP`
+            , MAX(`ERA_minus`) AS `ERA-`
+            , MAX(`FIP_minus`) AS `FIP-`
+            FROM(
+                SELECT CONCAT("Class of ", RIGHT(year_span,4)+2) AS HOF_Class
+                , hsh.player_name AS Player_Name
+                , year_span AS Career_Span
+                , player_seasons AS Total_Seasons
+                , listed_position AS Position
+                , team AS All_Teams
+                , IF(b.MOST_WAR_FRANCHISE=b.MOST_PA_FRANCHISE, b.MOST_WAR_FRANCHISE, CONCAT(b.MOST_WAR_FRANCHISE, ' & ', b.MOST_PA_FRANCHISE)) AS HOF_Team
+                , age AS Age_Span
+                
+                
+                , WAR AS `WAR/ERA_WAR`
+                , noDRS_WAR AS `noDRS_WAR/FIP_WAR`
+
+                , PA
+                , AB
+                , H
+                , HR
+                , SB
+                , hsh.AVG
+                , OBP
+                , SLG
+                , OBP+SLG AS OPS
+                , wOBA
+                , OPS_plus
+                , wRC_plus
+                , rAA
+                
+                , NULL AS W
+                , NULL AS L
+                , NULL AS SV
+                , NULL AS G
+                , NULL AS GS
+                , NULL AS CG
+                , NULL AS SHO
+                , NULL AS K
+                , NULL AS IP
+                , NULL AS ERA
+                , NULL AS FIP
+                , NULL AS ERA_minus
+                , NULL AS FIP_minus
+                FROM historical_stats_hitters hsh
+                JOIN(
+                    SELECT a.player_name
+                    , GROUP_CONCAT(DISTINCT war.team) AS MOST_WAR_FRANCHISE
+                    , GROUP_CONCAT(DISTINCT pa.team) AS MOST_PA_FRANCHISE
+                    FROM(
+                        SELECT hsh.player_name
+                        , MAX(WAR) AS WAR
+                        , MAX(pa) AS PA
+                        FROM historical_stats_hitters hsh
+                        WHERE 1
+                            AND group_type = 'career_by_team'
+                        GROUP BY hsh.player_name
+                    ) a
+                    JOIN historical_stats_hitters war ON (a.player_name = war.player_name AND a.WAR = war.WAR)
+                    JOIN historical_stats_hitters pa ON (a.player_name = pa.player_name AND a.pa = pa.pa)
                     WHERE 1
-                        AND group_type = 'career_by_team'
-                    GROUP BY hsh.player_name
-                ) a
-                JOIN historical_stats_hitters war ON (a.player_name = war.player_name AND a.WAR = war.WAR)
-                JOIN historical_stats_hitters pa ON (a.player_name = pa.player_name AND a.pa = pa.pa)
+                        AND war.group_type = 'career_by_team'
+                        AND pa.group_type = 'career_by_team'
+                    GROUP BY a.player_name
+                ) b ON (hsh.player_name = b.player_name)
                 WHERE 1
-                    AND war.group_type = 'career_by_team'
-                    AND pa.group_type = 'career_by_team'
-                GROUP BY a.player_name
-            ) b ON (hsh.player_name = b.player_name)
-            WHERE 1
-                AND group_type = 'full_career'
-                AND RIGHT(year_span,4) <= %s-2
-                AND IF(RIGHT(year_span,4) <= 2018,
-                    (0
-                    OR WAR >= 40
-                    OR noDRS_WAR >= 40
-                    OR HR >= 450
-                    OR b.player_name IN ('Barry Bonds', 'Chipper Jones', 'Manny Ramirez', 'David Ortiz'
-                    , 'Travis Hafner'
+                    AND group_type = 'full_career'
+                    AND RIGHT(year_span,4) <= %s-2
+                    AND IF(RIGHT(year_span,4) <= 2018,
+                        (0
+                        OR WAR >= 40
+                        OR noDRS_WAR >= 40
+                        OR HR >= 450
+                        OR b.player_name IN ('Barry Bonds', 'Chipper Jones', 'Manny Ramirez', 'David Ortiz'
+                        , 'Travis Hafner'
+                            )
+                        )
+                        , 
+                        (0
+                        OR WAR >= 50
+                        OR noDRS_WAR >= 50
+                        OR HR >= 500
                         )
                     )
-                    , 
-                    (0
-                    OR WAR >= 50
-                    OR noDRS_WAR >= 50
-                    OR HR >= 500
-                    )
-                )
-            UNION ALL
-            
-            SELECT CONCAT("Class of ", RIGHT(year_span,4)+2) AS HOF_Class
-            , hsp.player_name AS Player_Name
-            , year_span AS Career_Span
-            , player_seasons AS Total_Seasons
-            , listed_position AS Position
-            , team AS All_Teams
-            , IF(b.MOST_WAR_FRANCHISE=b.MOST_IP_FRANCHISE, b.MOST_WAR_FRANCHISE, CONCAT(b.MOST_WAR_FRANCHISE, ' & ', b.MOST_IP_FRANCHISE)) AS HOF_Team
-            , age AS Age_Span
-            
-            , ERA_WAR AS `WAR/ERA_WAR`
-            , FIP_WAR AS `noDRS_WAR/FIP_WAR`
+                UNION ALL
+                
+                SELECT CONCAT("Class of ", RIGHT(year_span,4)+2) AS HOF_Class
+                , hsp.player_name AS Player_Name
+                , year_span AS Career_Span
+                , player_seasons AS Total_Seasons
+                , listed_position AS Position
+                , team AS All_Teams
+                , IF(b.MOST_WAR_FRANCHISE=b.MOST_IP_FRANCHISE, b.MOST_WAR_FRANCHISE, CONCAT(b.MOST_WAR_FRANCHISE, ' & ', b.MOST_IP_FRANCHISE)) AS HOF_Team
+                , age AS Age_Span
+                
+                , ERA_WAR AS `WAR/ERA_WAR`
+                , FIP_WAR AS `noDRS_WAR/FIP_WAR`
 
-            , NULL AS PA
-            , NULL AS AB
-            , NULL AS H
-            , NULL AS HR
-            , NULL AS SB
-            , NULL AS AVG
-            , NULL AS OBP
-            , NULL AS SLG
-            , NULL AS OPS
-            , NULL AS wOBA
-            , NULL AS OPS_plus
-            , NULL AS wRC_plus
-            , NULL AS rAA
-            
-            , W
-            , L
-            , SV
-            , G
-            , GS
-            , CG
-            , SHO
-            , K
-            , IP
-            , ERA
-            , FIP
-            , ERA_minus
-            , FIP_minus
+                , NULL AS PA
+                , NULL AS AB
+                , NULL AS H
+                , NULL AS HR
+                , NULL AS SB
+                , NULL AS AVG
+                , NULL AS OBP
+                , NULL AS SLG
+                , NULL AS OPS
+                , NULL AS wOBA
+                , NULL AS OPS_plus
+                , NULL AS wRC_plus
+                , NULL AS rAA
+                
+                , W
+                , L
+                , SV
+                , G
+                , GS
+                , CG
+                , SHO
+                , K
+                , IP
+                , ERA
+                , FIP
+                , ERA_minus
+                , FIP_minus
 
 
-            FROM historical_stats_pitchers hsp
-            JOIN(
-                SELECT a.player_name
-                , GROUP_CONCAT(DISTINCT war.team) AS MOST_WAR_FRANCHISE
-                , GROUP_CONCAT(DISTINCT ip.team) AS MOST_IP_FRANCHISE
-                FROM(
-                    SELECT hsp.player_name
-                    , MAX(FIP_WAR) AS WAR
-                    , MAX(ip) AS IP
-                    FROM historical_stats_pitchers hsp
+                FROM historical_stats_pitchers hsp
+                JOIN(
+                    SELECT a.player_name
+                    , GROUP_CONCAT(DISTINCT war.team) AS MOST_WAR_FRANCHISE
+                    , GROUP_CONCAT(DISTINCT ip.team) AS MOST_IP_FRANCHISE
+                    FROM(
+                        SELECT hsp.player_name
+                        , MAX(FIP_WAR) AS WAR
+                        , MAX(ip) AS IP
+                        FROM historical_stats_pitchers hsp
+                        WHERE 1
+                            AND group_type = 'career_by_team'
+                        GROUP BY hsp.player_name
+                    ) a
+                    JOIN historical_stats_pitchers war ON (a.player_name = war.player_name AND a.WAR = war.FIP_WAR)
+                    JOIN historical_stats_pitchers ip ON (a.player_name = ip.player_name AND a.ip = ip.ip)
                     WHERE 1
-                        AND group_type = 'career_by_team'
-                    GROUP BY hsp.player_name
-                ) a
-                JOIN historical_stats_pitchers war ON (a.player_name = war.player_name AND a.WAR = war.FIP_WAR)
-                JOIN historical_stats_pitchers ip ON (a.player_name = ip.player_name AND a.ip = ip.ip)
+                        AND war.group_type = 'career_by_team'
+                        AND ip.group_type = 'career_by_team'
+                    GROUP BY a.player_name
+                ) b ON (hsp.player_name = b.player_name)
                 WHERE 1
-                    AND war.group_type = 'career_by_team'
-                    AND ip.group_type = 'career_by_team'
-                GROUP BY a.player_name
-            ) b ON (hsp.player_name = b.player_name)
-            WHERE 1
-                AND group_type = 'full_career'
-                AND RIGHT(year_span,4) <= %s-2
-                AND IF(RIGHT(year_span,4) <= 2018,
-                    (0
-                    OR FIP_WAR >= 40
-                    OR ERA_WAR >= 40
-                    OR W >= 200
-                    OR SV >= 300
-                    OR K >= 2500
-                    OR b.player_name IN ('Roy Oswalt', 'Pedro Martinez', 'Randy Johnson', 'Roger Clemens'
-                        , 'John Smoltz', 'Mariano Rivera', 'Billy Wagner', 'Joe Nathan', 'Jonathan Papelbon'
+                    AND group_type = 'full_career'
+                    AND RIGHT(year_span,4) <= %s-2
+                    AND IF(RIGHT(year_span,4) <= 2018,
+                        (0
+                        OR FIP_WAR >= 40
+                        OR ERA_WAR >= 40
+                        OR W >= 200
+                        OR SV >= 300
+                        OR K >= 2500
+                        OR b.player_name IN ('Roy Oswalt', 'Pedro Martinez', 'Randy Johnson', 'Roger Clemens'
+                            , 'John Smoltz', 'Mariano Rivera', 'Billy Wagner', 'Joe Nathan', 'Jonathan Papelbon'
+                            )
+                        )
+                        ,
+                        (0
+                        OR FIP_WAR >= 45
+                        OR ERA_WAR >= 45
+                        OR W >= 225
+                        OR SV >= 300
+                        OR K >= 2750
                         )
                     )
-                    ,
-                    (0
-                    OR FIP_WAR >= 45
-                    OR ERA_WAR >= 45
-                    OR W >= 225
-                    OR SV >= 300
-                    OR K >= 2750
-                    )
-                )
+            ) stats
+            GROUP BY HOF_Class, Player_Name
         ) a
         LEFT JOIN name_mapper nm ON (a.Player_Name = nm.wrong_name
             AND (nm.start_year IS NULL OR nm.start_year <= LEFT(a.Career_Span,4))

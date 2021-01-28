@@ -65,11 +65,11 @@ db = db('NSBL')
 #             FROM excel_rosters
 #             JOIN (
 #                 SELECT year
-#                 , MAX(gp) AS gp
+#                 , MAX(date) AS date
 #                 FROM excel_rosters
 #                 WHERE 1
 #                     AND year = 2021
-#             ) cur USING (year, gp)
+#             ) cur USING (year, date)
 #         ) r ON (IFNULL(nm2.wrong_name, a.player_name) = r.player_name)
 #         WHERE 1 
 #             AND a.age >= 25
