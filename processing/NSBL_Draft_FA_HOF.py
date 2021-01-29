@@ -534,13 +534,16 @@ def process(year):
             , MAX(`ERA_minus`) AS `ERA-`
             , MAX(`FIP_minus`) AS `FIP-`
             FROM(
-                SELECT CONCAT("Class of ", RIGHT(year_span,4)+2) AS HOF_Class
+                SELECT CONCAT("Class of ", RIGHT(year_span,4)+3) AS HOF_Class
                 , hsh.player_name AS Player_Name
                 , year_span AS Career_Span
                 , player_seasons AS Total_Seasons
                 , listed_position AS Position
                 , team AS All_Teams
-                , IF(b.MOST_WAR_FRANCHISE=b.MOST_PA_FRANCHISE, b.MOST_WAR_FRANCHISE, CONCAT(b.MOST_WAR_FRANCHISE, ' & ', b.MOST_PA_FRANCHISE)) AS HOF_Team
+                , IF((b.MOST_PA_FRANCHISE LIKE CONCAT("%%", b.MOST_WAR_FRANCHISE, "%%") OR (b.MOST_WAR_FRANCHISE LIKE CONCAT("%%", b.MOST_PA_FRANCHISE, "%%")))
+                    , b.MOST_WAR_FRANCHISE
+                    , CONCAT(b.MOST_WAR_FRANCHISE, ' & ', b.MOST_PA_FRANCHISE)
+                ) AS HOF_Team
                 , age AS Age_Span
                 
                 
@@ -577,8 +580,8 @@ def process(year):
                 FROM historical_stats_hitters hsh
                 JOIN(
                     SELECT a.player_name
-                    , GROUP_CONCAT(DISTINCT war.team) AS MOST_WAR_FRANCHISE
-                    , GROUP_CONCAT(DISTINCT pa.team) AS MOST_PA_FRANCHISE
+                    , GROUP_CONCAT(DISTINCT war.team SEPARATOR ' & ') AS MOST_WAR_FRANCHISE
+                    , GROUP_CONCAT(DISTINCT pa.team SEPARATOR ' &') AS MOST_PA_FRANCHISE
                     FROM(
                         SELECT hsh.player_name
                         , MAX(WAR) AS WAR
@@ -597,7 +600,7 @@ def process(year):
                 ) b ON (hsh.player_name = b.player_name)
                 WHERE 1
                     AND group_type = 'full_career'
-                    AND RIGHT(year_span,4) <= %s-2
+                    AND RIGHT(year_span,4) <= %s-3
                     AND IF(RIGHT(year_span,4) <= 2018,
                         (0
                         OR WAR >= 40
@@ -616,13 +619,16 @@ def process(year):
                     )
                 UNION ALL
                 
-                SELECT CONCAT("Class of ", RIGHT(year_span,4)+2) AS HOF_Class
+                SELECT CONCAT("Class of ", RIGHT(year_span,4)+3) AS HOF_Class
                 , hsp.player_name AS Player_Name
                 , year_span AS Career_Span
                 , player_seasons AS Total_Seasons
                 , listed_position AS Position
                 , team AS All_Teams
-                , IF(b.MOST_WAR_FRANCHISE=b.MOST_IP_FRANCHISE, b.MOST_WAR_FRANCHISE, CONCAT(b.MOST_WAR_FRANCHISE, ' & ', b.MOST_IP_FRANCHISE)) AS HOF_Team
+                , IF((b.MOST_IP_FRANCHISE LIKE CONCAT("%%", b.MOST_WAR_FRANCHISE, "%%") OR (b.MOST_WAR_FRANCHISE LIKE CONCAT("%%", b.MOST_IP_FRANCHISE, "%%")))
+                    , b.MOST_WAR_FRANCHISE
+                    , CONCAT(b.MOST_WAR_FRANCHISE, ' & ', b.MOST_IP_FRANCHISE)
+                ) AS HOF_Team
                 , age AS Age_Span
                 
                 , ERA_WAR AS `WAR/ERA_WAR`
@@ -660,8 +666,8 @@ def process(year):
                 FROM historical_stats_pitchers hsp
                 JOIN(
                     SELECT a.player_name
-                    , GROUP_CONCAT(DISTINCT war.team) AS MOST_WAR_FRANCHISE
-                    , GROUP_CONCAT(DISTINCT ip.team) AS MOST_IP_FRANCHISE
+                    , GROUP_CONCAT(DISTINCT war.team SEPARATOR ' & ') AS MOST_WAR_FRANCHISE
+                    , GROUP_CONCAT(DISTINCT ip.team SEPARATOR ' & ') AS MOST_IP_FRANCHISE
                     FROM(
                         SELECT hsp.player_name
                         , MAX(FIP_WAR) AS WAR
@@ -680,7 +686,7 @@ def process(year):
                 ) b ON (hsp.player_name = b.player_name)
                 WHERE 1
                     AND group_type = 'full_career'
-                    AND RIGHT(year_span,4) <= %s-2
+                    AND RIGHT(year_span,4) <= %s-3
                     AND IF(RIGHT(year_span,4) <= 2018,
                         (0
                         OR FIP_WAR >= 40

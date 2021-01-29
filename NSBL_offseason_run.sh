@@ -17,14 +17,14 @@ echo $(date)
 
 wait
 
-cd processing
-python NSBL_excel_rosters_GoogleSheets.py
-cd ..
+# cd processing
+# python NSBL_excel_rosters_GoogleSheets.py
+# cd ..
 
 
 wait
 
-python processing/NSBL_historical_stats.py
+# python processing/NSBL_historical_stats.py
 
 wait
 
