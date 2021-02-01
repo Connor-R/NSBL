@@ -85,8 +85,8 @@ def get_pitchers(team_abb, year):
         AND z.year = t.year
     )
     -- LEFT JOIN(
-    --     SELECT *
-    --     FROM excel_rosters
+    --     SELECT e.*
+    --     FROM excel_rosters e
     --     JOIN (
     --         SELECT year
     --         , MAX(date) AS date
@@ -182,8 +182,8 @@ def get_pitchers(team_abb, year):
         AND z.year = t.year
     )
     -- LEFT JOIN(
-    --     SELECT *
-    --     FROM excel_rosters
+    --     SELECT e.*
+    --     FROM excel_rosters e
     --     JOIN (
     --         SELECT year
     --         , MAX(date) AS date

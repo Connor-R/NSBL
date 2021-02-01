@@ -103,8 +103,8 @@ def get_player_matrix(team_abb, year):
     )
     -- LEFT JOIN processed_WAR_hitters w ON (z.year = w.year AND z.age = w.age AND nm2.wrong_name = w.player_name)
     -- LEFT JOIN(
-    --     SELECT *
-    --     FROM excel_rosters
+    --     SELECT e.*
+    --     FROM excel_rosters e
     --     JOIN (
     --         SELECT year
     --         , MAX(date) AS date

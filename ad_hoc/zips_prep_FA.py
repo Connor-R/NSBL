@@ -61,8 +61,8 @@ db = db('NSBL')
 #             AND (nm.rl_team = '' OR nm.rl_team = nm2.rl_team)
 #         )
 #         LEFT JOIN(
-#             SELECT *
-#             FROM excel_rosters
+#             SELECT e.*
+#             FROM excel_rosters e
 #             JOIN (
 #                 SELECT year
 #                 , MAX(date) AS date
