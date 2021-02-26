@@ -92,7 +92,7 @@ def batters():
             entry_str = 'yr' + str(contract_length)
 
 
-            war_val, dollar_val, est_total_salary, est_raw_surplus, est_present_surplus, preseason_war_val, preseason_dollar_val, preseason_total_salary, preseason_raw_surplus, preseason_present_surplus, prospect_war_val, prospect_dollar_val, prospect_total_salary, prospect_raw_surplus, prospect_present_surplus, preseason_payout, est_payout, prospect_payout = tv.get_war_val(year = year, adj_FV = None, age = age, position = PO, model_war = model_war, years_remaining = contract_length, salary = 0.000, contract_year = 'V', expires = year+contract_length, opt = 'N', salary_counted = 'Y', season_pct_multiplier = 1.000, player_name = Player, team_abb = 'FA', rl_team = team_abb)
+            war_val, dollar_val, est_total_salary, est_raw_surplus, est_present_surplus, preseason_war_val, preseason_dollar_val, preseason_total_salary, preseason_raw_surplus, preseason_present_surplus, prospect_war_val, prospect_dollar_val, prospect_total_salary, prospect_raw_surplus, prospect_present_surplus, preseason_payout, est_payout, prospect_payout, cur_year_mlb_value, cur_year_mlb_surplus = tv.get_war_val(year = year, adj_FV = None, age = age, position = PO, model_war = model_war, years_remaining = contract_length, salary = 0.000, contract_year = 'V', expires = year+contract_length, opt = 'N', salary_counted = 'Y', season_pct_multiplier = 1.000, player_name = Player, team_abb = 'FA', rl_team = team_abb)
 
             entry[entry_str+'_WAR'] = war_val
             entry[entry_str+'_value'] = dollar_val

@@ -125,6 +125,8 @@ def process_players(player_list, year, season_gp, team_name, team_abb, date):
     entries = []
     pos = ''
     for plr in player_list:
+        if plr == []:
+            continue
         if plr[0] == 'Pitchers':
             pos = 'p'
         elif plr[0] == 'Catchers':
