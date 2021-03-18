@@ -57,6 +57,17 @@ def get_team_name(city_name, year):
 
     return team_name
 
+def get_team(mascot_name, year):
+    qry = db.query("SELECT team_name FROM teams WHERE year = %s AND mascot_name = '%s';" % (year, mascot_name))
+    if qry != ():
+        team_name = qry[0][0]
+    else:
+        print "\n\n!!!!ERROR!!!! - no team_name for %s, %s" % (year, mascot_name)
+        team_name = None
+
+    return team_name
+
+
 def get_mascot_names(team_abb, year):
     qry = db.query("SELECT mascot_name FROM teams WHERE year = %s AND team_abb = '%s';" % (year, team_abb))
     if qry != ():
