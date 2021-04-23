@@ -136,8 +136,9 @@ def process_players(player_list, year, season_gp, team_name, team_abb, date):
         elif plr[0] == 'Outfield':
             pos = 'of'
 
+
         try:
-            if ((float(plr[2]) > 0 or plr[1] == 'MLI' or float(plr[3]) > 0) and plr[2] != ''):
+            if (plr[1] == 'MLI') or ((float(plr[2]) > 0 or float(plr[3]) > 0) and plr[2] != ''):
                 entry = {'year':year, 'gp':season_gp, 'position': pos, 'team_abb': team_abb, 'date': date}
 
                 entered_name = plr[0]
@@ -152,7 +153,10 @@ def process_players(player_list, year, season_gp, team_name, team_abb, date):
                 contract_year = plr[1]
                 entry['contract_year'] = contract_year
 
-                salary = plr[2]
+                if plr[1] == 'MLI':
+                    salary = 1.1
+                else:
+                    salary = plr[2]
                 entry['salary'] = salary
 
                 if len(plr) < 4:
