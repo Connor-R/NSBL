@@ -68,6 +68,13 @@ db = db('NSBL')
 #                 , MAX(date) AS date
 #                 FROM excel_rosters
 #                 WHERE 1
+#                     AND year = 2020
+#             ) cur USING (year, date)
+#             JOIN (
+#                 SELECT year
+#                 , MAX(date) AS date
+#                 FROM excel_rosters
+#                 WHERE 1
 #                     AND year = 2021
 #             ) cur USING (year, date)
 #         ) r ON (IFNULL(nm2.wrong_name, a.player_name) = r.player_name)
@@ -95,8 +102,14 @@ db = db('NSBL')
 #         AND (a.contract_year = '6th' OR (a.expires = 2020 AND a.opt = ''))
 # ) fa2
 # WHERE 1
-#     AND player_name NOT IN ('Tyler J. Alexander',)
-# ORDER BY player_name ASC
+#     AND player_name NOT IN ('Tyler J. Alexander')
+# UNION ALL SELECT 'Ryan Tepera'
+# UNION ALL SELECT 'Jimmy Lambert'
+# UNION ALL SELECT 'Jacob Webb'
+# UNION ALL SELECT 'Hirokazu Sawamura'
+# UNION ALL SELECT 'Kohei Arihara'
+# UNION ALL SELECT 'Ha-seong Kim'
+# ORDER BY player_name
 # ;
 
 # # best/worst contracts

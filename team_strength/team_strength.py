@@ -71,9 +71,12 @@ def get_optimal_lineups(year, season_gp):
         team_abb, starter_val, bullpen_val, lu_vsL, lu_vsR, roster_WAR, starter_var, bullpen_var, vsL_var, vsR_var, roster_var = row
 
         mascot_name = helper.get_mascot_names(team_abb.upper(), year)
-
         team_name, games_played, rep_WAR, oWAR, dWAR, FIP_WAR, W, L, py_W, py_L = get_standing_metrics(year, mascot_name)
         team_abb = helper.get_team_abb(team_name, year)
+        # mascot_name = helper.get_mascot_names(team_abb.upper(), year-1)
+        # team_name, games_played, rep_WAR, oWAR, dWAR, FIP_WAR, W, L, py_W, py_L = get_standing_metrics(year, mascot_name)
+        # team_abb = helper.get_team_abb(team_name, year-1)
+
 
         games_played = float(games_played)
 
@@ -175,14 +178,13 @@ def get_standing_metrics(year, mascot_name):
 
     query = qry % (year, mascot_name, year, mascot_name)
     return db.query(query)[0]
-
     # query = qry % (year-1, mascot_name, year-1, mascot_name)
     # return db.query(query)[0][0], 0,0,0,0,0,0,0,0,0
 
 
 if __name__ == "__main__":  
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',type=int,default=2020)
+    parser.add_argument('--year',type=int,default=2021)
     args = parser.parse_args()
     
     process(args.year)

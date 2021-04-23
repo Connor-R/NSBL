@@ -71,9 +71,8 @@ def get_player_matrix(team_abb, year):
     SELECT DISTINCT CONCAT(nm2.right_fname, ' ', nm2.right_lname) AS real_name
     , z.player_name AS player_name
     , t.team_abb
-    -- , cre.team_abb
     , (zo.ab+zo.bb+zo.hbp+zo.sh+zo.sf) as 'zips_pa'
-    -- SELECT DISTINCT player_name, COALESCE(t.team_abb, cre.team_abb) AS team_abb, (zo.ab+zo.bb+zo.hbp+zo.sh+zo.sf) as 'zips_pa'
+    # SELECT DISTINCT CONCAT(nm2.right_fname, ' ', nm2.right_lname) AS real_name, z.player_name, cre.team_abb AS team_abb, (zo.ab+zo.bb+zo.hbp+zo.sh+zo.sf) as 'zips_pa'
     FROM zips_WAR_hitters z
     JOIN zips_offense zo ON (z.player_name = zo.player_name 
         AND z.year = zo.year 
@@ -101,24 +100,24 @@ def get_player_matrix(team_abb, year):
     JOIN teams t ON (c.team_id = t.team_id 
         AND z.year = t.year
     )
-    -- LEFT JOIN processed_WAR_hitters w ON (z.year = w.year AND z.age = w.age AND nm2.wrong_name = w.player_name)
-    -- LEFT JOIN(
-    --     SELECT e.*
-    --     FROM excel_rosters e
-    --     JOIN (
-    --         SELECT year
-    --         , MAX(date) AS date
-    --         FROM excel_rosters
-    --         WHERE 1
-    --             AND year = %s
-    --     ) cur USING (year, date)
-    -- ) cre ON (IFNULL(nm2.wrong_name, z.player_name) = cre.player_name)
+    # LEFT JOIN processed_WAR_hitters w ON (z.year = w.year AND z.age = w.age AND nm2.wrong_name = w.player_name)
+    # LEFT JOIN(
+    #     SELECT e.*
+    #     FROM excel_rosters e
+    #     JOIN (
+    #         SELECT year
+    #         , MAX(date) AS date
+    #         FROM excel_rosters
+    #         WHERE 1
+    #             AND year = %s
+    #     ) cur USING (year, date)
+    # ) cre ON (IFNULL(nm2.wrong_name, z.player_name) = cre.player_name)
     WHERE 1
         AND z.year = %s
-    --    AND (cre.salary_counted IS NULL OR cre.salary_counted != 'N' OR w.player_name IS NOT NULL)
+    #    AND (cre.salary_counted IS NULL OR cre.salary_counted != 'N' OR w.player_name IS NOT NULL)
     HAVING 1
         %s
-        AND player_name NOT IN ('Player Name', 'Harrison Bader', 'Luis Arraez', 'Willy Adames')
+        AND real_name NOT IN ('Player Name')
     ) base"""
 
             base_q = base_q % (year, year, tq_add)
@@ -252,7 +251,7 @@ def get_player_matrix(team_abb, year):
 
 if __name__ == "__main__":  
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',default=2020)
+    parser.add_argument('--year',default=2021)
     args = parser.parse_args()
     
     process(args.year)

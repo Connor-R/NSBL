@@ -101,12 +101,12 @@ def get_pitchers(team_abb, year):
         # AND (cre.salary_counted IS NULL OR cre.salary_counted != 'N' OR w.player_name IS NOT NULL)
     HAVING 1
         %s
-        AND player_name NOT IN ('Player Name', 'Dustin May', 'Nick Pivetta', 'Jeff Hoffman')
+        AND player_name NOT IN ('Player Name')
     ORDER BY WAR_per_ip DESC
     LIMIT 6;"""
 
     starter_query = starter_qry % (year, year, tq_add)
-
+    # raw_input(starter_query)
     starters = db.query(starter_query)
 
     starter_ip = {"1":220.0, "2":200.0, "3":180.0, "4":150.0, "5":120.0, "6":90.0}
@@ -198,7 +198,7 @@ def get_pitchers(team_abb, year):
     HAVING 1
        AND player_name NOT IN %s
         %s
-        AND player_name NOT IN ('Player Name', 'Dustin May', 'Nick Pivetta', 'Jeff Hoffman')
+        AND player_name NOT IN ('Player Name')
     ORDER BY z.FIP_minus ASC
     LIMIT 7;"""
 
@@ -257,7 +257,7 @@ def get_pitchers(team_abb, year):
 
 if __name__ == "__main__":  
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',default=2020)
+    parser.add_argument('--year',default=2021)
     args = parser.parse_args()
     
     process(args.year)

@@ -69,7 +69,7 @@ def get_team(mascot_name, year):
 
 
 def get_mascot_names(team_abb, year):
-    qry = db.query("SELECT mascot_name FROM teams WHERE year = %s AND team_abb = '%s';" % (year, team_abb))
+    qry = db.query("SELECT mascot_name FROM teams WHERE year = %s AND (team_abb = '%s' OR spreadsheet_abb = '%s');" % (year, team_abb, team_abb))
     if qry != ():
         mascot_name = qry[0][0]
     else:
@@ -115,7 +115,7 @@ def get_pos_formula(position):
 
     qry = db.query("SELECT rng, err, arm, passed_ball FROM helper_zips_positions WHERE position = '%s';" % (position))
     if qry != ():
-        pos_formula = [qry[0][0], qry[0][1], qry[0][2], qry[0][3]]
+        pos_formula = [float(qry[0][0]), float(qry[0][1]), float(qry[0][2]), float(qry[0][3])]
     else:
         print "\n\n!!!!ERROR!!!! - no position formula for %s" % (position)
         pos_formula = [0,0,0,0]
@@ -420,7 +420,7 @@ def get_def_values(search_name, position, year):
     return rn_val, err_val, arm_val, pb_val
 
 def input_name(player_name):
-    chk_val = db.query('select count(*) from name_mapper where wrong_name = "%s"' % (player_name))[0][0]
+    chk_val = db.query('select count(*) from name_mapper where wrong_name = "%s"' % (player_name.replace('"', '""')))[0][0]
 
     if chk_val == 0:
         right_fname = player_name.split(" ")[0]
