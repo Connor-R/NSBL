@@ -12,8 +12,8 @@ date=$( date +"%b %d, %Y" )
 echo starting weekly run
 echo $(date)
 
-# python scrapers/NSBL_register_scraper.py --end_year "$year" --scrape_length "Current"
-# python scrapers/NSBL_scraper.py --end_year "$year" --scrape_length "Current"
+python scrapers/NSBL_scraper.py --end_year "$year" --scrape_length "Current"
+python scrapers/NSBL_register_scraper.py --end_year "$year" --scrape_length "Current"
 
 wait
 

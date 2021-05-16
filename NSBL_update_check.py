@@ -47,7 +47,7 @@ def initiate():
             email_msg = "wooo"
             email(email_sub, email_msg)
 
-            subprocess.call(['./NSBL_weekly_run.sh'])
+            # subprocess.call(['./NSBL_weekly_run.sh'])
 
             email_sub = "NSBL Updated [%s]" % (strftime("%Y-%m-%d %H:%M:%S", localtime()))
             email_msg = "Check http://thensbl.com/orgstand.htm for updated standings"
@@ -119,7 +119,6 @@ def scrape_cur_standings():
                     if team_location_name is not None:
                         full_name = helper.get_team_name(team_location_name, year)
 
-
                         qry = """SELECT ts.year
                         , ts.team_name
                         , MAX(ts.games_played) AS gp
@@ -130,11 +129,15 @@ def scrape_cur_standings():
                         GROUP BY ts.team_name, ts.year"""
 
                         prev_gp = db.query(qry % (full_name, year))
-                        prev_gp = prev_gp[0][2]
+                        if prev_gp == ():
+                            print "\n\nNEW SEASON!!!!!\n\n"
+                            prev_gp == 0
+                        else:
+                            prev_gp = prev_gp[0][2]
 
                         if int(wins)+int(losses) != prev_gp:
                             standings_changed = True
-
+                            
                         # print full_name, int(wins)+int(losses), prev_gp, standings_changed
 
     return standings_changed

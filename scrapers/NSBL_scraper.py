@@ -44,11 +44,12 @@ def initiate(end_year, scrape_length):
                 url_ext = "tmindex%s.htm" % team_id
                 url_index = url_base + url_ext
 
-                print url_index
                 html_ind = urllib2.urlopen(url_index)
                 soup_ind = BeautifulSoup(html_ind,"lxml")
                 team_name = (' '.join(soup_ind.find_all('h2')[1].get_text().split(" ")[1:]).split("\n")
                 )[0].split("\r")[0]
+                
+                print url_index, team_name
 
                 initiate_names(team_name, team_id, year, current, url_base)
     else:
