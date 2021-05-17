@@ -47,7 +47,7 @@ def initiate():
             email_msg = "wooo"
             email(email_sub, email_msg)
 
-            # subprocess.call(['./NSBL_weekly_run.sh'])
+            subprocess.call(['./NSBL_weekly_run.sh'])
 
             email_sub = "NSBL Updated [%s]" % (strftime("%Y-%m-%d %H:%M:%S", localtime()))
             email_msg = "Check http://thensbl.com/orgstand.htm for updated standings"

@@ -79,7 +79,7 @@ def get_pitchers(team_abb, year):
     )    
     LEFT JOIN current_rosters c ON (IFNULL(nm2.wrong_name, z.player_name) = c.player_name
         AND z.year = c.year
-        AND c.position IN ('SP', 'MR', 'CL')
+        AND (c.position IN ('SP', 'MR', 'CL') OR c.player_name IN ('shohei ohtani'))
     )
     LEFT JOIN teams t ON (c.team_id = t.team_id 
         AND z.year = t.year
@@ -176,7 +176,7 @@ def get_pitchers(team_abb, year):
     )    
     LEFT JOIN current_rosters c ON (IFNULL(nm2.wrong_name, z.player_name) = c.player_name
         AND z.year = c.year
-        AND c.position IN ('SP', 'MR', 'CL')
+        AND (c.position IN ('SP', 'MR', 'CL') OR c.player_name IN ('shohei ohtani'))
     )
     LEFT JOIN teams t ON (c.team_id = t.team_id 
         AND z.year = t.year
