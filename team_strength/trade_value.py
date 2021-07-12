@@ -95,11 +95,11 @@ def player_values(year):
         JOIN (
             SELECT year
             , MAX(date) AS date
-            FROM excel_rosters
+            FROM NSBL.excel_rosters
             WHERE 1
                 AND year = %s
         ) cur USING (year, date)
-        LEFT JOIN name_mapper nm ON (1
+        LEFT JOIN NSBL.name_mapper nm ON (1
             AND r.player_name = nm.wrong_name
             AND (nm.start_year IS NULL OR nm.start_year <= r.year)
             AND (nm.end_year IS NULL OR nm.end_year >= r.year)
@@ -107,7 +107,7 @@ def player_values(year):
             # AND (nm.rl_team = '' OR nm.rl_team = a.team_abb)
             AND (nm.nsbl_team = '' OR nm.nsbl_team = r.team_abb)
         )
-        LEFT JOIN name_mapper nm2 ON (nm.right_fname = nm2.right_fname
+        LEFT JOIN NSBL.name_mapper nm2 ON (nm.right_fname = nm2.right_fname
             AND nm.right_lname = nm2.right_lname
             AND (nm.start_year IS NULL OR nm.start_year = nm2.start_year)
             AND (nm.end_year IS NULL OR nm.end_year = nm2.end_year)
@@ -205,18 +205,20 @@ def player_values(year):
         yr, gp, date, player_name, fname, lname, team_abb, dummy_pos, salary, contract_year, expires, opt, NTC, salary_counted, entered_name, age, p_Team, adj_FV, z_Team, z_usage, zWAR, scaledWAR, position = row
 
         # print '\n\n-------------------------------------------------------------------'
-        # print player_name, team_abb, position, salary, contract_year, expires, opt, age
+        # print player_name, team_abb, position, salary, contract_year, expires, opt, age, adj_FV, zWAR
 
         entry = {'year':year, 'player_name': player_name, 'fname': fname, 'lname': lname, 'team_abb': team_abb, 'position': position, 'salary': salary, 'contract_year': contract_year, 'expires': expires, 'opt': opt, 'NTC': NTC, 'salary_counted': salary_counted, 'season_gp':season_gp, 'age':age, 'adj_FV':adj_FV, 'zWAR':zWAR, 'scaledWAR': scaledWAR}
 
-        if adj_FV is not None:
+        if p_Team is not None:
             rl_team = p_Team
-        elif zWAR is not None:
+        elif z_Team is not None:
             rl_team = z_Team
+        elif adj_FV is not None and zWAR is not None:
+            rl_team = '???'
         else:
             rl_team = None
 
-        # print zWAR, scaledWAR,
+        # print rl_team, zWAR, scaledWAR,
         if zWAR is not None:
             model_war = (float(zWAR) + float(scaledWAR))/2.0
         else:

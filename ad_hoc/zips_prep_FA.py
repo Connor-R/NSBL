@@ -367,7 +367,7 @@ def batters(year):
             AND year = %s
         GROUP BY year, Player
     ) b USING (year,Player,post_date)
-    JOIN zips_fangraphs_batters_rate c USING (year, Player, team_abb)
+    LEFT JOIN zips_fangraphs_batters_rate c USING (year, Player, team_abb)
     LEFT JOIN name_mapper nm ON (1
         AND a.Player = nm.wrong_name
         AND (nm.start_year IS NULL OR nm.start_year <= a.year)
@@ -513,7 +513,7 @@ def pitchers(year):
             AND year = %s
         GROUP BY year, Player
     ) b USING (year,Player,post_date)
-    JOIN zips_fangraphs_pitchers_rate c USING (year, Player, team_abb)
+    LEFT JOIN zips_fangraphs_pitchers_rate c USING (year, Player, team_abb)
     LEFT JOIN name_mapper nm ON (1
         AND a.Player = nm.wrong_name
         AND (nm.start_year IS NULL OR nm.start_year <= a.year)

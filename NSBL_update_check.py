@@ -44,7 +44,7 @@ def initiate():
             db.conn.commit()
 
             email_sub = "NSBL Update Started [%s]" % (strftime("%Y-%m-%d %H:%M:%S", localtime()))
-            email_msg = "wooo"
+            email_msg = "Check http://thensbl.com/orgstand.htm for updated standings"
             email(email_sub, email_msg)
 
             subprocess.call(['./NSBL_weekly_run.sh'])
@@ -67,11 +67,11 @@ def initiate():
 def email(sub, mesg):
     email_address = "connor.reed.92@gmail.com"
     fromaddr = email_address
-    toaddr = "connor.reed.92@gmail.com"
+    recipients = ['connor.reed.92@gmail.com', 'kienast@sccoast.net']
     bcc_addr = email_address
     msg = MIMEMultipart()
     msg['From'] = fromaddr
-    msg['To'] = toaddr
+    msg['To'] = ", ".join(recipients)
     msg['BCC'] = bcc_addr
     msg['Subject'] = sub
     body = mesg
@@ -81,7 +81,7 @@ def email(sub, mesg):
     server.starttls()
     server.login(fromaddr, key_list.get(email_address))
     text = msg.as_string()
-    server.sendmail(fromaddr, toaddr, text)
+    server.sendmail(fromaddr, recipients, text)
     server.quit()
 
 
@@ -153,6 +153,6 @@ def get_tables(table_url):
 
 
 
-if __name__ == "__main__":     
-   
+if __name__ == "__main__":
+
     initiate()
