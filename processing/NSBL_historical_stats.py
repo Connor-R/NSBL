@@ -245,6 +245,12 @@ def process():
         GROUP BY player_name
         ;
 
+        ALTER TABLE historical_stats_hitters ADD INDEX `pname_pa_group` (`player_name`, `pa`, `group_type`)
+        ;
+
+        ALTER TABLE historical_stats_hitters ADD INDEX `yr_pname_group` (`year_span`, `player_name`, `group_type`)
+        ;
+
         DROP TABLE IF EXISTS temp;
         """
 
@@ -450,6 +456,12 @@ def process():
         , ROUND( SUM(t.ERA_WAR), 1) AS ERA_WAR
         FROM temp t
         GROUP BY player_name
+        ;
+
+        ALTER TABLE historical_stats_pitchers ADD INDEX `pname_ip_g_group` (`player_name`, `ip`, `g`, `group_type`)
+        ;
+
+        ALTER TABLE historical_stats_hitters ADD INDEX `yr_pname_group` (`year_span`, `player_name`, `group_type`)
         ;
         
         DROP TABLE IF EXISTS temp;

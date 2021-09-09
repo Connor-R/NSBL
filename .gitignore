@@ -3,6 +3,7 @@
 *.png
 *.pyc
 *.xls
+*.xlsx
 /mlb_prospects/
 /weekly_leaderboards/
 credentials.json

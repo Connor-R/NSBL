@@ -86,6 +86,10 @@ python ad_hoc/zips_prep_FA.py --year "$year"
 
 wait
 
+python processing/NSBL_awards.py --year "$year" --backfill "False"
+
+wait
+
 cd weekly_leaderboards
 bash post_leaderboards_run.sh
 

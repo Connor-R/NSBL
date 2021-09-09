@@ -151,6 +151,8 @@ def process_players(player_list, year, season_gp, team_name, team_abb, date):
                 entry['entered_name'] = entered_name
 
                 contract_year = plr[1]
+                if player_name == 'Max Stassi':
+                    contract_year = 'V'
                 entry['contract_year'] = contract_year
 
                 if plr[1] == 'MLI':
