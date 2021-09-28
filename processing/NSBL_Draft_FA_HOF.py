@@ -20,7 +20,11 @@ def process(year):
         , hdp.pick
         , hdp.overall
         , hdp.position
-        , MIN(hfa.year) AS FA
+        , max(if(replace(yc.contract_year,'-g','') in ('xxx', '1st', '2nd', '3rd'), yc.year, null)) as last_pre_arb
+        , max(if(replace(yc.contract_year,'-g','') in ('xxx', '1st', '2nd', '3rd', '4th', '5th', '6th', 'ce'), yc.year, null)) as last_team_controlled
+        , min(if(replace(yc.contract_year,'-g','') not in ('xxx', '1st', '2nd', '3rd', '4th', '5th', '6th', 'ce'), yc.year, null)) as first_fa
+        , MIN(hfa.year) AS first_fa2
+        , group_concat(concat(yc.year, ' ', yc.salary, ' ', yc.contract_year, ' ', yc.expires) order by yc.year asc separator '\n') as contracts
         , nm2.position AS map_position
         FROM historical_draft_picks hdp
         JOIN teams_current_franchise tcf ON (REPLACE(hdp.team_abb, '*', '') = tcf.primary_abb
@@ -43,15 +47,18 @@ def process(year):
             AND (nm.position = '' OR nm.position = nm2.position)
             AND (nm.rl_team = '' OR nm.rl_team = nm2.rl_team)
         )
-        LEFT JOIN historical_free_agency hfa ON (IFNULL(nm2.wrong_name, hdp.player_name) = hfa.player_name
+        LEFT JOIN historical_free_agency hfa ON (nm2.wrong_name = hfa.player_name
             AND hfa.year > hdp.year
+        )
+        LEFT JOIN yearly_contracts yc ON (nm2.wrong_name = yc.player_name
+            and yc.year >= hdp.year
         )
         GROUP BY hdp.year, IFNULL(CONCAT(nm2.right_fname, ' ', nm2.right_lname), hdp.player_name), hdp.season, hdp.overall
         ; 
         
         DROP TABLE IF EXISTS historical_draft_pick_performance;
         CREATE TABLE historical_draft_pick_performance AS
-         SELECT draft_year
+        SELECT draft_year
         , overall
         , round
         , pick
@@ -60,11 +67,15 @@ def process(year):
         , drafted_by
         , teams
         , position
-        , seasons
+        , MAX(`seasons`) AS `Seasons`
         , SUM(`WAR/ERA_WAR`) AS `WAR/ERA_WAR`
         , SUM(`noDRS_WAR/FIP_WAR`) AS `noDRS_WAR/FIP_WAR`
-        , SUM(`Homegrown_WAR/ERA_WAR`) AS `Homegrown_WAR/ERA_WAR`
-        , SUM(`Homegrown_noDRS_WAR/FIP_WAR`) AS `Homegrown_noDRS_WAR/FIP_WAR`
+        , MAX(`PreArb_Seasons`) AS `PreArb_Seasons`
+        , SUM(`PreArb_WAR/ERA_WAR`) AS `PreArb_WAR/ERA_WAR`
+        , SUM(`PreArb_noDRS_WAR/FIP_WAR`) AS `PreArb_noDRS_WAR/FIP_WAR`
+        , MAX(`TeamControl_Seasons`) AS `TeamControl_Seasons`
+        , SUM(`TeamControl_WAR/ERA_WAR`) AS `TeamControl_WAR/ERA_WAR`
+        , SUM(`TeamControl_noDRS_WAR/FIP_WAR`) AS `TeamControl_noDRS_WAR/FIP_WAR`
         , MAX(`pa`) AS `PA`
         , MAX(`ab`) AS `AB`
         , MAX(`h`) AS `H`
@@ -102,11 +113,16 @@ def process(year):
             , a.overall
             , a.position    
             , COUNT(DISTINCT hh.year_span) AS seasons
+            
             , ROUND( SUM(hh.WAR) , 1) AS `WAR/ERA_WAR`
             , ROUND( SUM(hh.noDRS_WAR) , 1) AS `noDRS_WAR/FIP_WAR`
 
-            , ROUND( SUM(IF(a.franchise_name = abb.franchise_name AND IF(a.FA IS NULL, 1, hh.year_span < a.FA), hh.WAR, 0)) , 1) AS `Homegrown_WAR/ERA_WAR`
-            , ROUND( SUM(IF(a.franchise_name = abb.franchise_name AND IF(a.FA IS NULL, 1, hh.year_span < a.FA), hh.noDRS_WAR, 0)) , 1) AS `Homegrown_noDRS_WAR/FIP_WAR`
+            , COUNT( DISTINCT(IF(hh.year_span <= last_pre_arb, hh.year_span, NULL )), 1) AS `PreArb_Seasons`
+            , ROUND( SUM(IF(hh.year_span <= last_pre_arb, hh.WAR, NULL )), 1) AS `PreArb_WAR/ERA_WAR`
+            , ROUND( SUM(IF(hh.year_span <= last_pre_arb, hh.noDRS_WAR, NULL )), 1) AS `PreArb_noDRS_WAR/FIP_WAR`
+            , COUNT( DISTINCT(IF(hh.year_span < COALESCE(a.last_team_controlled+1, a.first_fa, a.first_fa2), hh.year_span, NULL )), 1) AS `TeamControl_Seasons`
+            , ROUND( SUM(IF(hh.year_span < COALESCE(a.last_team_controlled+1, a.first_fa, a.first_fa2), hh.WAR, NULL )), 1) AS `TeamControl_WAR/ERA_WAR`     
+            , ROUND( SUM(IF(hh.year_span < COALESCE(a.last_team_controlled+1, a.first_fa, a.first_fa2), hh.noDRS_WAR, NULL )), 1) AS `TeamControl_noDRS_WAR/FIP_WAR`
                 
             , SUM(hh.pa) AS pa
             , SUM(hh.ab) AS ab
@@ -140,11 +156,20 @@ def process(year):
             FROM temp a
             LEFT JOIN historical_stats_hitters hh ON (a.player_name = hh.player_name
                 # AND tcf.team_name = hh.team
-                # AND IF(a.FA IS NULL, 1, hh.year_span < a.FA)
+                # AND IF(a.first_fa2 IS NULL, 1, hh.year_span < a.first_fa2)
                 AND hh.year_span >= a.draft_year
                 AND hh.group_type = 'season_by_team'
-                AND IF(0
-                , 0, 1)
+                AND CASE
+                    WHEN a.player_name = 'Chris Carter' and a.draft_year = 2006
+                        THEN hh.year_span in (2009, 2010)
+                    WHEN a.player_name = 'Chris Carter' and a.draft_year = 2009
+                        THEN hh.year_span >= 2013
+                    WHEN a.player_name = 'Josh Bell' AND a.draft_year = 2009
+                        THEN 0
+                    WHEN a.player_name = 'Carlos Perez' AND a.draft_year = 2011
+                        THEN 0
+                    ELSE 1
+                END
             )
             LEFT JOIN teams_current_franchise abb ON (hh.team = abb.team_name)
             WHERE 1
@@ -168,9 +193,13 @@ def process(year):
             , ROUND( SUM(hp.ERA_WAR), 1) AS `WAR/ERA_WAR`
             , ROUND( SUM(hp.FIP_WAR) , 1) AS `noDRS_WAR/FIP_WAR`
             
-            , ROUND( SUM(IF(a.franchise_name = abb.franchise_name AND IF(a.FA IS NULL, 1, hp.year_span < a.FA), hp.ERA_WAR, 0)) , 1) AS `Homegrown_WAR/ERA_WAR`
-            , ROUND( SUM(IF(a.franchise_name = abb.franchise_name AND IF(a.FA IS NULL, 1, hp.year_span < a.FA), hp.FIP_WAR, 0)) , 1) AS `Homegrown_noDRS_WAR/FIP_WAR`
-            
+            , COUNT( DISTINCT(IF(hp.year_span <= last_pre_arb, hp.year_span, NULL )), 1) AS `PreArb_Seasons`
+            , ROUND( SUM(IF(hp.year_span <= last_pre_arb, hp.ERA_WAR, NULL )), 1) AS `PreArb_WAR/ERA_WAR`
+            , ROUND( SUM(IF(hp.year_span <= last_pre_arb, hp.FIP_WAR, NULL )), 1) AS `PreArb_noDRS_WAR/FIP_WAR`
+            , COUNT( DISTINCT(IF(hp.year_span < COALESCE(a.last_team_controlled+1, a.first_fa, a.first_fa2), hp.year_span, NULL )), 1) AS `TeamControl_Seasons`
+            , ROUND( SUM(IF(hp.year_span < COALESCE(a.last_team_controlled+1, a.first_fa, a.first_fa2), hp.ERA_WAR, NULL )), 1) AS `TeamControl_WAR/ERA_WAR`     
+            , ROUND( SUM(IF(hp.year_span < COALESCE(a.last_team_controlled+1, a.first_fa, a.first_fa2), hp.FIP_WAR, NULL )), 1) AS `TeamControl_noDRS_WAR/FIP_WAR`
+                   
             , NULL AS pa
             , NULL AS ab
             , NULL AS h
@@ -202,15 +231,22 @@ def process(year):
             FROM temp a
             LEFT JOIN historical_stats_pitchers hp ON (a.player_name = hp.player_name
                 # AND tcf.team_name = hp.team
-                # AND IF(a.FA IS NULL, 1, hp.year_span < a.FA)
+                # AND IF(a.first_fa2 IS NULL, 1, hp.year_span < a.first_fa2)
                 AND hp.year_span >= a.draft_year
                 AND hp.group_type = 'season_by_team'
-                AND IF(0
-                    OR(a.player_name = 'Jose Castillo' AND a.draft_year = 2005)
-                    OR(a.player_name = 'Josh Fields' AND a.draft_year = 2006)
-                    OR(a.player_name = 'Henry Rodriguez' AND draft_year = 2012)
-                    OR(a.player_name = 'Will Smith' AND draft_year = 2016)
-                , 0, 1)
+                AND CASE
+                    WHEN a.player_name = 'Jose Castillo' and a.draft_year = 2005
+                        THEN 0
+                    WHEN a.player_name = 'Josh Fields' and a.draft_year = 2006
+                        THEN 0
+                    WHEN a.player_name = 'Henry Rodriguez' AND a.draft_year = 2012
+                        THEN 0
+                    WHEN a.player_name = 'Will Smith' AND a.draft_year = 2016
+                        THEN 0
+                    WHEN a.player_name = 'Cody Reed' AND a.draft_year = 2016
+                        THEN 0
+                    ELSE 1
+                END
             )
             LEFT JOIN teams_current_franchise abb ON (hp.team = abb.team_name)
             WHERE 1
@@ -384,12 +420,17 @@ def process(year):
                 AND hh.year_span < IF(a.opt = 'yes', a.signing_year+a.contract_years+1, a.signing_year+a.contract_years)
                 AND hh.year_span >= a.signing_year
                 AND hh.group_type = 'season_by_team'
-                AND IF(0
-                    OR (a.player_name = 'Henry Rodriguez' AND a.signing_year = 2013)
-                    OR (a.player_name = 'Matt Reynolds' AND a.signing_year = 2015)
-                    OR (a.player_name = 'Matt Duffy' AND a.signing_year = 2016)
-                    OR (a.player_name = 'Will Smith' AND a.signing_year = 2018)
-                , 0, 1)
+                AND CASE
+                    WHEN a.player_name = 'Henry Rodriguez' and a.signing_year = 2013
+                        THEN 0
+                    WHEN a.player_name = 'Matt Reynolds' and a.signing_year = 2015
+                        THEN 0
+                    WHEN a.player_name = 'Matt Duffy' AND a.signing_year = 2016
+                        THEN 0
+                    WHEN a.player_name = 'Will Smith' AND a.signing_year = 2018
+                        THEN 0
+                    ELSE 1
+                END
             )
             LEFT JOIN teams_current_franchise abb ON (hh.team = abb.team_name)
             WHERE 1
@@ -453,8 +494,11 @@ def process(year):
                 AND hp.year_span < IF(a.opt = 'yes', a.signing_year+a.contract_years+1, a.signing_year+a.contract_years)
                 AND hp.year_span >= a.signing_year
                 AND hp.group_type = 'season_by_team'
-                AND IF(0
-                , 0, 1)
+                AND CASE
+                    WHEN a.player_name = 'Jared Hughes' and a.signing_year = 2016 and a.franchise_name = 'Colorado Rockies'
+                        THEN 0
+                    ELSE 1
+                END
             )
             LEFT JOIN teams_current_franchise abb ON (hp.team = abb.team_name)
             WHERE 1
@@ -533,6 +577,11 @@ def process(year):
             , MAX(`FIP`) AS `FIP`
             , MAX(`ERA_minus`) AS `ERA-`
             , MAX(`FIP_minus`) AS `FIP-`
+                            
+            , MAX(`Black_Ink`) AS `Black_Ink`
+            , MAX(`Gray_Ink`) AS `Gray_Ink`
+            , Earnings
+            , Trophy_Details
             FROM(
                 SELECT CONCAT("Class of ", RIGHT(year_span,4)+3) AS HOF_Class
                 , hsh.player_name AS Player_Name
@@ -577,6 +626,12 @@ def process(year):
                 , NULL AS FIP
                 , NULL AS ERA_minus
                 , NULL AS FIP_minus
+                
+                , Black_Ink
+                , Gray_Ink
+                , Earnings
+                , Trophy_Details
+                
                 FROM historical_stats_hitters hsh
                 JOIN(
                     SELECT a.player_name
@@ -661,7 +716,11 @@ def process(year):
                 , FIP
                 , ERA_minus
                 , FIP_minus
-
+                
+                , Black_Ink
+                , Gray_Ink
+                , Earnings
+                , Trophy_Details
 
                 FROM historical_stats_pitchers hsp
                 JOIN(

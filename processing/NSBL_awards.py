@@ -21,6 +21,8 @@ def process(year, backfill):
 
     format_ties(year)
 
+    append_historical_stats()
+
     tests()
 
 
@@ -207,19 +209,19 @@ def prep():
                 db.conn.commit()
 
 
-    base_query = """drop table if exists %s
+    base_query = """drop table if exists %s #table
         ;
-        create table %s as
+        create table %s as #table
         select b.*
         from(
             select a.*
             , CASE
-                %s
+                %s #rank_bool
                     THEN @rnk := 1
             ELSE @rnk := @rnk+1
             END AS ranking
             , CASE
-                %s
+                %s #rank_bool
                     THEN @tie_rnk := 1
                 WHEN @prev = a.SCORE
                     THEN @tie_rnk := @tie_rnk
@@ -231,21 +233,21 @@ def prep():
             , @prev := score as prev_set
             from(
                 select bt.*
-                %s
-                , %s as score
+                %s #table_add
+                , %s as score #score
                 , @rnk := 0 as rnk_dummy
                 , @pos := '' as pos_dummy
                 , @lg := '' as lg_dummy
                 , @yr := 0 as yr_dummy
                 , @prev := 0.0 as prev_dummy
                 , @tie_rnk := 0 as tie_rnk_dummy
-                from %s bt
+                from %s bt #derived_from
                 where 1
-                    %s
-                %s
+                    %s #filter
+                %s #ordering
             ) a
         ) b
-        where b.tie_rank <= %s
+        where b.tie_rank <= %s #limit
     ;"""
 
     query_details = [
@@ -298,12 +300,14 @@ def prep():
                 order by year, league, position, ranking;"""
         }
         , {"table": "temp_gold_glove"
-            , "score": "drs"
-            , "derived_from": "league_hitters"
+            , "score": "defense"
+            , "derived_from": "processed_compWAR_defensive bt join teams t using (year, team_abb) #"
             , "filter": "AND year >= 2011 AND position in ('c', '1b', '2b', '3b', 'ss', 'lf', 'rf', 'cf')"
             , "rank_bool": "WHEN @yr != year OR @lg != league OR @pos != position"
-            , "table_add": ""
-            , "ordering": "order by year, league, position, score desc"
+            , "table_add": """, left(t.division,2) as league
+                , group_concat(distinct t.team_abb) as team_abbs
+                , group_concat(distinct t.team_name) as teams"""
+            , "ordering": "group by year, league, bt.position, score desc"
             , "limit": 1
             , "other_query": ""
         }
@@ -1355,6 +1359,251 @@ def format_ties(year):
     # print q
     db.query(q)
     db.conn.commit()
+
+def append_historical_stats():
+    print '\tadding trophies to historical_stats'
+
+    db.query("SET SESSION group_concat_max_len = 1000000;")
+    db.conn.commit()
+
+    for hp in ('hitters', 'pitchers'):
+        print '\t\t', hp
+
+        print '\t\t\tremoving trophy/ink'
+        q = "update historical_stats_%s set trophy_count = NULL, black_ink = NULL, gray_ink = NULL, trophy_details = NULL" % (hp)
+        # print q
+        db.query(q)
+        db.conn.commit()
+
+        print '\t\t\tadding seasonal trophies/ink'
+        season_q = """update historical_stats_%s h
+            join(
+                select a.year
+                , a.player_name
+                , a.h_team
+                , a.p_team
+                , count(distinct if(a.new_trophy_type = 'award'
+                    and a.trophy_name != 'World Series'
+                    and a.update_type != 'outliers'
+                    and (a.rank = 1 or a.trophy_name = 'all star')
+                , a.trophy_name, null)) as trophy_count
+                , count(distinct if(a.trophy_type = 'player_leagueleader' and a.rank = 1, a.trophy_name, null)) as black_ink
+                , count(distinct if(a.trophy_type = 'player_leagueleader' and a.rank <= 10, a.trophy_name, null)) as gray_ink
+                , group_concat(concat('- '
+                    , if(a.new_trophy_type != 'Award', concat(a.new_trophy_type, ' '), '')
+                    , if(a.update_type = 'outliers' or a.trophy_name in ('World Series', 'All Star', 'Gold Glove', 'Silver Slugger') or (a.new_trophy_type = 'award' and a.rank = 1 and a.ties = 0) 
+                        , upper(a.new_trophy_name)
+                        , concat(if(a.new_trophy_type = 'award' and a.rank = 1, upper(a.new_trophy_name), a.new_trophy_name)
+                            , ' ('
+                            , if(a.ties > 0, 'T-', '')
+                            , a.rank
+                            , if(a.ties > 0, concat(' w/', a.ties, ' others'), '')
+                            , ')'
+                            )
+                        )
+                    )
+                order by if(a.trophy_name = 'World Series', 1, 0) desc
+                , if(a.update_type = 'outliers', 1, 0) desc
+                , if(a.trophy_name in ('All Star', 'Gold Glove', 'Silver Slugger'), 1, 0) desc
+                , (case
+                    when a.trophy_type = 'player' then 0
+                    when a.trophy_type = 'player_alltimesingleseason' then 1
+                    when a.trophy_type = 'player_overallleader' then 2
+                    when a.trophy_type = 'player_leagueleader' then 3
+                end) asc, a.rank asc, a.rank_id asc, a.new_trophy_name asc
+                separator ' \n') as trophy_details
+                from(
+                    select t.*
+                    , case when t.trophy_type = 'player' then 'Award'
+                        when t.trophy_type = 'player_alltimesingleseason' then 'All-Time Single Season'
+                        when t.trophy_type = 'player_overallleader' then 'Overall'
+                        when t.trophy_type = 'player_leagueleader' then t.league
+                    end as new_trophy_type
+                    , case
+                        when t.trophy_type = 'player'
+                            then (replace(replace(replace(replace(t.trophy_name, 'HITTERS_', ''), 'PITCHERS_', ''), '_plus', '+'), '_minus', '-'))
+                        else upper(replace(replace(replace(replace(t.trophy_name, 'HITTERS_', ''), 'PITCHERS_', ''), '_plus', '+'), '_minus', '-'))
+                    end as new_trophy_name
+                    , group_concat(distinct h.team) AS h_team
+                    , group_concat(distinct p.team) AS p_team
+                    from trophies t
+                    left join historical_stats_hitters h on (t.year = h.year_span
+                        and t.player_name = h.player_name
+                        and h.group_type = 'full_season'
+                        and if(t.trophy_type != 'player', LEFT(t.trophy_name,1) = 'H', 1)
+                    )
+                    left join historical_stats_pitchers p on (t.year = p.year_span
+                        and t.player_name = p.player_name
+                        and p.group_type = 'full_season'
+                        and if(t.trophy_type != 'player', LEFT(t.trophy_name,1) = 'P', 1)
+                    )
+                    where 1
+                        and t.player_name is not null
+                        and t.trophy_type in ('player', 'player_alltimesingleseason', 'player_overallleader', 'player_leagueleader')
+                        and case
+                            when t.trophy_type = 'player_alltimesingleseason' then t.rank <= 20
+                            when t.trophy_type = 'player_overallleader' then t.rank <= 10
+                            when t.trophy_type = 'player_leagueleader' then t.rank <= 10
+                        else 1
+                        end
+                    group by t.year, t.trophy_name, t.league, t.trophy_type, t.rank, t.player_name
+                ) a
+                group by year, player_name, h_team, p_team
+                order by trophy_count desc, black_ink desc, gray_ink desc, year desc
+            ) t on (h.player_name = t.player_name and h.year_span = t.year and h.team = t.%s_team)
+            set h.trophy_count = t.trophy_count
+            , h.black_ink = t.black_ink
+            , h.gray_ink = t.gray_ink
+            , h.trophy_details = t.trophy_details
+            where 1
+                and h.group_type  = 'full_season'
+        ;""" % (hp, hp[0])
+        # print season_q
+        db.query(season_q)
+        db.conn.commit()
+
+        print '\t\t\tadding career trophies/ink'
+        career_queries = """drop table if exists temp;
+            create table temp as
+            select t.*
+            , case when t.trophy_type = 'player' then 'Award'
+                when t.trophy_type = 'player_alltimesingleseason' then 'All-Time Single Season'
+                when t.trophy_type = 'player_overallleader' then 'Overall'
+                when t.trophy_type = 'player_AllTimeCareer' then 'Career'
+                when t.trophy_type = 'player_leagueleader' then t.league
+            end as new_trophy_type
+            , case
+                when t.trophy_type = 'player'
+                    then (replace(replace(replace(replace(t.trophy_name, 'HITTERS_', ''), 'PITCHERS_', ''), '_plus', '+'), '_minus', '-'))
+                else upper(replace(replace(replace(replace(t.trophy_name, 'HITTERS_', ''), 'PITCHERS_', ''), '_plus', '+'), '_minus', '-'))
+            end as new_trophy_name
+            , group_concat(distinct h.year_span) AS h_years
+            , group_concat(distinct p.year_span) AS p_years
+            , group_concat(distinct h.team) AS h_team
+            , group_concat(distinct p.team) AS p_team
+            from trophies t
+            left join historical_stats_hitters h on (t.player_name = h.player_name
+                and h.group_type = 'full_career'
+                and if(t.trophy_type != 'player', LEFT(t.trophy_name,1) = 'H', 1)
+            )
+            left join historical_stats_pitchers p on (t.player_name = p.player_name
+                and p.group_type = 'full_career'
+                and if(t.trophy_type != 'player', LEFT(t.trophy_name,1) = 'P', 1)
+            )
+            where 1
+                and t.player_name is not null
+                and t.trophy_type in ('player', 'player_alltimesingleseason', 'player_overallleader', 'player_leagueleader', 'player_AllTimeCareer')
+                and case
+                    when t.trophy_type = 'player_alltimesingleseason' then t.rank <= 10
+                    when t.trophy_type = 'player_overallleader' then t.rank <= 10
+                    when t.trophy_type = 'player_leagueleader' then t.rank <= 10
+                    when t.trophy_type = 'player_AllTimeCareer' then t.rank <= 20
+                else 1
+                end
+            group by t.year, t.trophy_name, t.league, t.trophy_type, t.rank, t.player_name
+            ;
+
+
+            update historical_stats_%s h
+            join(
+                select a.player_name
+                , a.h_years
+                , a.p_years
+                , a.h_team
+                , a.p_team
+                , count(distinct if(a.new_trophy_type = 'award'
+                    and a.trophy_name != 'World Series'
+                    and a.update_type != 'outliers'
+                    and (a.rank = 1 or a.trophy_name = 'all star')
+                , concat(a.trophy_name, a.year), null)) as trophy_count
+                , count(distinct if(a.trophy_type = 'player_leagueleader' and a.rank = 1, concat(a.trophy_name, a.year), null)) as black_ink
+                , count(distinct if(a.trophy_type = 'player_leagueleader' and a.rank <= 10, concat(a.trophy_name, a.year), null)) as gray_ink
+                , concat(c.accolades
+                    , if(c.accolades is null, '', ' \n')
+                    , ifnull(group_concat(if((a.trophy_type = 'player_alltimesingleseason' and a.rank <= 1) or (a.trophy_type = 'player_AllTimeCareer' and a.rank <= 10)
+                        , concat('- '
+                            , a.new_trophy_type
+                            , ' '
+                            , a.new_trophy_name
+                            , if(a.rank = 1, ' Record', concat(' (', a.rank, ')'))
+                            , if(a.ties > 0, concat(' (tied w/', a.ties, ' others)'), '')
+                        )
+                        , null
+                        )
+                    order by a.trophy_type asc
+                    , a.rank asc
+                    separator ' \n'), '')
+                ) trophy_details
+                from temp a
+                left join(
+                    select player_name
+                    , h_team
+                    , p_team
+                    , h_years
+                    , p_years
+                    , sum(if(b.trophy_name != 'world series' and b.update_type != 'outliers' and b.trophy_type = 'player', b.cnt, 0)) as trophy_count
+                    , group_concat(concat('- '
+                        , b.cnt
+                        , 'x '
+                        , b.new_trophy_name
+                        , if(b.trophy_type = 'player_leagueleader' and b.update_type != 'outliers', ' Leader', '')
+                        , ' ('
+                        , b.years
+                        , ')'
+                        )
+                    order by if(b.trophy_name = 'World Series', 1, 0) desc
+                    , if(b.trophy_type = 'player', 1, 0) desc
+                    , if(b.update_type = 'outliers', 1, 0) desc
+                    , b.cnt desc
+                    separator ' \n') AS accolades
+                    from(
+                        select player_name
+                        , h_team
+                        , p_team
+                        , h_years
+                        , p_years
+                        , trophy_name
+                        , group_concat(distinct new_trophy_type) as combined_trophy_types
+                        , trophy_type
+                        , new_trophy_name
+                        , update_type
+                        , count(*) as cnt
+                        , group_concat(distinct t.year order by t.year asc separator ', ') as years
+                        from temp t
+                        where 1
+                            and t.trophy_type in ('player', 'player_leagueleader')
+                            and case
+                                when t.trophy_type = 'player_leagueleader' then t.rank <= 1
+                                when t.trophy_type = 'player' then (t.update_type = 'outliers' or t.trophy_name in ('World Series', 'All Star', 'Gold Glove', 'Silver Slugger') or (t.new_trophy_type = 'award' and t.rank = 1))
+                                else 1
+                            end
+                        group by player_name, h_team, p_team, h_years, p_years, trophy_name
+                    ) b
+                    group by player_name, h_team, p_team, h_years, p_years
+                ) c on (a.player_name = c.player_name
+                    and ifnull(a.h_team,'') = ifnull(c.h_team,'')
+                    and ifnull(a.p_team,'') = ifnull(c.p_team,'')
+                    and ifnull(a.h_years,'') = ifnull(c.h_years,'')
+                    and ifnull(a.p_years,'') = ifnull(c.p_years,'')
+                )
+                group by player_name, h_team, p_team, h_years, p_years
+            ) t on (h.player_name = t.player_name and h.year_span = t.%s_years and h.team = t.%s_team)
+            set h.trophy_count = t.trophy_count
+            , h.black_ink = t.black_ink
+            , h.gray_ink = t.gray_ink
+            , h.trophy_details = t.trophy_details
+            where 1
+                and h.group_type  = 'full_career'
+            ;
+
+            drop table if exists temp;
+        """ % (hp, hp[0], hp[0])
+
+        for q in career_queries.split(";"):
+            if q.strip() != "":
+                # raw_input(q)
+                db.query(q)
+                db.conn.commit()
 
 def tests():
     q_dict = {"irregularities":"""select year

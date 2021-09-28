@@ -11,6 +11,14 @@ def process():
         CREATE TABLE temp AS
         SELECT o.year
         , COALESCE(CONCAT(nm.right_fname, ' ', nm.right_lname), o.player_name) AS player_name
+        , GROUP_CONCAT(DISTINCT hdp.year ORDER BY hdp.year ASC SEPARATOR ' or ') AS draft_year
+        , GROUP_CONCAT(DISTINCT hdp.season ORDER BY hdp.year ASC SEPARATOR ' or ') AS draft_season
+        , GROUP_CONCAT(DISTINCT hdp.overall ORDER BY hdp.year ASC SEPARATOR ' or ') AS draft_overall
+        , GROUP_CONCAT(DISTINCT hdp.round ORDER BY hdp.year ASC SEPARATOR ' or ') AS draft_round
+        , GROUP_CONCAT(DISTINCT hdp.pick ORDER BY hdp.year ASC SEPARATOR ' or ') AS draft_pick_in_round
+        , GROUP_CONCAT(DISTINCT hdp.team_abb ORDER BY hdp.year ASC SEPARATOR ' or ') AS draft_team
+        , cast(group_concat(distinct contract_year) as CHAR(16)) as Contract
+        , cast(group_concat(distinct salary) as decimal(10,3)) as Earnings
         , t.team_name as full_team
         , tcf.franchise_name
         , tcf.primary_abb as tcf_team_abb
@@ -67,6 +75,37 @@ def process():
             # AND (nm.rl_team = '' OR nm.rl_team = a.team_abb)
             AND (nm.nsbl_team = '' OR nm.nsbl_team = o.team_abb)
         )
+        LEFT JOIN name_mapper nm2 ON (nm.right_fname = nm2.right_fname
+            AND nm.right_lname = nm2.right_lname
+            AND (nm.start_year IS NULL OR nm.start_year = nm2.start_year)
+            AND (nm.end_year IS NULL OR nm.end_year = nm2.end_year)
+            AND (nm.position = '' OR nm.position = nm2.position)
+            AND (nm.rl_team = '' OR nm.rl_team = nm2.rl_team)
+        )
+        LEFT JOIN yearly_contracts yc ON (nm2.wrong_name = yc.player_name
+            and o.year = yc.year
+            and if(nm2.wrong_name in ('will smith', 'henry rodriguez', 'luis castillo', 'jose castillo', 'eury perez', 'daniel cabrera', 'alex gonzalez', 'chris young')
+                , yc.pos2 = 'h'
+                , 1
+            )
+        )
+        LEFT JOIN historical_draft_picks hdp ON ((nm2.wrong_name) = hdp.player_name 
+            and o.year >= hdp.year
+            and if(nm2.wrong_name in ('will smith', 'henry rodriguez', 'luis castillo', 'jose castillo', 'eury perez', 'daniel cabrera', 'alex gonzalez', 'chris young', 'carlos perez')
+                , hdp.position not like "%%p%%"
+                , 1
+            )
+            AND CASE
+                WHEN hdp.player_name = 'Josh Bell'
+                    THEN hdp.year = 2011
+                WHEN hdp.player_name = 'Chris Carter' AND o.year IN (2009, 2010)
+                    THEN hdp.year = 2006
+                WHEN hdp.player_name = 'Chris Carter' AND o.year >= 2013
+                    THEN hdp.year = 2009
+                WHEN hdp.player_name = 'Max Muncy'
+                    THEN hdp.year = 2013
+            END
+        )
         GROUP BY COALESCE(CONCAT(nm.right_fname, ' ', nm.right_lname), o.player_name), o.year, tcf.franchise_name
         ;
 
@@ -112,6 +151,18 @@ def process():
         , ROUND( IF(SUM(t.pa) = 0, 0, 600*SUM(t.WAR)/SUM(t.pa)), 1) AS WAR_600
         , ROUND( SUM(t.noDRS_WAR) , 1) AS noDRS_WAR
         , ROUND( SUM(t.WAR) , 1) AS WAR
+        , t.Draft_Year
+        , t.Draft_Season
+        , t.Draft_Overall
+        , t.Draft_Round
+        , t.Draft_Pick_In_Round
+        , t.Draft_Team
+        , CAST(NULL AS CHAR(16)) AS Contract
+        , CAST(NULL AS DECIMAL(10,3)) AS Earnings
+        , CAST(NULL AS UNSIGNED) AS Trophy_Count
+        , CAST(NULL AS UNSIGNED) AS Black_Ink
+        , CAST(NULL AS UNSIGNED) AS Gray_Ink
+        , CAST(NULL AS CHAR(100000)) AS Trophy_Details
         FROM temp t
         GROUP BY player_name, listed_position, year, franchise_name
         UNION ALL
@@ -155,6 +206,18 @@ def process():
         , ROUND( IF(SUM(t.pa) = 0, 0, 600*SUM(t.WAR)/SUM(t.pa)), 1) AS WAR_600
         , ROUND( SUM(t.noDRS_WAR) , 1) AS noDRS_WAR
         , ROUND( SUM(t.WAR) , 1) AS WAR
+        , t.Draft_Year
+        , t.Draft_Season
+        , t.Draft_Overall
+        , t.Draft_Round
+        , t.Draft_Pick_In_Round
+        , t.Draft_Team
+        , CAST( (t.Contract) AS CHAR(16)) AS Contract
+        , CAST( (t.Earnings) AS DECIMAL(10,3)) AS Earnings
+        , CAST(NULL AS UNSIGNED) AS Trophy_Count
+        , CAST(NULL AS UNSIGNED) AS Black_Ink
+        , CAST(NULL AS UNSIGNED) AS Gray_Ink
+        , CAST(NULL AS CHAR(100000)) AS Trophy_Details
         FROM temp t
         GROUP BY player_name, listed_position, year
         UNION ALL
@@ -198,6 +261,18 @@ def process():
         , ROUND( IF(SUM(t.pa) = 0, 0, 600*SUM(t.WAR)/SUM(t.pa)), 1) AS WAR_600
         , ROUND( SUM(t.noDRS_WAR) , 1) AS noDRS_WAR
         , ROUND( SUM(t.WAR) , 1) AS WAR
+        , t.Draft_Year
+        , t.Draft_Season
+        , t.Draft_Overall
+        , t.Draft_Round
+        , t.Draft_Pick_In_Round
+        , t.Draft_Team
+        , CAST(NULL AS CHAR(16)) AS Contract
+        , CAST(NULL AS DECIMAL(10,3)) AS Earnings
+        , CAST(NULL AS UNSIGNED) AS Trophy_Count
+        , CAST(NULL AS UNSIGNED) AS Black_Ink
+        , CAST(NULL AS UNSIGNED) AS Gray_Ink
+        , CAST(NULL AS CHAR(100000)) AS Trophy_Details
         FROM temp t
         GROUP BY player_name, franchise_name
         UNION ALL
@@ -241,6 +316,18 @@ def process():
         , ROUND( IF(SUM(t.pa) = 0, 0, 600*SUM(t.WAR)/SUM(t.pa)), 1) AS WAR_600
         , ROUND( SUM(t.noDRS_WAR) , 1) AS noDRS_WAR
         , ROUND( SUM(t.WAR) , 1) AS WAR
+        , t.Draft_Year
+        , t.Draft_Season
+        , t.Draft_Overall
+        , t.Draft_Round
+        , t.Draft_Pick_In_Round
+        , t.Draft_Team
+        , CAST(NULL AS CHAR(16)) AS Contract
+        , CAST(NULL AS DECIMAL(10,3)) AS Earnings
+        , CAST(NULL AS UNSIGNED) AS Trophy_Count
+        , CAST(NULL AS UNSIGNED) AS Black_Ink
+        , CAST(NULL AS UNSIGNED) AS Gray_Ink
+        , CAST(NULL AS CHAR(100000)) AS Trophy_Details
         FROM temp t
         GROUP BY player_name
         ;
@@ -263,6 +350,14 @@ def process():
         CREATE TABLE temp AS
         SELECT o.year
         , COALESCE(CONCAT(nm.right_fname, ' ', nm.right_lname), o.player_name) AS player_name
+        , GROUP_CONCAT(DISTINCT hdp.year ORDER BY hdp.year ASC SEPARATOR ' or ') AS draft_year
+        , GROUP_CONCAT(DISTINCT hdp.season ORDER BY hdp.year ASC SEPARATOR ' or ') AS draft_season
+        , GROUP_CONCAT(DISTINCT hdp.overall ORDER BY hdp.year ASC SEPARATOR ' or ') AS draft_overall
+        , GROUP_CONCAT(DISTINCT hdp.round ORDER BY hdp.year ASC SEPARATOR ' or ') AS draft_round
+        , GROUP_CONCAT(DISTINCT hdp.pick ORDER BY hdp.year ASC SEPARATOR ' or ') AS draft_pick_in_round
+        , GROUP_CONCAT(DISTINCT hdp.team_abb ORDER BY hdp.year ASC SEPARATOR ' or ') AS draft_team
+        , cast(group_concat(distinct contract_year) as CHAR(16)) as Contract
+        , cast(group_concat(distinct salary) as decimal(10,3)) as Earnings
         , t.team_name as full_team
         , tcf.franchise_name
         , tcf.primary_abb as tcf_team_abb
@@ -304,6 +399,33 @@ def process():
             # AND (nm.rl_team = '' OR nm.rl_team = a.team_abb)
             AND (nm.nsbl_team = '' OR nm.nsbl_team = o.team_abb)
         )
+        LEFT JOIN name_mapper nm2 ON (nm.right_fname = nm2.right_fname
+            AND nm.right_lname = nm2.right_lname
+            AND (nm.start_year IS NULL OR nm.start_year = nm2.start_year)
+            AND (nm.end_year IS NULL OR nm.end_year = nm2.end_year)
+            AND (nm.position = '' OR nm.position = nm2.position)
+            AND (nm.rl_team = '' OR nm.rl_team = nm2.rl_team)
+        )
+        LEFT JOIN yearly_contracts yc ON (nm2.wrong_name = yc.player_name
+            and o.year = yc.year
+            and if(nm2.wrong_name in ('will smith', 'henry rodriguez', 'luis castillo', 'jose castillo', 'eury perez', 'daniel cabrera', 'alex gonzalez', 'chris young', 'carlos perez')
+                , yc.pos2 = 'p'
+                , 1
+            )
+        )
+        LEFT JOIN historical_draft_picks hdp ON ((nm2.wrong_name) = hdp.player_name 
+            and o.year >= hdp.year
+            and if(nm2.wrong_name in ('will smith', 'henry rodriguez', 'luis castillo', 'jose castillo', 'eury perez', 'daniel cabrera', 'alex gonzalez', 'chris young')
+                , hdp.position like "%%p%%"
+                , 1
+            )
+            AND CASE
+                WHEN hdp.player_name = 'Cody Reed'
+                    THEN hdp.year = 2015
+                WHEN hdp.player_name = 'Luis Garcia' 
+                    THEN 0
+            END
+        )
         GROUP BY COALESCE(CONCAT(nm.right_fname, ' ', nm.right_lname), o.player_name), o.year, tcf.franchise_name
         ;
         
@@ -343,6 +465,18 @@ def process():
         , ROUND( IF(SUM(t.ip)=0, 0, SUM(t.park_ERA*t.ip)/ (SUM(ROUND(t.ip) + (10 * (t.ip - ROUND(t.ip)) / 3)))), 2) AS park_ERA
         , ROUND( IF(SUM(t.ip)=0, 0, SUM(t.ERA_minus*t.ip)/ (SUM(ROUND(t.ip) + (10 * (t.ip - ROUND(t.ip)) / 3)))), 0) AS ERA_minus
         , ROUND( SUM(t.ERA_WAR), 1) AS ERA_WAR
+        , t.Draft_Year
+        , t.Draft_Season
+        , t.Draft_Overall
+        , t.Draft_Round
+        , t.Draft_Pick_In_Round
+        , t.Draft_Team
+        , CAST(NULL AS CHAR(16)) AS Contract
+        , CAST(NULL AS DECIMAL(10,3)) AS Earnings
+        , CAST(NULL AS UNSIGNED) AS Trophy_Count
+        , CAST(NULL AS UNSIGNED) AS Black_Ink
+        , CAST(NULL AS UNSIGNED) AS Gray_Ink
+        , CAST(NULL AS CHAR(100000)) AS Trophy_Details
         FROM temp t
         GROUP BY player_name, year, franchise_name
         UNION ALL
@@ -380,6 +514,18 @@ def process():
         , ROUND( IF(SUM(t.ip)=0, 0, SUM(t.park_ERA*t.ip)/ (SUM(ROUND(t.ip) + (10 * (t.ip - ROUND(t.ip)) / 3)))), 2) AS park_ERA
         , ROUND( IF(SUM(t.ip)=0, 0, SUM(t.ERA_minus*t.ip)/ (SUM(ROUND(t.ip) + (10 * (t.ip - ROUND(t.ip)) / 3)))), 0) AS ERA_minus
         , ROUND( SUM(t.ERA_WAR), 1) AS ERA_WAR
+        , t.Draft_Year
+        , t.Draft_Season
+        , t.Draft_Overall
+        , t.Draft_Round
+        , t.Draft_Pick_In_Round
+        , t.Draft_Team
+        , CAST( (t.contract) AS CHAR(16)) AS Contract
+        , CAST( (t.Earnings) AS DECIMAL(10,3)) AS Earnings
+        , CAST(NULL AS UNSIGNED) AS Trophy_Count
+        , CAST(NULL AS UNSIGNED) AS Black_Ink
+        , CAST(NULL AS UNSIGNED) AS Gray_Ink
+        , CAST(NULL AS CHAR(100000)) AS Trophy_Details
         FROM temp t
         GROUP BY player_name, year
         UNION ALL
@@ -417,6 +563,18 @@ def process():
         , ROUND( IF(SUM(t.ip)=0, 0, SUM(t.park_ERA*t.ip)/ (SUM(ROUND(t.ip) + (10 * (t.ip - ROUND(t.ip)) / 3)))), 2) AS park_ERA
         , ROUND( IF(SUM(t.ip)=0, 0, SUM(t.ERA_minus*t.ip)/ (SUM(ROUND(t.ip) + (10 * (t.ip - ROUND(t.ip)) / 3)))), 0) AS ERA_minus
         , ROUND( SUM(t.ERA_WAR), 1) AS ERA_WAR
+        , t.Draft_Year
+        , t.Draft_Season
+        , t.Draft_Overall
+        , t.Draft_Round
+        , t.Draft_Pick_In_Round
+        , t.Draft_Team
+        , CAST(NULL AS CHAR(16)) AS Contract
+        , CAST(NULL AS DECIMAL(10,3)) AS Earnings
+        , CAST(NULL AS UNSIGNED) AS Trophy_Count
+        , CAST(NULL AS UNSIGNED) AS Black_Ink
+        , CAST(NULL AS UNSIGNED) AS Gray_Ink
+        , CAST(NULL AS CHAR(100000)) AS Trophy_Details
         FROM temp t
         GROUP BY player_name, franchise_name
         UNION ALL
@@ -454,6 +612,18 @@ def process():
         , ROUND( IF(SUM(t.ip)=0, 0, SUM(t.park_ERA*t.ip)/ (SUM(ROUND(t.ip) + (10 * (t.ip - ROUND(t.ip)) / 3)))), 2) AS park_ERA
         , ROUND( IF(SUM(t.ip)=0, 0, SUM(t.ERA_minus*t.ip)/ (SUM(ROUND(t.ip) + (10 * (t.ip - ROUND(t.ip)) / 3)))), 0) AS ERA_minus
         , ROUND( SUM(t.ERA_WAR), 1) AS ERA_WAR
+        , t.Draft_Year
+        , t.Draft_Season
+        , t.Draft_Overall
+        , t.Draft_Round
+        , t.Draft_Pick_In_Round
+        , t.Draft_Team
+        , CAST(NULL AS CHAR(16)) AS Contract
+        , CAST(NULL AS DECIMAL(10,3)) AS Earnings
+        , CAST(NULL AS UNSIGNED) AS Trophy_Count
+        , CAST(NULL AS UNSIGNED) AS Black_Ink
+        , CAST(NULL AS UNSIGNED) AS Gray_Ink
+        , CAST(NULL AS CHAR(100000)) AS Trophy_Details
         FROM temp t
         GROUP BY player_name
         ;
@@ -461,7 +631,35 @@ def process():
         ALTER TABLE historical_stats_pitchers ADD INDEX `pname_ip_g_group` (`player_name`, `ip`, `g`, `group_type`)
         ;
 
-        ALTER TABLE historical_stats_hitters ADD INDEX `yr_pname_group` (`year_span`, `player_name`, `group_type`)
+        ALTER TABLE historical_stats_pitchers ADD INDEX `yr_pname_group` (`year_span`, `player_name`, `group_type`)
+        ;
+
+        update historical_stats_hitters h1
+        join(
+            select h2.player_name
+            , sum(h2.Earnings) as total_salary
+            from historical_stats_hitters h2
+            where 1
+                and h2.group_type = 'full_season'
+            group by h2.player_name
+        ) ts on (h1.player_name = ts.player_name)
+        set h1.Earnings = ts.total_salary
+        where 1
+            and h1.group_type = 'full_career'
+        ;
+
+        update historical_stats_pitchers h1
+        join(
+            select h2.player_name
+            , sum(h2.Earnings) as total_salary
+            from historical_stats_pitchers h2
+            where 1
+                and h2.group_type = 'full_season'
+            group by h2.player_name
+        ) ts on (h1.player_name = ts.player_name)
+        set h1.Earnings = ts.total_salary
+        where 1
+            and h1.group_type = 'full_career'
         ;
         
         DROP TABLE IF EXISTS temp;

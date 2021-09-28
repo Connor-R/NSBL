@@ -58,10 +58,10 @@ def initiate():
             email_msg += "\nUpdated Hitting Leaderboard: http://connor-r.github.io/Tables/leaderboard_Batters.html"
             email(email_sub, email_msg)
 
-        else:
-            print "--------------\nNo update - %s\n--------------" % (strftime("%Y-%m-%d %H:%M:%S", localtime()))
-    else:
-            print "--------------\nAlready updated - %s\n--------------" % (strftime("%Y-%m-%d %H:%M:%S", localtime()))
+        # else:
+    #         print "--------------\nNo update - %s\n--------------" % (strftime("%Y-%m-%d %H:%M:%S", localtime()))
+    # else:
+    #         print "--------------\nAlready updated - %s\n--------------" % (strftime("%Y-%m-%d %H:%M:%S", localtime()))
 
 
 def email(sub, mesg):

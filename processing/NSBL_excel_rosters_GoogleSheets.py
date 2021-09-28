@@ -176,13 +176,14 @@ def process_players(player_list, year, season_gp, team_name, team_abb, date):
                 else:
                     ntc = plr[5]
 
-                if len(plr) < 7:
-                    salary_counted = 'N'
-                else:
-                    if plr[6] > 0 or (contract_year in ('V', 'CE', '4th', '5th', '6th') or contract_year[-1]=='G'):
-                        salary_counted = 'Y'
-                    else:
-                        salary_counted = 'N'
+
+                # if len(plr) < 7:
+                    # salary_counted = 'N'
+                # else:
+                salary_counted = 'N'
+                if (contract_year.lower() in ('v', 'ce', '4th', '5th', '6th') or contract_year[-1]=='G'):
+                    salary_counted = 'Y'
+
 
                 entry['expires'] = expires
                 entry['opt'] = opt
@@ -201,6 +202,109 @@ def process_players(player_list, year, season_gp, team_name, team_abb, date):
     if entries != []: 
         db.insertRowDict(entries, 'excel_rosters', replace=True, insertMany=True, rid=0)
     db.conn.commit()
+
+
+def update_names():
+    queries = """update excel_rosters er
+        join name_mapper nm on (1
+            and if(entered_name like "%,%"
+            , concat(trim(substring(entered_name from instr(entered_name, ',') + 1)), ' ', trim(substring_index(entered_name, ',', 1))) # search name
+            , entered_name
+            ) = nm.wrong_name
+        )
+        set player_name = concat(nm.right_fname, ' ', nm.right_lname)
+        , fname = nm.right_fname
+        , lname = nm.right_lname
+        ;
+    """
+
+    print '\n\tupdating excel roster names'
+    for q in queries.split(";"):
+        if q.strip() != "":
+            # print(q)
+            db.query(q)
+            db.conn.commit()
+
+
+def yearly_contracts():
+    queries = """drop table if exists yearly_contracts;
+        create table yearly_contracts (index idx(player_name, year)) as
+        select year
+        , player_name
+        , pos2
+        , salary
+        , replace(contract_year, '-g', '') as contract_year
+        , expires
+        , opt
+        , ntc
+        from(   
+            select b.*
+            , if(@pos = pos2 and @yr = year and @plr = player_name, @cnt := @cnt+1, @cnt := 1) as cnt
+            , @pos := pos2 as pos_set
+            , @yr := year as yr_set
+            , @plr := player_name as plr_set
+            from(
+                select distinct a.*
+                , case
+                    when overlap = 'yes' then 0
+                    when contract_year = 'ce' then 1
+                    when ntc is not null then 2
+                    when replace(contract_year, '-g', '') = 'v' and (expires > year or expires = year and opt not in ('no', '')) then 3
+                    when expires = 0 and contract_year != 'MLI' then 4
+                    when replace(contract_year, '-g', '') = 'v' and expires = year then 5
+                else 6
+                end as ordering
+                , @pos := '' as pos_init
+                , @yr := 0 as yr_init
+                , @plr := '' as plr_init
+                , @cnt := 0 as cnt_init
+                from(
+                    select *
+                    , null as overlap
+                    , if(position = 'p', 'p', 'h') as pos2
+                    from excel_rosters
+                    union all
+                    select year-1 as `year`
+                    , gp
+                    , concat(year-1, '-12-31') as `date`
+                    , player_name
+                    , fname
+                    , lname
+                    , team_abb
+                    , position
+                    , salary
+                    , contract_year
+                    , expires
+                    , opt
+                    , ntc
+                    , salary_counted
+                    , entered_name
+                    , 'yes' as overlap
+                    , if(position = 'p', 'p', 'h') as pos2
+                    from excel_rosters
+                    where 1
+                        and gp = 0
+                        and contract_year in ('ce', 'v')
+                        and month(date) = 1
+                        and day(date) = 1
+                    group by year, player_name
+                    order by player_name, year
+                ) a
+                where 1
+                order by year, player_name, ordering asc
+            ) b
+        ) c
+        where 1
+            and cnt = 1
+        ;
+    """
+
+    print '\n\tadding yearly_contracts table'
+    for q in queries.split(";"):
+        if q.strip() != "":
+            # print(q)
+            db.query(q)
+            db.conn.commit()
 
 
 def name_parser(reverse_name):
@@ -229,4 +333,8 @@ def name_parser(reverse_name):
     return player_name, first_name, last_name
 
 if __name__ == "__main__":     
-    process()
+    # process()
+
+    update_names()
+
+    yearly_contracts()

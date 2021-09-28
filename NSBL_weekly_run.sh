@@ -56,10 +56,6 @@ wait
 
 python processing/NSBL_historical_stats.py
 
-wait
-
-python processing/NSBL_Draft_FA_HOF.py --year "$year"
-
 
 python team_strength/lineup_optimizer.py --year "$year"
 python team_strength/pitching_optimizer.py --year "$year"
@@ -87,6 +83,10 @@ python ad_hoc/zips_prep_FA.py --year "$year"
 wait
 
 python processing/NSBL_awards.py --year "$year" --backfill "False"
+
+wait
+
+python processing/NSBL_Draft_FA_HOF.py --year "$year"
 
 wait
 
