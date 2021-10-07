@@ -104,6 +104,7 @@ def process():
                     THEN hdp.year = 2009
                 WHEN hdp.player_name = 'Max Muncy'
                     THEN hdp.year = 2013
+                ELSE 1
             END
         )
         GROUP BY COALESCE(CONCAT(nm.right_fname, ' ', nm.right_lname), o.player_name), o.year, tcf.franchise_name
@@ -424,6 +425,7 @@ def process():
                     THEN hdp.year = 2015
                 WHEN hdp.player_name = 'Luis Garcia' 
                     THEN 0
+                ELSE 1
             END
         )
         GROUP BY COALESCE(CONCAT(nm.right_fname, ' ', nm.right_lname), o.player_name), o.year, tcf.franchise_name

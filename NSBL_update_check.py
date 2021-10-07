@@ -54,14 +54,16 @@ def initiate():
             email_msg += "\n\n\nCheck out recent board activity: https://nsbl2012.boards.net/posts/recent"
             email_msg += "\n\n\nUpdated Advanced Standings: http://connor-r.github.io/Tables/leaderboard_Standings.html"
             email_msg += "\nUpdated Leaderboard Changes: http://connor-r.github.io/Tables/leaderboard_Changes.html"
-            email_msg += "\nUpdated Pitching Leaderboard: http://connor-r.github.io/Tables/leaderboard_Pitchers.html"
-            email_msg += "\nUpdated Hitting Leaderboard: http://connor-r.github.io/Tables/leaderboard_Batters.html"
+            email_msg += "\nUpdated Pitching Leaderboard: http://connor-r.github.io/Tables/historical_StatsPitchers.html"
+            email_msg += "\nUpdated Hitting Leaderboard: http://connor-r.github.io/Tables/historical_StatsHitters.html"
             email(email_sub, email_msg)
 
-        # else:
-    #         print "--------------\nNo update - %s\n--------------" % (strftime("%Y-%m-%d %H:%M:%S", localtime()))
-    # else:
-    #         print "--------------\nAlready updated - %s\n--------------" % (strftime("%Y-%m-%d %H:%M:%S", localtime()))
+        else:
+            print "--------------\nNo update - %s\n--------------" % (strftime("%Y-%m-%d %H:%M:%S", localtime()))
+    elif (date_since_update <= 1):
+        continue
+    else:
+        print "--------------\nAlready updated - %s\n--------------" % (strftime("%Y-%m-%d %H:%M:%S", localtime()))
 
 
 def email(sub, mesg):

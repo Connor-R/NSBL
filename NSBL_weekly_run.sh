@@ -95,4 +95,8 @@ bash post_leaderboards_run.sh
 
 wait
 
+python prep_weekly_post.sh
+
+wait
+
 echo weekly run completed

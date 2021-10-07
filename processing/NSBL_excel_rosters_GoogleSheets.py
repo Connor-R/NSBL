@@ -333,7 +333,7 @@ def name_parser(reverse_name):
     return player_name, first_name, last_name
 
 if __name__ == "__main__":     
-    # process()
+    process()
 
     update_names()
 
