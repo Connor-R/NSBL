@@ -19,6 +19,8 @@ def initiate(year):
     export_standings(year)
     export_changes(year)
 
+    export_milestones(year)
+
     export_hidden_teams(year)
     export_hidden_projections(year)
     export_hidden_FA_batters(year)
@@ -477,6 +479,526 @@ def export_changes(year):
             if type(val) in (str,):
                 row[i] = "".join([l if ord(l) < 128 else "" for l in val])
         append_csv.writerow(row)    
+
+def export_milestones(year):
+    print "\t milestones"
+    qry = """drop table if exists milestones;
+        create table milestones as
+        select b.trophy_name
+        , concat(round(b.score,0), if(b.score_type = 'record', ' *NSBL record*', '')) as milestone
+        , 'career' as milestone_type
+        , t.player_name
+        , coalesce(h.team, p.team) as team
+        , round(t.score,0) as player_value
+        , if(b.score = t.score, '***', concat(round(b.score-t.score,0), ' to '
+            , if(b.score_type = 'record', concat('NSBL record (', round(b.score), ' - ', plyrs, ')'), concat('milestone (', round(b.score), ')'))
+        )
+        ) as details
+        from(
+            select a.trophy_name
+            , score
+            , 'record' as score_type
+            , group_concat(t.player_name separator '/') as plyrs
+            from(
+                select trophy_name
+                , trophy_type
+                , score
+                from trophies
+                where 1
+                    and trophy_type = 'player_alltimecareer'
+                    and rank = 1
+                    and trophy_name not in ('hitters_bb%%'
+                        , 'hitters_k%%', 'hitters_ops+', 'hitters_obp', 'hitters_raa', 'hitters_avg', 'hitters_slg', 'hitters_wrc+', 'hitters_opbs+', 'hitters_nodrs_war', 'hitters_war'
+                        , 'pitchers_bb/9', 'pitchers_era', 'pitchers_era_minus', 'pitchers_fip', 'pitchers_fip_minus', 'pitchers_hr/9', 'pitchers_k/9', 'pitchers_k/bb', 'pitchers_era_war', 'pitchers_fip_war'
+                    )
+                group by trophy_name
+            ) a 
+            join trophies t using (trophy_name, score, trophy_type)
+            group by trophy_name
+            union all
+            select
+            'HITTERS_2b'
+            , 500
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_2b'
+            , 400
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_2b'
+            , 300
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_3b'
+            , 100
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_3b'
+            , 75
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_3b'
+            , 50
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_bb'
+            , 2000
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_bb'
+            , 1500
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_bb'
+            , 1000
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_h'
+            , 2000
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_h'
+            , 1500
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_h'
+            , 1000
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_hr'
+            , 450
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_hr'
+            , 400
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_hr'
+            , 300
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_k'
+            , 2000
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_k'
+            , 1500
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_k'
+            , 1000
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_r'
+            , 1000
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_r'
+            , 750
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_r'
+            , 500
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_rbi'
+            , 1250
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_rbi'
+            , 1000
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_rbi'
+            , 750
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_rbi'
+            , 500
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_sb'
+            , 500
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_sb'
+            , 250
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_sb'
+            , 100
+            , 'milestone'
+            , null
+            union all
+            select
+            'PITCHERS_bb'
+            , 750
+            , 'milestone'
+            , null
+            union all
+            select
+            'PITCHERS_bb'
+            , 500
+            , 'milestone'
+            , null
+            union all
+            select
+            'PITCHERS_cg'
+            , 50
+            , 'milestone'
+            , null
+            union all
+            select
+            'PITCHERS_cg'
+            , 25
+            , 'milestone'
+            , null
+            union all
+            select
+            'PITCHERS_g'
+            , 750
+            , 'milestone'
+            , null
+            union all
+            select
+            'PITCHERS_g'
+            , 500
+            , 'milestone'
+            , null
+            union all
+            select
+            'PITCHERS_ip'
+            , 2500
+            , 'milestone'
+            , null
+            union all
+            select
+            'PITCHERS_ip'
+            , 2000
+            , 'milestone'
+            , null
+            union all
+            select
+            'PITCHERS_ip'
+            , 1500
+            , 'milestone'
+            , null
+            union all
+            select
+            'PITCHERS_ip'
+            , 1000
+            , 'milestone'
+            , null
+            union all
+            select
+            'PITCHERS_k'
+            , 2500
+            , 'milestone'
+            , null
+            union all
+            select
+            'PITCHERS_k'
+            , 2000
+            , 'milestone'
+            , null
+            union all
+            select
+            'PITCHERS_k'
+            , 1500
+            , 'milestone'
+            , null
+            union all
+            select
+            'PITCHERS_k'
+            , 1000
+            , 'milestone'
+            , null
+            union all
+            select
+            'PITCHERS_sv'
+            , 200
+            , 'milestone'
+            , null
+            union all
+            select
+            'PITCHERS_sv'
+            , 150
+            , 'milestone'
+            , null
+            union all
+            select
+            'PITCHERS_sv'
+            , 100
+            , 'milestone'
+            , null
+            union all
+            select
+            'PITCHERS_w'
+            , 200
+            , 'milestone'
+            , null
+            union all
+            select
+            'PITCHERS_w'
+            , 150
+            , 'milestone'
+            , null
+            union all
+            select
+            'PITCHERS_w'
+            , 100
+            , 'milestone'
+            , null
+        ) b
+        left join trophies t on (b.trophy_name = t.trophy_name
+            and t.score >= least(b.score*0.95, b.score-5)
+            and t.score <= b.score
+            and t.trophy_type = 'player_alltimecareer'
+        )
+        left join historical_stats_hitters h on (%s = h.year_span and t.player_name = h.player_name and h.group_type = 'full_season')
+        left join historical_stats_pitchers p on (%s = p.year_span and t.player_name = p.player_name and p.group_type = 'full_season')
+        where 1
+            and (h.player_name is not null or p.player_name is not null)
+        group by b.trophy_name, b.score_type, h.player_name, p.player_name
+        union all
+        select b.trophy_name
+        , concat(round(b.score,0), if(b.score_type = 'record', ' *NSBL record*', '')) as milestone
+        , 'season' as milestone_type
+        , t.player_name
+        , coalesce(h.team, p.team) as team
+        , concat(round(t.score,0), ', on pace for ', round(t.score/(plap.gs/(30*162)),0)) as player_value
+        , concat(case
+            when b.score < round(t.score/(plap.gs/(30*162))) then concat(round(abs(b.score-(t.score/(plap.gs/(30*162)))),0), ' over ')
+            when b.score = round(t.score/(plap.gs/(30*162))) then 'On '
+            else concat(round(abs(b.score-(t.score/(plap.gs/(30*162)))),0), ' off ')
+        end
+        , if(score_type='milestone', concat('pace for ', round(b.score,0)), concat('record pace (', round(b.score), ' - ', plyrs, ')'))
+        ) as details
+        from(
+            select a.trophy_name
+            , score
+            , 'record' as score_type
+            , group_concat(concat(t.player_name, '(', t.year, ')') separator '/') as plyrs
+            from(
+                select trophy_name
+                , trophy_type 
+                , score
+                from trophies
+                where 1
+                    and trophy_type = 'player_AllTimeSingleSeason'
+                    and rank = 1
+                    and trophy_name not in ('hitters_bb%%'
+                        , 'hitters_k%%', 'hitters_ops+', 'hitters_obp', 'hitters_raa', 'hitters_avg', 'hitters_slg', 'hitters_wrc+', 'hitters_opbs+', 'hitters_nodrs_war', 'hitters_war'
+                        , 'pitchers_bb/9', 'pitchers_era', 'pitchers_era_minus', 'pitchers_fip', 'pitchers_fip_minus', 'pitchers_hr/9', 'pitchers_k/9', 'pitchers_k/bb', 'pitchers_era_war', 'pitchers_fip_war'
+                    )
+                group by trophy_name
+            ) a 
+            join trophies t using (trophy_name, score, trophy_type)
+            group by trophy_name
+            union all
+            select
+            'HITTERS_2b'
+            , 50
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_3b'
+            , 15
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_bb'
+            , 100
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_h'
+            , 200
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_hr'
+            , 50
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_k'
+            , 200
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_r'
+            , 100
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_rbi'
+            , 100
+            , 'milestone'
+            , null
+            union all
+            select
+            'HITTERS_sb'
+            , 50
+            , 'milestone'
+            , null
+            union all
+            select
+            'PITCHERS_bb'
+            , 100
+            , 'milestone'
+            , null
+            union all
+            select
+            'PITCHERS_cg'
+            , 10
+            , 'milestone'
+            , null
+            union all
+            select
+            'PITCHERS_g'
+            , 80
+            , 'milestone'
+            , null
+            union all
+            select
+            'PITCHERS_ip'
+            , 200
+            , 'milestone'
+            , null
+            union all
+            select
+            'PITCHERS_k'
+            , 200
+            , 'milestone'
+            , null
+            union all
+            select
+            'PITCHERS_sv'
+            , 30
+            , 'milestone'
+            , null
+            union all
+            select
+            'PITCHERS_w'
+            , 20
+            , 'milestone'
+            , null
+        ) b
+        join processed_league_averages_pitching plap on (plap.year = %s)
+        left join trophies t on (b.trophy_name = t.trophy_name
+            and t.score/(plap.gs/(30*162)) >= least(b.score*.95, b.score-5)
+            and t.trophy_type = 'player_AllTimeSingleSeason'
+            and t.year = plap.year
+        )
+        left join historical_stats_hitters h on (t.year = h.year_span and t.player_name = h.player_name and h.group_type = 'full_season')
+        left join historical_stats_pitchers p on (t.year = p.year_span and t.player_name = p.player_name and p.group_type = 'full_season')
+        where 1
+            and (h.player_name is not null or p.player_name is not null)
+        group by b.trophy_name, b.score_type, h.player_name, p.player_name
+    ;""" % (year, year, year)
+
+    for q in qry.split(";"):
+        if q.strip() != "":
+            # print(q)
+            db.query(q)
+            db.conn.commit()
+
+    path_base = "/Users/connordog/Dropbox/Desktop_Files/Work_Things/connor-r.github.io/csvs"
+
+    t_name = 'milestones'
+    table = 'milestones'
+
+    csv_title = path_base + "/NSBL_%s.csv" % (t_name)
+    csv_file = open(csv_title, "wb")
+    append_csv = csv.writer(csv_file)
+    csv_header = []
+
+    query = "select * from milestones"
+
+    res = db.query(query)
+
+    col_names_qry = """SELECT `COLUMN_NAME` 
+    FROM `INFORMATION_SCHEMA`.`COLUMNS` 
+    WHERE `TABLE_SCHEMA`='NSBL' 
+    AND `TABLE_NAME`='%s';"""
+
+    col_names_query = col_names_qry % (table)
+
+    col_names = db.query(col_names_query)
+
+    for cn in col_names:
+        csv_header.append(cn[0])
+
+    append_csv.writerow(csv_header)
+
+    for row in res:
+        row = list(row)
+        for i, val in enumerate(row):
+            if type(val) in (str,):
+                row[i] = "".join([l if ord(l) < 128 else "" for l in val])
+        append_csv.writerow(row)  
 
 def export_hidden_batters(year):
     print "\t hidden batters"

@@ -52,6 +52,11 @@ python /Users/connordog/Dropbox/Desktop_Files/Work_Things/connor-r.github.io/Tab
 csvtotable /Users/connordog/Dropbox/Desktop_Files/Work_Things/connor-r.github.io/csvs/NSBL_historical_StatsPitchers.csv /Users/connordog/Dropbox/Desktop_Files/Work_Things/connor-r.github.io/Tables/historical_StatsPitchers.html -c "NSBL - Historical Stats (Pitchers) (Last Updated $updateDate)" -vs 15 -o
 python /Users/connordog/Dropbox/Desktop_Files/Work_Things/connor-r.github.io/Tables/google_analytics_appender.py --file_path "/Users/connordog/Dropbox/Desktop_Files/Work_Things/connor-r.github.io/Tables/historical_StatsPitchers.html"
 
+wait
+
+csvtotable /Users/connordog/Dropbox/Desktop_Files/Work_Things/connor-r.github.io/csvs/NSBL_milestones.csv /Users/connordog/Dropbox/Desktop_Files/Work_Things/connor-r.github.io/Tables/NSBL_milestones.html -c "NSBL - Milestone Watch (Last Updated $updateDate)" -vs 15 -o
+python /Users/connordog/Dropbox/Desktop_Files/Work_Things/connor-r.github.io/Tables/google_analytics_appender.py --file_path "/Users/connordog/Dropbox/Desktop_Files/Work_Things/connor-r.github.io/Tables/NSBL_milestones.html"
+
 
 wait
 

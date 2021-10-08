@@ -266,6 +266,11 @@ Coming up:
 
 [hr]
 
+[b]MILESTONE WATCH[/b]
+[a href="http://connor-r.github.io/Tables/NSBL_milestones.html"]Milestone Watch[/a]
+
+[hr]
+
 Weekly Leaderboards are updated:
 [ul type="disc"]
 [li][a href="http://connor-r.github.io/Tables/leaderboard_Standings.html"]Advanced Standings[/a][/li]
