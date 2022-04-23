@@ -21,8 +21,8 @@ def process(year):
             , case
                 when rank = 1 then 'top'
                 when rank = 30 then 'bottom'
-                when weekly_impv >= 0.4*top then 'top_also'
-                when weekly_impv <= .7*bottom then 'bottom_also'
+                when weekly_impv >= 0.75*top then 'top_also'
+                when weekly_impv <= .75*bottom then 'bottom_also'
             end as
             grouping
             from __weekly_changes wc
@@ -40,7 +40,7 @@ def process(year):
 
     res = db.query(qry)
 
-    res_dict = {}
+    res_dict = {"top":[""],"bottom":[""],"top_also":[""],"bottom_also":[""]}
     for row in res:
         grouping, team, team_abb, wl, ws, gw = row 
         res_dict[grouping] = [team, team_abb, wl, ws, gw]

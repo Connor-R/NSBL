@@ -95,7 +95,7 @@ bash post_leaderboards_run.sh
 
 wait
 
-python prep_weekly_post.sh
+python prep_weekly_post.py
 
 wait
 

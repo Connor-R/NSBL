@@ -5,7 +5,7 @@
 SHELL=/bin/bash
 source "/Users/connordog/.bash_profile"
 
-year=2021
+year=2022
 date=$( date +"%b %d, %Y" )
 
 
@@ -25,7 +25,13 @@ python processing/NSBL_historical_stats.py
 
 wait
 
+python processing/NSBL_awards.py --year "$year" --backfill "False"
+
+wait
+
 python processing/NSBL_Draft_FA_HOF.py --year "$year"
+
+wait
 
 wait
 

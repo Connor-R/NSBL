@@ -418,7 +418,7 @@ def export_changes(year):
         CONCAT( FORMAT(1*FORMAT(w0.make_LCS-w1.make_LCS,3),1), "%%") AS "make_LCS_change",
         CONCAT( FORMAT(1*FORMAT(w0.make_World_Series-w1.make_World_Series,3),1), "%%") AS "make_World_Series_change",
         CONCAT( FORMAT(1*FORMAT(w0.win_World_Series-w1.win_World_Series,3),1), "%%") AS "win_World_Series_change",
-        ROUND( (w0.mean_W-w1.mean_W) + (w0.win_World_Series-w1.win_World_Series), 3) AS "weekly_impv",
+        ROUND( 2*(w0.mean_W-w1.mean_W) + (w0.win_World_Series-w1.win_World_Series), 3) AS "weekly_impv",
         t.team_abb,
         @rowno:=0 as set_row
         FROM(

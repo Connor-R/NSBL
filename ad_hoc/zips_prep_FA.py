@@ -4,15 +4,20 @@ from decimal import Decimal
 import NSBL_helpers as helper
 from time import time
 
+# run zips_scraper first, then zips_FA_contract_value, then this
+
 
 db = db('NSBL')
 
 # find potential FA
 
-# SELECT * FROM zips_fangraphs_prep_FA_batters WHERE year = 2021;
-# SELECT * FROM zips_fangraphs_prep_FA_pitchers WHERE year = 2021;
+# SELECT * FROM zips_fangraphs_prep_FA_batters WHERE year = 2022;
+# SELECT * FROM zips_fangraphs_prep_FA_pitchers WHERE year = 2022;
 # # fa targets
-# SELECT DISTINCT player_name
+# SELECT DISTINCT case
+#     when player_name='will smith' then 'Will Smith (RP)'
+#     else player_name
+# end as player_name
 # FROM(
 #     SELECT player_name
 #     FROM(
@@ -63,24 +68,24 @@ db = db('NSBL')
 #         LEFT JOIN(
 #             SELECT e.*
 #             FROM excel_rosters e
+#             # JOIN (
+#             #     SELECT year
+#             #     , MAX(date) AS date
+#             #     FROM excel_rosters
+#             #     WHERE 1
+#             #         AND year = 2021
+#             # ) cur USING (year, date)
 #             JOIN (
 #                 SELECT year
 #                 , MAX(date) AS date
 #                 FROM excel_rosters
 #                 WHERE 1
-#                     AND year = 2020
-#             ) cur USING (year, date)
-#             JOIN (
-#                 SELECT year
-#                 , MAX(date) AS date
-#                 FROM excel_rosters
-#                 WHERE 1
-#                     AND year = 2021
+#                     AND year = 2022
 #             ) cur USING (year, date)
 #         ) r ON (IFNULL(nm2.wrong_name, a.player_name) = r.player_name)
 #         WHERE 1 
 #             AND a.age >= 25
-#             AND a.year = 2021
+#             AND a.year = 2022
 #             AND a.threshold = 1
 #         GROUP BY player_name
 #         HAVING 1
@@ -89,6 +94,13 @@ db = db('NSBL')
 #     UNION ALL
 #     SELECT DISTINCT CONCAT(nm.right_fname, ' ', nm.right_lname) AS player_name
 #     FROM excel_rosters a
+#     JOIN (
+#         SELECT year
+#         , MAX(date) AS date
+#         FROM excel_rosters
+#         WHERE 1
+#             AND year = 2021
+#     ) cur USING (year, date)
 #     LEFT JOIN name_mapper nm ON (1
 #         AND a.player_name = nm.wrong_name
 #         AND (nm.start_year IS NULL OR nm.start_year <= a.year)
@@ -98,17 +110,14 @@ db = db('NSBL')
 #         # AND (nm.nsbl_team = '' OR nm.nsbl_team = rbp.team_abb)
 #     )
 #     WHERE 1
-#         AND a.YEAR = 2020
-#         AND (a.contract_year = '6th' OR (a.expires = 2020 AND a.opt = ''))
+#         AND a.YEAR = 2021
+#         AND (a.contract_year = '6th' OR (a.expires = 2021 AND a.opt = ''))
 # ) fa2
 # WHERE 1
-#     AND player_name NOT IN ('Tyler J. Alexander')
-# UNION ALL SELECT 'Ryan Tepera'
-# UNION ALL SELECT 'Jimmy Lambert'
-# UNION ALL SELECT 'Jacob Webb'
-# UNION ALL SELECT 'Hirokazu Sawamura'
-# UNION ALL SELECT 'Kohei Arihara'
-# UNION ALL SELECT 'Ha-seong Kim'
+#     AND player_name NOT IN ('Ben Leeper', 'Richie Palacios')
+# UNION ALL SELECT 'Seiya Suzuki'
+# UNION ALL SELECT 'Will Smith (RP)'
+# UNION ALL SELECT 'Daniel Vogelbach'
 # ORDER BY player_name
 # ;
 
@@ -205,7 +214,7 @@ db = db('NSBL')
 #         AND hfa.year = fab.year
 #     )
 #     WHERE 1
-#         AND hfa.year = 2021
+#         AND hfa.year = 2022
 #         AND hfa.position NOT IN ('RP', 'SP')
 #     UNION ALL   
 #     SELECT hfa.year
@@ -294,7 +303,7 @@ db = db('NSBL')
 #         AND hfa.year = fab.year
 #     )
 #     WHERE 1
-#         AND hfa.year = 2021
+#         AND hfa.year = 2022
 #         AND hfa.position IN ('RP', 'SP')
 # ) a
 # ORDER BY proj_value DESC
@@ -642,7 +651,7 @@ def pitchers(year):
 if __name__ == "__main__":        
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--year",type=int,default=2021)
+    parser.add_argument("--year",type=int,default=2022)
     args = parser.parse_args()
     
     process(args.year)

@@ -572,7 +572,7 @@ def backfill_func(year):
         query = base_query % (t['trophy_name'], t['trophy_type'], t['position'], t['derived_from'], t['derived_from'], t['join_filter'], t['rank_filter'], year)
         for q in query.split(";"):
             if q.strip() != "":
-                # print(q)
+                print(q)
                 db.query(q)
                 db.conn.commit()
 
@@ -1642,6 +1642,7 @@ def tests():
         where 1
         and t.player_name is not null
         and t.trophy_type = 'player'
+        and t.year >= 2006
         group by t.year, t.trophy_name, t.league, t.trophy_type, t.rank, t.player_name
         having 0
         or (h_team is null and p_team is null)

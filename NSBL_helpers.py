@@ -366,9 +366,9 @@ def get_def_values(search_name, position, year):
             rtg_qry = rtg_q % (rn, er, arm, pb, year, search_name)
             rtgs = db.query(rtg_qry)[0]
         else:
-            rtgs = (0,0,0,0)
+            rtgs = (0,100,0,0)
     except IndexError:
-        rtgs = (0,0,0,0)
+        rtgs = (0,100,0,0)
 
     _r, error, _a, passed_ball = rtgs
     if error is None:

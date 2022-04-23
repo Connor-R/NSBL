@@ -19,6 +19,7 @@ def process(year):
         statistics_war(year)
 
     # for year in range(2006,2017):
+    #     print year
     #     register_war(year)
 
     # for year in range(2017,2021):
@@ -53,7 +54,7 @@ def register_war(year):
         # bats = helper.get_hand(player_name)
         # entry['bats'] = bats
 
-        if player_name[-1] in ('*', '#'):
+        if player_name[-1] not in ('*', '#'):
             s_name = player_name
         else:
             s_name = player_name[:len(player_name)-1]
@@ -83,6 +84,10 @@ def register_war(year):
             adj = float(helper.get_pos_adj(position.upper()))
             position_adj = adj*(float(pa)/600)
             entry['position_adj'] = position_adj
+
+            # if player_name.lower() == 'derek jeter':
+                # print rn_val, err_val, arm_val, pb_val
+                # raw_input(entry)
             
 
         dwar = (defense+position_adj)/10.0

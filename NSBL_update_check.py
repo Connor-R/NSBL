@@ -61,7 +61,7 @@ def initiate():
         else:
             print "--------------\nNo update - %s\n--------------" % (strftime("%Y-%m-%d %H:%M:%S", localtime()))
     elif (date_since_update <= 1):
-        continue
+        print "***"
     else:
         print "--------------\nAlready updated - %s\n--------------" % (strftime("%Y-%m-%d %H:%M:%S", localtime()))
 

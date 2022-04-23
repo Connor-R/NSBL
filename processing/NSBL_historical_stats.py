@@ -535,7 +535,7 @@ def process():
         , IF(MIN(t.year) = MAX(t.year), t.year, CONCAT(MIN(t.year), ' - ', MAX(t.year))) AS year_span
         , COUNT(DISTINCT t.year) AS player_seasons
         , t.player_name
-        , GROUP_CONCAT(DISTINCT t.full_team ORDER BY ip DESC SEPARATOR '/') AS team
+        , GROUP_CONCAT(DISTINCT t.franchise_name ORDER BY ip DESC SEPARATOR '/') AS team
         , t.listed_position
         , IF(MIN(t.age) = MAX(t.age), t.age, CONCAT(MIN(t.age), ' - ', MAX(t.age))) AS age
         , SUM(t.w) AS w

@@ -541,7 +541,7 @@ def process(year):
         FROM(
             SELECT HOF_Class
             , stats.Player_Name
-            , HOF_Team
+            , HOF_Franchise
             , Career_Span
             , Total_Seasons
             , stats.Position
@@ -592,7 +592,7 @@ def process(year):
                 , IF((b.MOST_PA_FRANCHISE LIKE CONCAT("%%", b.MOST_WAR_FRANCHISE, "%%") OR (b.MOST_WAR_FRANCHISE LIKE CONCAT("%%", b.MOST_PA_FRANCHISE, "%%")))
                     , b.MOST_WAR_FRANCHISE
                     , CONCAT(b.MOST_WAR_FRANCHISE, ' & ', b.MOST_PA_FRANCHISE)
-                ) AS HOF_Team
+                ) AS HOF_Franchise
                 , age AS Age_Span
                 
                 
@@ -662,7 +662,7 @@ def process(year):
                         OR noDRS_WAR >= 40
                         OR HR >= 450
                         OR b.player_name IN ('Barry Bonds', 'Chipper Jones', 'Manny Ramirez', 'David Ortiz'
-                        , 'Travis Hafner'
+                        , 'Travis Hafner', 'Derek Jeter', 'Jose Reyes'
                             )
                         )
                         , 
@@ -670,6 +670,8 @@ def process(year):
                         OR WAR >= 50
                         OR noDRS_WAR >= 50
                         OR HR >= 500
+                        OR b.player_name IN ('Ian Kinsler'
+                            )
                         )
                     )
                 UNION ALL
@@ -683,7 +685,7 @@ def process(year):
                 , IF((b.MOST_IP_FRANCHISE LIKE CONCAT("%%", b.MOST_WAR_FRANCHISE, "%%") OR (b.MOST_WAR_FRANCHISE LIKE CONCAT("%%", b.MOST_IP_FRANCHISE, "%%")))
                     , b.MOST_WAR_FRANCHISE
                     , CONCAT(b.MOST_WAR_FRANCHISE, ' & ', b.MOST_IP_FRANCHISE)
-                ) AS HOF_Team
+                ) AS HOF_Franchise
                 , age AS Age_Span
                 
                 , ERA_WAR AS `WAR/ERA_WAR`
