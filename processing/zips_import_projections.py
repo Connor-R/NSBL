@@ -16,7 +16,7 @@ db = db("NSBL")
 def process(player_mapper):
     start_time = time()
 
-    year = 2021
+    year = 2022
     for _type in ('offense','pitching','defense'):
         initiate(year, _type, player_mapper)
     
