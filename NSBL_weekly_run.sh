@@ -5,7 +5,7 @@
 SHELL=/bin/bash
 source "/Users/connordog/.bash_profile"
 
-year=2021
+year=2022
 date=$( date +"%b %d, %Y" )
 
 

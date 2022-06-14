@@ -117,7 +117,7 @@ def get_player_matrix(team_abb, year):
     #    AND (cre.salary_counted IS NULL OR cre.salary_counted != 'N' OR w.player_name IS NOT NULL)
     HAVING 1
         %s
-        AND real_name NOT IN ('Player Name')
+        AND real_name NOT IN ('Player Name', 'Gleyber Torres', 'Willi Castro', 'Luis Arraez')
     ) base"""
 
             base_q = base_q % (year, year, tq_add)
@@ -251,7 +251,7 @@ def get_player_matrix(team_abb, year):
 
 if __name__ == "__main__":  
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',default=2021)
+    parser.add_argument('--year',default=2022)
     args = parser.parse_args()
     
     process(args.year)
