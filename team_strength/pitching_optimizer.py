@@ -101,7 +101,7 @@ def get_pitchers(team_abb, year):
         # AND (cre.salary_counted IS NULL OR cre.salary_counted != 'N' OR w.player_name IS NOT NULL)
     HAVING 1
         %s
-        AND player_name NOT IN ('Player Name', 'Dustin May', 'Bryan Abreu', 'Nick Pivetta', 'Luis H. Garcia')
+        AND player_name NOT IN ('Player Name', 'Dustin May', 'Bryan Abreu', 'Nick Pivetta', 'Luis H. Garcia', 'Matthew Boyd')
     ORDER BY WAR_per_ip DESC
     LIMIT 6;"""
 
@@ -198,7 +198,7 @@ def get_pitchers(team_abb, year):
     HAVING 1
        AND player_name NOT IN %s
         %s
-        AND player_name NOT IN ('Player Name', 'Dustin May', 'Bryan Abreu', 'Nick Pivetta', 'Luis H. Garcia')
+        AND player_name NOT IN ('Player Name', 'Dustin May', 'Bryan Abreu', 'Nick Pivetta', 'Luis H. Garcia', 'Matthew Boyd')
     ORDER BY z.FIP_minus ASC
     LIMIT 7;"""
 

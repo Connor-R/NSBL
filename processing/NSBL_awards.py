@@ -824,7 +824,7 @@ def leaders(year):
             , "score_formula":"(h.h)"
             , "player_type":"hitters"
             , "rate":"pa"
-            , "per_g":0.1
+            , "per_g":0.01
             , "sort_type":"desc"
             , "score_filter":"and score > 0"
         }
@@ -833,7 +833,7 @@ def leaders(year):
             , "score_formula":"(h.2b)"
             , "player_type":"hitters"
             , "rate":"pa"
-            , "per_g":0.1
+            , "per_g":0.01
             , "sort_type":"desc"
             , "score_filter":"and score > 0"
         }
@@ -842,7 +842,7 @@ def leaders(year):
             , "score_formula":"(h.3b)"
             , "player_type":"hitters"
             , "rate":"pa"
-            , "per_g":0.1
+            , "per_g":0.01
             , "sort_type":"desc"
             , "score_filter":"and score > 0"
         }
@@ -851,7 +851,7 @@ def leaders(year):
             , "score_formula":"(h.hr)"
             , "player_type":"hitters"
             , "rate":"pa"
-            , "per_g":0.1
+            , "per_g":0.01
             , "sort_type":"desc"
             , "score_filter":"and score > 0"
         }
@@ -860,7 +860,7 @@ def leaders(year):
             , "score_formula":"(h.bb)"
             , "player_type":"hitters"
             , "rate":"pa"
-            , "per_g":0.1
+            , "per_g":0.01
             , "sort_type":"desc"
             , "score_filter":"and score > 0"
         }
@@ -869,7 +869,7 @@ def leaders(year):
             , "score_formula":"(h.k)"
             , "player_type":"hitters"
             , "rate":"pa"
-            , "per_g":0.1
+            , "per_g":0.01
             , "sort_type":"desc"
             , "score_filter":"and score > 0"
         }
@@ -878,7 +878,7 @@ def leaders(year):
             , "score_formula":"(h.rbi)"
             , "player_type":"hitters"
             , "rate":"pa"
-            , "per_g":0.1
+            , "per_g":0.01
             , "sort_type":"desc"
             , "score_filter":"and score > 0"
         }
@@ -887,7 +887,7 @@ def leaders(year):
             , "score_formula":"(h.r)"
             , "player_type":"hitters"
             , "rate":"pa"
-            , "per_g":0.1
+            , "per_g":0.01
             , "sort_type":"desc"
             , "score_filter":"and score > 0"
         }
@@ -896,7 +896,7 @@ def leaders(year):
             , "score_formula":"(h.sb)"
             , "player_type":"hitters"
             , "rate":"pa"
-            , "per_g":0.1
+            , "per_g":0.01
             , "sort_type":"desc"
             , "score_filter":"and score > 0"
         }
@@ -941,7 +941,7 @@ def leaders(year):
             , "score_formula":"(h.raa)"
             , "player_type":"hitters"
             , "rate":"pa"
-            , "per_g":0.1
+            , "per_g":0.01
             , "sort_type":"desc"
             , "score_filter":""
         }
@@ -950,7 +950,7 @@ def leaders(year):
             , "score_formula":"(h.nodrs_war)"
             , "player_type":"hitters"
             , "rate":"pa"
-            , "per_g":0.1
+            , "per_g":0.01
             , "sort_type":"desc"
             , "score_filter":""
         }
@@ -959,7 +959,7 @@ def leaders(year):
             , "score_formula":"(h.war)"
             , "player_type":"hitters"
             , "rate":"pa"
-            , "per_g":0.1
+            , "per_g":0.01
             , "sort_type":"desc"
             , "score_filter":""
         }
@@ -986,7 +986,7 @@ def leaders(year):
             , "score_formula":"h.g"
             , "player_type":"pitchers"
             , "rate":"ip"
-            , "per_g":0.1
+            , "per_g":0.01
             , "sort_type":"desc"
             , "score_filter":"and score > 0"
         }
@@ -995,7 +995,7 @@ def leaders(year):
             , "score_formula":"h.w"
             , "player_type":"pitchers"
             , "rate":"ip"
-            , "per_g":0.1
+            , "per_g":0.01
             , "sort_type":"desc"
             , "score_filter":"and score > 0"
         }
@@ -1004,7 +1004,7 @@ def leaders(year):
             , "score_formula":"h.sv"
             , "player_type":"pitchers"
             , "rate":"ip"
-            , "per_g":0.1
+            , "per_g":0.01
             , "sort_type":"desc"
             , "score_filter":"and score > 0"
         }
@@ -1013,7 +1013,7 @@ def leaders(year):
             , "score_formula":"h.cg"
             , "player_type":"pitchers"
             , "rate":"ip"
-            , "per_g":0.1
+            , "per_g":0.01
             , "sort_type":"desc"
             , "score_filter":"and score > 0"
         }
@@ -1022,7 +1022,7 @@ def leaders(year):
             , "score_formula":"h.sho"
             , "player_type":"pitchers"
             , "rate":"ip"
-            , "per_g":0.1
+            , "per_g":0.01
             , "sort_type":"desc"
             , "score_filter":"and score > 0"
         }
@@ -1031,7 +1031,7 @@ def leaders(year):
             , "score_formula":"h.ip"
             , "player_type":"pitchers"
             , "rate":"ip"
-            , "per_g":0.1
+            , "per_g":0.01
             , "sort_type":"desc"
             , "score_filter":"and score > 0"
         }
@@ -1040,7 +1040,7 @@ def leaders(year):
             , "score_formula":"h.k"
             , "player_type":"pitchers"
             , "rate":"ip"
-            , "per_g":0.1
+            , "per_g":0.01
             , "sort_type":"desc"
             , "score_filter":"and score > 0"
         }
@@ -1049,7 +1049,7 @@ def leaders(year):
             , "score_formula":"h.bb"
             , "player_type":"pitchers"
             , "rate":"ip"
-            , "per_g":0.1
+            , "per_g":0.01
             , "sort_type":"desc"
             , "score_filter":"and score > 0"
         }
@@ -1201,7 +1201,8 @@ def leaders(year):
             )
             for q in query.split(";"):
                 if q.strip() != "":
-                    # raw_input(q)
+                    # if t['trophy_name'] == 'HITTERS_hr':
+                        # raw_input(q)
                     db.query(q)
                     db.conn.commit()
 
@@ -1691,7 +1692,7 @@ if __name__ == "__main__":
     start_time = time()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',type=int,default=2021)
+    parser.add_argument('--year',type=int,default=2022)
     parser.add_argument('--backfill',type=str,default="False")
     args = parser.parse_args()
 
