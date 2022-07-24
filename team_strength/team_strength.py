@@ -59,9 +59,13 @@ def get_optimal_lineups(year, season_gp):
     AND l.dh_name IS NOT NULL
     AND r.dh_name IS NOT NULL;"""
 
+    # should be around ~1000
     total_roster_war = db.query(total_roster_war_query)[0][0]
 
+    # should be around 48 (48-114 replacement level?)
     replacement_team_wins = (2430-float(total_roster_war))/30
+
+    # should be around .300
     rep_team_win_pct = float(replacement_team_wins)/162
 
     optimal_res = db.query(optimal_query)

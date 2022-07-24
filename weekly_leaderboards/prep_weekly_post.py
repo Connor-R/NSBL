@@ -1,8 +1,22 @@
 from py_db import db
 from time import time
 import argparse
+import smtplib
+import os
+import csv
+from email.MIMEMultipart import MIMEMultipart
+from email.MIMEText import MIMEText
 
-# Makes a string that preps the weekly post
+# Emails a string of the weekly post prep
+
+
+key_file = os.getcwd()+"/../un_pw.csv"
+key_list = {}
+with open(key_file, 'rU') as f:
+    mycsv = csv.reader(f)
+    for row in mycsv:
+        un, pw = row
+        key_list[un]=pw
 
 db = db('NSBL')
 
@@ -253,7 +267,7 @@ def process(year):
 
     ldrs = db.query(q2)[0][0]
 
-    post = """\n\n\nThe good: 
+    post = """The good: 
 
 The bad: 
 
@@ -272,6 +286,7 @@ Coming up:
 [hr]
 
 Weekly Leaderboards are updated:
+[font color="e61919"][b][i]REMEMBER THAT UNTIL I GET AROUND TO CHANGING THE PLAYOFF LOGIC ALL PLAYOFF ODDS ARE STILL BASED ON A TWO WILD CARD SYSTEM[/i][/b][/font]
 [ul type="disc"]
 [li][a href="http://connor-r.github.io/Tables/leaderboard_Standings.html"]Advanced Standings[/a][/li]
 [li][a href="http://connor-r.github.io/Tables/leaderboard_Changes.html"]Weekly Changes[/a][/li]
@@ -284,36 +299,62 @@ Weekly Leaderboards are updated:
 [a href="http://connor-r.github.io/Posts/sim_league_weekly_charts.html"]Week-By-Week Charts[/a]
 
 Best week: %s, %s, %s World Series Odds (%s wins added to mean win projection). Also Considered: %s
-[img style="max-width:40%%;" src="http://connor-r.github.io/i/NSBL_WeeklyProjections/2021_%s-WeeklyProjections.png" alt=" "]
+[img style="max-width:40%%;" src="http://connor-r.github.io/i/NSBL_WeeklyProjections/%s_%s-WeeklyProjections.png" alt=" "]
 
 Worst week: %s, %s, %s World Series Odds (%s wins subtracted from mean win projection). Also Considered: %s
-[img style="max-width:40%%;" src="http://connor-r.github.io/i/NSBL_WeeklyProjections/2021_%s-WeeklyProjections.png" alt=" "]
+[img style="max-width:40%%;" src="http://connor-r.github.io/i/NSBL_WeeklyProjections/%s_%s-WeeklyProjections.png" alt=" "]
 
 
-[img alt=" " src="http://connor-r.github.io/i/NSBL_WeeklyProjections/2021_NSBL_Wins-WeeklyProjections.png" style="max-width:50%%;"]
-[img style="max-width:50%%;" alt=" " src="http://connor-r.github.io/i/NSBL_WeeklyProjections/2021_NSBL_PlayoffOdds-WeeklyProjections.png"]
-[img src="http://connor-r.github.io/i/NSBL_WeeklyProjections/2021_NSBL_WorldSeriesOdds-WeeklyProjections.png" alt=" " style="max-width:50%%;"]
+[img alt=" " src="http://connor-r.github.io/i/NSBL_WeeklyProjections/%s_NSBL_Wins-WeeklyProjections.png" style="max-width:50%%;"]
+[img style="max-width:50%%;" alt=" " src="http://connor-r.github.io/i/NSBL_WeeklyProjections/%s_NSBL_PlayoffOdds-WeeklyProjections.png"]
+[img src="http://connor-r.github.io/i/NSBL_WeeklyProjections/%s_NSBL_WorldSeriesOdds-WeeklyProjections.png" alt=" " style="max-width:50%%;"]
 [div align="justify"][/div]""" % (ldrs
         , res_dict.get('top')[0]
         , res_dict.get('top')[2]
         , res_dict.get('top')[3]
         , res_dict.get('top')[4]
         , res_dict.get('top_also')[0] or ""
+        , year
         , res_dict.get('top')[1]
         , res_dict.get('bottom')[0]
         , res_dict.get('bottom')[2]
         , res_dict.get('bottom')[3]
         , res_dict.get('bottom')[4]
         , res_dict.get('bottom_also')[0] or ""
+        , year
         , res_dict.get('bottom')[1]
+        , year
+        , year
+        , year
     )
 
-    print post
+    subject = "Weekly Post"
+    email(subject, post)
+
+def email(sub, mesg):
+    email_address = "connor.reed.92@gmail.com"
+    fromaddr = email_address
+    recipients = ['connor.reed.92@gmail.com']
+    bcc_addr = email_address
+    msg = MIMEMultipart()
+    msg['From'] = fromaddr
+    msg['To'] = ", ".join(recipients)
+    msg['BCC'] = bcc_addr
+    msg['Subject'] = sub
+    body = mesg
+    msg.attach(MIMEText(mesg,'plain'))
+
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.starttls()
+    server.login(fromaddr, key_list.get(email_address))
+    text = msg.as_string()
+    server.sendmail(fromaddr, recipients, text)
+    server.quit()
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',type=int,default=2021)
+    parser.add_argument('--year',type=int,default=2022)
     args = parser.parse_args()
 
     process(args.year)

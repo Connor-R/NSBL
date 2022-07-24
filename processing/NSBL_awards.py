@@ -31,7 +31,7 @@ def prep():
         ;
         create table league_hitters (index idx(year,league,player_name)) as
         select a.*
-        , min(rk.year_span) as rookie_year
+        , ifnull(min(rk.year_span), a.year) as rookie_year
         from(
             select t.year
             , h.player_name
@@ -86,7 +86,7 @@ def prep():
         ;
         create table league_pitchers (index idx(year,league,player_name)) as
         select a.*
-        , min(rk.year_span) as rookie_year
+        , ifnull(min(rk.year_span), a.year) as rookie_year
         from(
             select t.year
             , h.player_name
@@ -386,7 +386,7 @@ def prep():
         , {"table": "temp_reliever_of_the_year"
             , "score": "fip_war+era_war+(sv*0.09)+(k*0.005)"
             , "derived_from": "league_pitchers"
-            , "filter": "and gs < 5"
+            , "filter": "and gs < 5 and gs/g < 0.5"
             , "rank_bool": "WHEN @yr != year OR @lg != league"
             , "table_add": ", 'rp' as position"
             , "ordering": "order by year, league, score desc"
@@ -1674,6 +1674,24 @@ def tests():
         or update_cnt >= 2
         or team_cnt >= 2
         or player_cnt >= 2
+        ;"""
+        , "excel roster errors":"""select count(*) as total_teams
+        , sum(if(ros_count != ets_count, 1, 0)) as error_teams
+        from(
+            select ets.team_abb
+            , ets.team_name
+            , ets.year
+            , ets.date
+            , ros.date as ros_date
+            , ets.total as ets_count
+            , count(distinct ros.player_name) as ros_count
+            from excel_team_summary ets
+            join (select max(date) as date from excel_team_summary) md using (date)
+            join (select max(date) as date from excel_rosters) md2
+            join excel_rosters ros on (md2.date = ros.date and ets.team_abb = ros.team_abb)
+            group by ets.team_abb
+        ) a
+        having total_teams != 30 or error_teams != 0
         ;"""
     }
 

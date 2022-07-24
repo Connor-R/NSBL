@@ -338,6 +338,16 @@ def export_standings(year):
     # "|",
     current_W AS "cur_W", current_L AS "cur_L",
     FORMAT(IFNULL(py_wins,0),1) AS py_wins, FORMAT(IFNULL(py_losses,0),1) AS py_losses, 
+    round(((((wt.total_fWAR+wt.total_rWAR)/2)/pp.games_played)*(162) # extrapolated end of season team war
+     - la.total_avgWAR_per_game*162 # extrapolated end of season average league war, creating team war over average
+     + 81) / 162 * pp.games_played, 1)  # add to 81 to get expected war wins, divide by 162 to get per game
+    as WAR_w,
+
+    pp.games_played - round(((((wt.total_fWAR+wt.total_rWAR)/2)/pp.games_played)*(162) # extrapolated end of season team war
+     - la.total_avgWAR_per_game*162 # extrapolated end of season average league war, creating team war over average
+     + 81) / 162 * pp.games_played, 1)  # add to 81 to get expected war wins, divide by 162 to get per game
+    as WAR_l,
+    
     # "|",
     RIGHT(strength_pct,4) AS "ROS_win%%",
     FORMAT(mean_W,1) AS "mean_proj_W",
@@ -354,6 +364,8 @@ def export_standings(year):
     CONCAT( FORMAT(100*(make_cs),1), "%%") AS make_LCS,
     CONCAT( FORMAT(100*(make_ws),1), "%%") AS make_WS,
     CONCAT( FORMAT(100*(win_ws),1), "%%") AS win_WS 
+
+
     FROM __playoff_probabilities pp
     JOIN (SELECT team_abb, MAX(year) AS year, MAX(games_played) AS games_played FROM __playoff_probabilities GROUP BY team_abb, year) t2 USING (team_abb, year, games_played)
     JOIN __team_strength USING (team_abb, team_name, year, games_played)
@@ -361,6 +373,21 @@ def export_standings(year):
         AND pp.team_name = tsa.team_name
         AND pp.games_played = tsa.games_played
     ) 
+    LEFT JOIN processed_war_team wt on (pp.team_abb = wt.team_abb and pp.year = wt.year)
+    LEFT JOIN (
+        select tw.*
+        , lap.gs/2 as total_gp
+        , (tw.total_fWAR+tw.total_rWAR)/2 as total_avgWAR
+        , ((tw.total_fWAR+tw.total_rWAR)/2)/(lap.gs) as total_avgWAR_per_game
+        from(
+            select year
+            , sum(total_fWAR) as total_fWAR
+            , sum(total_rWAR) as total_rWAR
+            from processed_war_team wt
+            group by year
+        ) tw
+        join processed_league_averages_pitching lap on (tw.year = lap.year)
+    ) la on (pp.year = la.year)
     WHERE 1
         AND pp.strength_type ="projected"
         AND pp.year = %s
@@ -376,7 +403,7 @@ def export_standings(year):
     csv_file = open(csv_title, "wb")
     append_csv = csv.writer(csv_file)
     csv_header = ["Team Name", "Games Played", "Division", 
-    "W", "L", "Py Wins", "Py Losses", 
+    "W", "L", "Py Wins", "Py Losses", "WAR Wins", "WAR Losses",
     "ROS Win%", "Mean Proj W", "Mean Proj L", 
     "95th Pctile", "75th Pctile", "25th Pctile", "5th Pctile",
     "Win Div", "Make Wild Card", "Make LDS", "Make LCS", "Make WS", "Win WS"]

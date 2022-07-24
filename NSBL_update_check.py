@@ -26,15 +26,21 @@ with open(key_file, 'rU') as f:
 
 def initiate():
 
+    cur_weekday = datetime.now().weekday()
+
     qry = """SELECT DATEDIFF(DATE(NOW()), MAX(update_date)) AS DAYS_SINCE_UPDATE
     FROM update_log
     WHERE 1
         AND type = 'weekly'
     """
 
-    date_since_update = db.query(qry)[0][0]
+    days_since_update = db.query(qry)[0][0]
 
-    if (date_since_update >= 4 or date_since_update is None):
+    if (days_since_update is None 
+        or (cur_weekday == 2 and days_since_update >= 2) 
+        # or (cur_weekday == 3 and days_since_update >= 3)
+        or (cur_weekday in (4,5,6) and days_since_update >= (cur_weekday-2))
+    ):
         standings_update = scrape_cur_standings()
 
         if standings_update == True:
@@ -58,9 +64,11 @@ def initiate():
             email_msg += "\nUpdated Hitting Leaderboard: http://connor-r.github.io/Tables/historical_StatsHitters.html"
             email(email_sub, email_msg)
 
+            print "DONE"
+
         else:
             print "--------------\nNo update - %s\n--------------" % (strftime("%Y-%m-%d %H:%M:%S", localtime()))
-    elif (date_since_update <= 1):
+    elif (days_since_update <= 1):
         print "***"
     else:
         print "--------------\nAlready updated - %s\n--------------" % (strftime("%Y-%m-%d %H:%M:%S", localtime()))
