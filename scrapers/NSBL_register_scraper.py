@@ -83,7 +83,7 @@ def get_row_data(table, field=False, hand=""):
 
 
 def get_tables(table_url):
-    sleep(0.5)
+    sleep(10.5)
     html_team = urllib2.urlopen(table_url)
     soup_team = BeautifulSoup(html_team, "lxml")
 

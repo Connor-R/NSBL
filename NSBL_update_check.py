@@ -38,7 +38,7 @@ def initiate():
 
     if (days_since_update is None 
         or (cur_weekday == 2 and days_since_update >= 2) 
-        # or (cur_weekday == 3 and days_since_update >= 3)
+        or (cur_weekday == 3 and days_since_update >= 3)
         or (cur_weekday in (4,5,6) and days_since_update >= (cur_weekday-2))
     ):
         standings_update = scrape_cur_standings()

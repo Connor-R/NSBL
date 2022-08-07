@@ -109,7 +109,7 @@ def process(team_id, year, current, url_base):
 
 
 def get_row_data(table, team_id, field=False, hand=""):
-    sleep(0.5)
+    # sleep(0.5)
     players = []
     rosters = table.find_all('tr', class_ = re.compile('dmrptbody'))
     
@@ -151,12 +151,19 @@ def get_row_data(table, team_id, field=False, hand=""):
 
 
 def get_tables(team_url):
-    sleep(0.5)
-    html_team = urllib2.urlopen(team_url)
-    soup_team = BeautifulSoup(html_team, "lxml")
+    sleep(2.5)
+    # print(team_url)
+    try:
+        html_team = urllib2.urlopen(team_url)
+        soup_team = BeautifulSoup(html_team, "lxml")
 
-    tables = soup_team.find_all('table', class_ = re.compile('dmrpt'))
-    return tables
+        tables = soup_team.find_all('table', class_ = re.compile('dmrpt'))
+        return tables
+    except urllib2.URLError as e:
+        print(team_url)
+        print("\tError, (%s, %s) - waiting 30 seconds and trying again..." % (e.code, e.args))
+        sleep(30)
+        get_tables(team_url)
 
 
 def input_data(ratings, year, sql_table, cats):
@@ -352,8 +359,8 @@ def scrape_current_rosters(team_id, url_base, year, rating_type):
 
 if __name__ == "__main__":     
     parser = argparse.ArgumentParser()
-    parser.add_argument('--end_year',type=int,default=2020)
-    parser.add_argument('--scrape_length',type=str,default="All")
+    parser.add_argument('--end_year',type=int,default=2022)
+    parser.add_argument('--scrape_length',type=str,default="Current")
 
     args = parser.parse_args()
     

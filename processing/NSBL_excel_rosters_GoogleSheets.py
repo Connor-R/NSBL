@@ -141,7 +141,7 @@ def process_players(player_list, year, season_gp, team_name, team_abb, date):
             if (plr[1] == 'MLI') or ((float(plr[2]) > 0 or float(plr[3]) > 0) and plr[2] != ''):
                 entry = {'year':year, 'gp':season_gp, 'position': pos, 'team_abb': team_abb, 'date': date}
 
-                entered_name = plr[0]
+                entered_name = plr[0].replace('  ', ' ')
                 if pos == 'c' and entered_name == 'Smith, Will':
                     entered_name = 'D. Smith, Will'
                 player_name, first_name, last_name = name_parser(entered_name)
