@@ -83,7 +83,7 @@ def get_row_data(table, field=False, hand=""):
 
 
 def get_tables(table_url):
-    sleep(10.5)
+    sleep(0.5)
     html_team = urllib2.urlopen(table_url)
     soup_team = BeautifulSoup(html_team, "lxml")
 
@@ -91,8 +91,8 @@ def get_tables(table_url):
     return tables
 
 
-def input_data(ratings, sql_table, cats, year):
-    print '\t' + sql_table
+def input_data(ratings, sql_table, cats, year, table_url):
+    print '\t' + sql_table + ' - ' + table_url
     entries = []
     for player in ratings:
         entry = {}
@@ -202,7 +202,7 @@ def scrape_registers(year, current):
 
             ratings = get_row_data(table, hand = vsH)
 
-            input_data(ratings, sql_table, cats, year)
+            input_data(ratings, sql_table, cats, year, table_url)
 
 
 def scrape_standings(year, current):
@@ -225,7 +225,7 @@ def scrape_standings(year, current):
                 sql_table = 'team_standings'
                 ratings = get_row_data(table)
                 cats = ['foo','team_name','w','l','foo','foo','foo','foo','foo','foo','RF','RA','foo','foo']
-                input_data(ratings, sql_table, cats, year)
+                input_data(ratings, sql_table, cats, year, table_url)
             else:
                 pass
 

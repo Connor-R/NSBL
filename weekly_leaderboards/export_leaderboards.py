@@ -60,6 +60,7 @@ def export_current_rosters(year):
     ) cur USING (year, date);"""
 
     query = qry % (year)
+    # raw_input(query)
 
     res = db.query(query)
 
@@ -81,7 +82,7 @@ def export_current_rosters(year):
         row = list(row)
         for i, val in enumerate(row):
             if type(val) in (str,):
-                row[i] = "".join([l if ord(l) < 128 else "" for l in val])
+                row[i] = "".join([l if ord(l) < 128 else "*" for l in val])
         append_csv.writerow(row)
 
 def export_current_team_summary(year):
@@ -130,7 +131,7 @@ def export_current_team_summary(year):
         row = list(row)
         for i, val in enumerate(row):
             if type(val) in (str,):
-                row[i] = "".join([l if ord(l) < 128 else "" for l in val])
+                row[i] = "".join([l if ord(l) < 128 else "*" for l in val])
         append_csv.writerow(row)
 
 def export_historical_tables():
@@ -178,7 +179,7 @@ def export_historical_tables():
             row = list(row)
             for i, val in enumerate(row):
                 if type(val) in (str,):
-                    row[i] = "".join([l if ord(l) < 128 else "" for l in val])
+                    row[i] = "".join([l if ord(l) < 128 else "*" for l in val])
             append_csv.writerow(row)
 
 def export_historical_team_draft_table(year):
@@ -250,7 +251,7 @@ def export_historical_team_draft_table(year):
         row = list(row)
         for i, val in enumerate(row):
             if type(val) in (str,):
-                row[i] = "".join([l if ord(l) < 128 else "" for l in val])
+                row[i] = "".join([l if ord(l) < 128 else "*" for l in val])
         append_csv.writerow(row)
 
 def export_historical_team_free_agency_table(year):
@@ -328,7 +329,7 @@ def export_historical_team_free_agency_table(year):
         row = list(row)
         for i, val in enumerate(row):
             if type(val) in (str,):
-                row[i] = "".join([l if ord(l) < 128 else "" for l in val])
+                row[i] = "".join([l if ord(l) < 128 else "*" for l in val])
         append_csv.writerow(row)
 
 def export_standings(year):
@@ -413,7 +414,7 @@ def export_standings(year):
         row = list(row[1:])
         for i, val in enumerate(row):
             if type(val) in (str,):
-                row[i] = "".join([l if ord(l) < 128 else "" for l in val])
+                row[i] = "".join([l if ord(l) < 128 else "*" for l in val])
         append_csv.writerow(row)
 
 def export_changes(year):
@@ -504,7 +505,7 @@ def export_changes(year):
         row = list(row[2:-2])
         for i, val in enumerate(row):
             if type(val) in (str,):
-                row[i] = "".join([l if ord(l) < 128 else "" for l in val])
+                row[i] = "".join([l if ord(l) < 128 else "*" for l in val])
         append_csv.writerow(row)    
 
 def export_milestones(year):
@@ -1024,7 +1025,7 @@ def export_milestones(year):
         row = list(row)
         for i, val in enumerate(row):
             if type(val) in (str,):
-                row[i] = "".join([l if ord(l) < 128 else "" for l in val])
+                row[i] = "".join([l if ord(l) < 128 else "*" for l in val])
         append_csv.writerow(row)  
 
 def export_hidden_batters(year):
@@ -1206,7 +1207,7 @@ def export_hidden_batters(year):
         row = list(row[1:])
         for i, val in enumerate(row):
             if type(val) in (str,):
-                row[i] = "".join([l if ord(l) < 128 else "" for l in val])
+                row[i] = "".join([l if ord(l) < 128 else "*" for l in val])
         append_csv.writerow(row)  
 
 def export_hidden_teams(year):
@@ -1249,7 +1250,7 @@ def export_hidden_teams(year):
         row = list(row[1:])
         for i, val in enumerate(row):
             if type(val) in (str,):
-                row[i] = "".join([l if ord(l) < 128 else "" for l in val])
+                row[i] = "".join([l if ord(l) < 128 else "*" for l in val])
         append_csv.writerow(row)
 
 def export_hidden_projections(year):
@@ -1290,7 +1291,7 @@ def export_hidden_projections(year):
         row = list(row[1:])
         for i, val in enumerate(row):
             if type(val) in (str,):
-                row[i] = "".join([l if ord(l) < 128 else "" for l in val])
+                row[i] = "".join([l if ord(l) < 128 else "*" for l in val])
         append_csv.writerow(row)
 
 def export_hidden_FA_batters(year):
@@ -1424,7 +1425,7 @@ def export_hidden_FA_batters(year):
         row = list(row[1:])
         for i, val in enumerate(row):
             if type(val) in (str,):
-                row[i] = "".join([l if ord(l) < 128 else "" for l in val])
+                row[i] = "".join([l if ord(l) < 128 else "*" for l in val])
         append_csv.writerow(row)
 
 def export_hidden_FA_pitchers(year):
@@ -1577,7 +1578,7 @@ def export_hidden_FA_pitchers(year):
         row = list(row[1:])
         for i, val in enumerate(row):
             if type(val) in (str,):
-                row[i] = "".join([l if ord(l) < 128 else "" for l in val])
+                row[i] = "".join([l if ord(l) < 128 else "*" for l in val])
         append_csv.writerow(row)
 
 def export_hidden_value(year):
@@ -1627,7 +1628,7 @@ def export_hidden_value(year):
             row = list(row)
             for i, val in enumerate(row):
                 if type(val) in (str,):
-                    row[i] = "".join([l if ord(l) < 128 else "" for l in val])
+                    row[i] = "".join([l if ord(l) < 128 else "*" for l in val])
             append_csv.writerow(row)
 
 

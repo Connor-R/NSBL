@@ -2,7 +2,7 @@ SHELL=/bin/bash
 source "/Users/connordog/.bash_profile"
 
 updateDate=$( date +"%b %d, %Y" )
-year=2022
+year=2024
 
 python weekly_projection_charts.py --year "$year"
 

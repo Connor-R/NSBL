@@ -17,7 +17,7 @@ db = db("NSBL")
 
 
 sleep_time = 5
-initial_url = "https://blogs.fangraphs.com/2022-zips-projection-baltimore-orioles/"
+initial_url = "https://blogs.fangraphs.com/2024-zips-projections-atlanta-braves/"
 
 
 start_time = time()
@@ -27,8 +27,12 @@ def initiate(year):
     page_data = requests.get(initial_url)
     soup = BeautifulSoup(page_data.content, "lxml")
 
+    # raw_input(page_data)
+    # raw_input(soup)
 
-    team_links = soup.find_all("div", attrs={"class":"box-team"})
+
+    team_links = soup.find_all("div", attrs={"class":"blog-content"})
+    # raw_input(team_links)
 
     urls = []
     for tl in team_links:
@@ -39,8 +43,9 @@ def initiate(year):
             url = link['href']
             # print url
             team_abb = link.getText()
+            # print team_abb, len(team_abb)
 
-            if ("/" + str(year) + "-zips" in url) or ("/zips-" + str(year) in url):
+            if ((("/" + str(year) + "-zips" in url) or ("/zips-" + str(year) in url)) and (len(team_abb) < 5)):
                 urls.append({team_abb:url})
 
     # raw_input(urls)
@@ -53,11 +58,11 @@ def process_urls(urls, year):
             print '\t', str(teamcnt+1), tm, '-', url
             
             tm_list = []
-            tm_query = db.query("SELECT DISTINCT team_abb FROM zips_fangraphs_batters_counting WHERE year = %s" % (year))
-            for t in tm_query:
-                tm_list.append(t[0])
-            if tm in tm_list:
-                continue
+            # tm_query = db.query("SELECT DISTINCT team_abb FROM zips_fangraphs_batters_counting WHERE year = %s" % (year))
+            # for t in tm_query:
+            #     tm_list.append(t[0])
+            # if tm in tm_list:
+            #     continue
 
             sleep(sleep_time)
             team_data = requests.get(url)
@@ -83,10 +88,10 @@ def process_urls(urls, year):
 
                 cats = []
                 for h in headers:
-                    cat = h.getText().replace('/','_').replace('+','_Plus').replace('-','_Minus').replace('No. 1 Comp','Top_Comp').replace('%','_Pct')
+                    cat = h.getText().replace('/','_').replace('+','_Plus').replace('-','_Minus').replace('No. 1 Comp','Top_Comp').replace('%','_Pct').replace(' ','_')
                     cats.append(cat)
 
-                if len(cats) < 10:
+                if len(cats) < 8:
                     continue
                 else:
                     j = j+1
@@ -98,10 +103,16 @@ def process_urls(urls, year):
                     db_table = "zips_fangraphs_batters_counting"
                 elif j == 2:
                     db_table = "zips_fangraphs_batters_rate"
-                elif j == 3:
-                    db_table = "zips_fangraphs_pitchers_counting"
                 elif j == 4:
+                    db_table = "zips_fangraphs_pitchers_counting"
+                elif j == 5:
                     db_table = "zips_fangraphs_pitchers_rate"
+                elif j == 3:
+                    db_table = "zips_fangraphs_batters_distribution"
+                elif j == 6:
+                    db_table = "zips_fangraphs_pitchers_distribution"
+                else:
+                    continue
 
                 print '\t\t', db_table
 
@@ -123,7 +134,7 @@ def process_urls(urls, year):
                         if atts != []:
                             for k, att in enumerate(atts):
                                 fld = att.getText()
-                                fld = "".join([i if ord(i) < 128 else "" for i in fld])
+                                fld = "".join([i if ord(i) < 128 else "*" for i in fld])
                                 entry[cats[k]] = fld
 
                             # print '\t\t\t', entry
@@ -139,7 +150,7 @@ def process_urls(urls, year):
 if __name__ == "__main__":     
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--year",type=int,default=2022)
+    parser.add_argument("--year",type=int,default=2024)
     args = parser.parse_args()
     
     initiate(args.year)

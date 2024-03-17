@@ -3,6 +3,7 @@ from py_db import db
 from bs4 import BeautifulSoup
 from time import sleep # be nice
 import re
+import sys
 import argparse
 import NSBL_helpers as helper
 
@@ -44,14 +45,30 @@ def initiate(end_year, scrape_length):
                 url_ext = "tmindex%s.htm" % team_id
                 url_index = url_base + url_ext
 
-                html_ind = urllib2.urlopen(url_index)
-                soup_ind = BeautifulSoup(html_ind,"lxml")
-                team_name = (' '.join(soup_ind.find_all('h2')[1].get_text().split(" ")[1:]).split("\n")
-                )[0].split("\r")[0]
-                
-                print url_index, team_name
+                pt_i = 1
 
-                initiate_names(team_name, team_id, year, current, url_base)
+                def process_team(year, team_id, url_index, current, url_base, pt_i):
+                    try:
+                        html_ind = urllib2.urlopen(url_index)
+                        soup_ind = BeautifulSoup(html_ind,"lxml")
+                        team_name = (' '.join(soup_ind.find_all('h2')[1].get_text().split(" ")[1:]).split("\n")
+                        )[0].split("\r")[0]
+                        
+                        print url_index, team_name
+
+                        initiate_names(team_name, team_id, year, current, url_base)
+                    except urllib2.URLError as e:
+                        pt_i += 1
+                        if pt_i >= 6:
+                            sys.exit("\n\nFailed 5 times, exiting script\n\n")
+                        else:
+                            print('process_team', pt_i, html_ind)
+                            print("\n\tError \n%s\n\nWaiting 60 seconds and trying again...\n" % (e))
+                            sleep(60)
+                            process_team(year, team_id, url_index, current, url_base, pt_i)
+
+                process_team(year, team_id, url_index, current, url_base, pt_i)
+
     else:
         year = end_year
         current = True
@@ -65,11 +82,28 @@ def initiate(end_year, scrape_length):
             url_index = url_base + url_ext
 
             print url_index
-            html_ind = urllib2.urlopen(url_index)
-            soup_ind = BeautifulSoup(html_ind,"lxml")
-            team_name = soup_ind.title.get_text()
 
-            initiate_names(team_name, team_id, year, current, url_base)
+            pn_i = 1
+
+            def process_team2(team_id, year, current, url_base, url_index, pn_i):
+                try:
+                    html_ind = urllib2.urlopen(url_index)
+                    soup_ind = BeautifulSoup(html_ind,"lxml")
+                    team_name = soup_ind.title.get_text()
+
+                    initiate_names(team_name, team_id, year, current, url_base)
+                except urllib2.URLError as e:
+                    pn_i += 1
+                    if pn_i >= 6:
+                        sys.exit("\n\nFailed 5 times, exiting script\n\n")
+                    else:
+                        print('process_team2', pn_i, url_index)
+                        print("\n\tError \n%s\n\nWaiting 60 seconds and trying again...\n" % (e))
+                        sleep(60)
+                        process_team2(team_id, year, current, url_base, url_index, pn_i)
+
+            process_team2(team_id, year, current, url_base, url_index, pn_i)
+
 
 
 def initiate_names(team_name, team_id, year, current, url_base):
@@ -150,24 +184,29 @@ def get_row_data(table, team_id, field=False, hand=""):
     return players
 
 
-def get_tables(team_url):
-    sleep(2.5)
+def get_tables(team_url, i):
+    sleep(0.5)
     # print(team_url)
     try:
         html_team = urllib2.urlopen(team_url)
         soup_team = BeautifulSoup(html_team, "lxml")
 
         tables = soup_team.find_all('table', class_ = re.compile('dmrpt'))
-        return tables
+        if tables is not None:
+            return tables
+        else:
+            print('empty tables')
     except urllib2.URLError as e:
-        print(team_url)
-        print("\tError, (%s, %s) - waiting 30 seconds and trying again..." % (e.code, e.args))
-        sleep(30)
-        get_tables(team_url)
+        i += 1
+        if i >= 6:
+            sys.exit("\n\nFailed 5 times, exiting script\n\n")
+        else:
+            print('get_tables', i, team_url)
+            print("\n\tError \n%s\n\nWaiting 60 seconds and trying again...\n" % (e))
+            sleep(60)
 
-
-def input_data(ratings, year, sql_table, cats):
-    print '\t' + sql_table
+def input_data(ratings, year, sql_table, cats, team_url):
+    print '\t' + sql_table + '  ---  ' + team_url
     entries = []
     for player in ratings:
         entry = {}
@@ -200,7 +239,11 @@ def scrape_stats(team_id, url_base, year, _type):
 
     team_url = url_base + url_ext
 
-    tables = get_tables(team_url)
+    i = 1
+    tables = get_tables(team_url, i)
+    if tables is None:
+        i += 1
+        tables = get_tables(team_url, i)
 
     for table in tables:
         title = table.find_all('tr', class_ = re.compile('dmrptsecttitle'))
@@ -270,7 +313,7 @@ def scrape_stats(team_id, url_base, year, _type):
 
         ratings = get_row_data(table, team_id, hand = vsH)
 
-        input_data(ratings, year, sql_table, cats)
+        input_data(ratings, year, sql_table, cats, team_url)
 
 
 def scrape_fielding(team_id, url_base, year):
@@ -278,7 +321,11 @@ def scrape_fielding(team_id, url_base, year):
 
     team_url = url_base + url_ext
 
-    tables = get_tables(team_url)
+    i = 1
+    tables = get_tables(team_url, i)
+    if tables is None:
+        i += 1
+        tables = get_tables(team_url, i)
 
     for table in tables:
         title = table.find_all('tr', class_ = re.compile('dmrptsecttitle'))
@@ -288,7 +335,7 @@ def scrape_fielding(team_id, url_base, year):
             cats = ['team_id', 'pos', 'foo', 'foo', 'player_name', 'g', 'gs', 'inn', 'po', 'a', 'e', 'dp', 'tc', 'f_pct', 'pb', 'sb', 'cs', 'sb_pct', 'pk']
             ratings = get_row_data(table, team_id, field = True)
 
-            input_data(ratings, year, sql_table, cats)
+            input_data(ratings, year, sql_table, cats, team_url)
 
         else:
             continue
@@ -299,7 +346,11 @@ def scrape_ratings(team_id, url_base, year, rating_type):
 
     team_url = url_base + url_ext
 
-    tables = get_tables(team_url)
+    i = 1
+    tables = get_tables(team_url, i)
+    if tables is None:
+        i += 1
+        tables = get_tables(team_url, i)
 
     for table in tables:
         title = table.find_all('tr', class_ = re.compile('dmrptsecttitle'))
@@ -320,7 +371,7 @@ def scrape_ratings(team_id, url_base, year, rating_type):
 
             ratings = get_row_data(table, team_id)
 
-            input_data(ratings, year, sql_table, cats)
+            input_data(ratings, year, sql_table, cats, team_url)
 
         else:
             continue
@@ -331,7 +382,11 @@ def scrape_current_rosters(team_id, url_base, year, rating_type):
 
     team_url = url_base + url_ext
 
-    tables = get_tables(team_url)
+    i = 1
+    tables = get_tables(team_url, i)
+    if tables is None:
+        i += 1
+        tables = get_tables(team_url, i)
 
     for table in tables:
         title = table.find_all('tr', class_ = re.compile('dmrptsecttitle'))
@@ -351,7 +406,7 @@ def scrape_current_rosters(team_id, url_base, year, rating_type):
 
             ratings = get_row_data(table, team_id)
 
-            input_data(ratings, year, sql_table, cats)
+            input_data(ratings, year, sql_table, cats, team_url)
 
         else:
             continue

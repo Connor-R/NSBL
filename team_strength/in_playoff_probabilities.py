@@ -177,6 +177,8 @@ def get_playoff_teams(year, timestamp):
         AND year = %s;"""
         query = qry % (year)
 
+        # raw_input(query)
+
         res = db.query(query)
 
         for row in res:
@@ -194,6 +196,7 @@ def get_playoff_teams(year, timestamp):
 
             strength_query = strength_qry % (strength_type, team_name, year)
 
+            # raw_input(strength_query)
             strength_pct = db.query(strength_query)
 
             entry['strength_pct'] = strength_pct
@@ -201,6 +204,7 @@ def get_playoff_teams(year, timestamp):
             entries.append(entry)
 
 
+    # raw_input(entries)
     db.insertRowDict(entries, '__in_playoff_probabilities', insertMany=True, replace=True, rid=0,debug=1)
     db.conn.commit()
 
@@ -505,7 +509,7 @@ def get_single_game_win_prob(team1_abb, team2_abb, strength_type, year):
 
 if __name__ == "__main__":  
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',type=int,default=2020)
+    parser.add_argument('--year',type=int,default=2022)
     args = parser.parse_args()
     
     process(args.year)

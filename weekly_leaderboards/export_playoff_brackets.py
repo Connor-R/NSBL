@@ -54,7 +54,7 @@ def export_current_bracket(year):
         row = list(row[1:])
         for i, val in enumerate(row):
             if type(val) in (str,):
-                row[i] = "".join([l if ord(l) < 128 else "" for l in val])
+                row[i] = "".join([l if ord(l) < 128 else "*" for l in val])
         append_csv.writerow(row)
 
 def export_current_probabilities(year):
@@ -90,13 +90,13 @@ def export_current_probabilities(year):
         row = list(row[1:])
         for i, val in enumerate(row):
             if type(val) in (str,):
-                row[i] = "".join([l if ord(l) < 128 else "" for l in val])
+                row[i] = "".join([l if ord(l) < 128 else "*" for l in val])
         append_csv.writerow(row)
 
 
 if __name__ == "__main__":     
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',type=int,default=2018)
+    parser.add_argument('--year',type=int,default=2022)
 
     args = parser.parse_args()
     

@@ -810,6 +810,6 @@ if __name__ == "__main__":
 
     end_time = time()
     elapsed_time = float(end_time - start_time)
-    print "zips_WAR_hitters.py"
+    print "NSBL_Draft_FA_HOF.py"
     print "time elapsed (in seconds): " + str(elapsed_time)
     print "time elapsed (in minutes): " + str(elapsed_time/60.0)

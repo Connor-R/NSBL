@@ -190,7 +190,7 @@ def get_player_matrix(team_abb, year):
                 matrix.append(matrix_row)
 
             # print matrix
-            # raw_input(matrix)
+            raw_input(matrix)
             lu = optimize.linear_sum_assignment(matrix)
 
             # raw_input(position_map)

@@ -1520,7 +1520,14 @@ def append_historical_stats():
                 , count(distinct if(a.trophy_type = 'player_leagueleader' and a.rank = 1, concat(a.trophy_name, a.year), null)) as black_ink
                 , count(distinct if(a.trophy_type = 'player_leagueleader' and a.rank <= 10, concat(a.trophy_name, a.year), null)) as gray_ink
                 , concat(c.accolades
-                    , if(c.accolades is null, '', ' \n')
+                    , if(c.accolades is null, '', 
+                        if(
+                            (count(distinct if(a.trophy_type = 'player_alltimesingleseason' and a.rank = 1, concat(a.trophy_name, a.year), null))
+                            + count(distinct if(a.trophy_type = 'player_AllTimeCareer' and a.rank <= 10, concat(a.trophy_name, a.year), null))) = 0
+                        , ''
+                        , ' \n'
+                        )
+                    )
                     , ifnull(group_concat(if((a.trophy_type = 'player_alltimesingleseason' and a.rank <= 1) or (a.trophy_type = 'player_AllTimeCareer' and a.rank <= 10)
                         , concat('- '
                             , a.new_trophy_type
@@ -1710,7 +1717,7 @@ if __name__ == "__main__":
     start_time = time()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',type=int,default=2022)
+    parser.add_argument('--year',type=int,default=2023)
     parser.add_argument('--backfill',type=str,default="False")
     args = parser.parse_args()
 

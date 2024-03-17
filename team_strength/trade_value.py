@@ -15,7 +15,14 @@ db = db('NSBL')
 
 # year: [years_remaining, salary multiplied, reverse index, ceiling, floor]
 # select year, contract_year, max(salary), min(salary) from excel_rosters where contract_year not in ('v', 'ce', 'mli') group by year desc, contract_year asc
-years_map = {'6th':[1, 0.8, 5, 17.500, 2.00], '5th':[2, .6, 4, 9, 1.50], '4th':[3, .4, 3, 5.5, 1.0], '3rd':[4, 0.2, 2, 2.5, 0.650], '2nd':[5, 0.1, 1, 1.250, 0.600], '1st':[6, 1, 0, 0.550, 0.550], 'XXX':[6, 1, -1, 0.550, 0.550]}
+years_map = {'6th':[1, 0.8, 5, 28.500, 2.50]
+    , '5th':[2, .6, 4, 14.0, 1.75]
+    , '4th':[3, .4, 3, 7.0, 1.25]
+    , '3rd':[4, 0.2, 2, 3.5, 1.0]
+    , '2nd':[5, 0.1, 1, 1.750, 0.850]
+    , '1st':[6, 1, 0, 0.700, 0.700]
+    , 'XXX':[6, 1, -1, 0.700, 0.700]
+}
 
 
 def process(year):
@@ -167,7 +174,7 @@ def player_values(year):
             SELECT zr.player_name
             , zfg.*
             , zfc.age
-            , zfc.IP
+            , zfc.IP as IP2
             , zfc.GS
             , zfc.G
             , COALESCE(zfg.FIP, zfc.FIP) AS z_FIP
@@ -232,6 +239,7 @@ def player_values(year):
             if player_name in ('Hudson Head'):
                 contract_year = 'XXX'
                 entry['contract_year'] = 'XXX'
+            # print entry
             years_remaining = years_map.get(contract_year.replace("-G",""))[0]
         elif contract_year.upper() == 'MLI' and expires == 0:
             years_remaining = 1
@@ -757,7 +765,7 @@ def team_values(year):
 
 if __name__ == "__main__":  
     parser = argparse.ArgumentParser()
-    parser.add_argument('--year',type=int,default=2021)
+    parser.add_argument('--year',type=int,default=2022)
     args = parser.parse_args()
     
     process(args.year)

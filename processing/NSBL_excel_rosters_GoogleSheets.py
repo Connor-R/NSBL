@@ -19,7 +19,7 @@ db = db('NSBL')
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 
 # The ID of the roster spreadsheet
-SAMPLE_SPREADSHEET_ID = '1yCxpH7Z11npATz_rYJZiGlq64LtoT8nQNvGAyZkqTv4'
+SAMPLE_SPREADSHEET_ID = '16s8weHbZkpf-2SyidRd1df4Z0f36NWnNzhH2BJw1kfc'
 
 def process():
 
@@ -65,12 +65,12 @@ def process():
         active_rng = sheet_name + '!A:H'
         active_players = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID, range=active_rng).execute().get('values', [])
 
-        process_players(active_players, year, season_gp, team_name, team_abb, date)
+        process_players(active_players, year, season_gp, team_name, team_abb, date, 'Active')
 
         reserve_rng = sheet_name + '!J:P'
         reserve_players = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID, range=reserve_rng).execute().get('values', [])
 
-        process_players(reserve_players, year, season_gp, team_name, team_abb, date)
+        process_players(reserve_players, year, season_gp, team_name, team_abb, date, 'Reserve')
 
     print '\nteam summary\n'
     summary = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID, range='SUMMARY!A2:R31').execute().get('values', [])
@@ -121,19 +121,19 @@ def process_team_summary(summary, year, season_gp, date):
     db.conn.commit()
 
 
-def process_players(player_list, year, season_gp, team_name, team_abb, date):
+def process_players(player_list, year, season_gp, team_name, team_abb, date, active_reserve):
     entries = []
     pos = ''
     for plr in player_list:
         if plr == []:
             continue
-        if plr[0] == 'Pitchers':
+        if plr[0] == 'P-Pitchers':
             pos = 'p'
-        elif plr[0] == 'Catchers':
+        elif plr[0] == 'C-Catchers':
             pos = 'c'
-        elif plr[0] == 'Infield':
+        elif plr[0] == 'IF-Infield':
             pos = 'if'
-        elif plr[0] == 'Outfield':
+        elif plr[0] == 'OF-Outfield':
             pos = 'of'
 
 
@@ -189,6 +189,7 @@ def process_players(player_list, year, season_gp, team_name, team_abb, date):
                 entry['opt'] = opt
                 entry['ntc'] = ntc
                 entry['salary_counted'] = salary_counted
+                entry['active_reserve'] = active_reserve
 
                 # for i,v in entry.items():
                 #     print i, '\t', v
@@ -205,17 +206,14 @@ def process_players(player_list, year, season_gp, team_name, team_abb, date):
 
 
 def update_names():
-    queries = """update excel_rosters er
-        join name_mapper nm on (1
-            and if(entered_name like "%,%"
-            , concat(trim(substring(entered_name from instr(entered_name, ',') + 1)), ' ', trim(substring_index(entered_name, ',', 1))) # search name
-            , entered_name
-            ) = nm.wrong_name
-        )
-        set player_name = concat(nm.right_fname, ' ', nm.right_lname)
-        , fname = nm.right_fname
-        , lname = nm.right_lname
-        ;
+    queries = """update 
+        excel_rosters er
+        join name_mapper nm on (er.player_name = nm.wrong_name)
+        set er.player_name = concat(nm.right_fname, ' ', nm.right_lname)
+            , er.fname = nm.right_fname
+            , er.lname = nm.right_lname
+        where 1
+            and (er.fname != nm.right_fname or er.lname != nm.right_lname or er.player_name != concat(nm.right_fname, ' ', nm.right_lname))
     """
 
     print '\n\tupdating excel roster names'
@@ -279,6 +277,7 @@ def yearly_contracts():
                     , ntc
                     , salary_counted
                     , entered_name
+                    , active_reserve
                     , 'yes' as overlap
                     , if(position = 'p', 'p', 'h') as pos2
                     from excel_rosters

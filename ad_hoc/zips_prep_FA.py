@@ -11,8 +11,8 @@ db = db('NSBL')
 
 # find potential FA
 
-# SELECT * FROM zips_fangraphs_prep_FA_batters WHERE year = 2022;
-# SELECT * FROM zips_fangraphs_prep_FA_pitchers WHERE year = 2022;
+# SELECT * FROM zips_fangraphs_prep_FA_batters WHERE year = 2023;
+# SELECT * FROM zips_fangraphs_prep_FA_pitchers WHERE year = 2023;
 # # fa targets
 # SELECT DISTINCT case
 #     when player_name='will smith' then 'Will Smith (RP)'
@@ -73,19 +73,19 @@ db = db('NSBL')
 #             #     , MAX(date) AS date
 #             #     FROM excel_rosters
 #             #     WHERE 1
-#             #         AND year = 2021
+#             #         AND year = 2022
 #             # ) cur USING (year, date)
 #             JOIN (
 #                 SELECT year
 #                 , MAX(date) AS date
 #                 FROM excel_rosters
 #                 WHERE 1
-#                     AND year = 2022
+#                     AND year = 2023
 #             ) cur USING (year, date)
 #         ) r ON (IFNULL(nm2.wrong_name, a.player_name) = r.player_name)
 #         WHERE 1 
 #             AND a.age >= 25
-#             AND a.year = 2022
+#             AND a.year = 2023
 #             AND a.threshold = 1
 #         GROUP BY player_name
 #         HAVING 1
@@ -99,7 +99,7 @@ db = db('NSBL')
 #         , MAX(date) AS date
 #         FROM excel_rosters
 #         WHERE 1
-#             AND year = 2021
+#             AND year = 2022
 #     ) cur USING (year, date)
 #     LEFT JOIN name_mapper nm ON (1
 #         AND a.player_name = nm.wrong_name
@@ -110,14 +110,18 @@ db = db('NSBL')
 #         # AND (nm.nsbl_team = '' OR nm.nsbl_team = rbp.team_abb)
 #     )
 #     WHERE 1
-#         AND a.YEAR = 2021
-#         AND (a.contract_year = '6th' OR (a.expires = 2021 AND a.opt = ''))
+#         AND a.YEAR = 2022
+#         AND (a.contract_year = '6th' OR (a.expires = 2022 AND a.opt = ''))
 # ) fa2
 # WHERE 1
-#     AND player_name NOT IN ('Ben Leeper', 'Richie Palacios')
-# UNION ALL SELECT 'Seiya Suzuki'
-# UNION ALL SELECT 'Will Smith (RP)'
-# UNION ALL SELECT 'Daniel Vogelbach'
+#     AND player_name NOT IN ('Julio Rodriguez', 'Josh H. Smith')
+# UNION ALL SELECT 'Masataka Yoshida'
+# UNION ALL SELECT 'Shintaro Fujinami'
+# UNION ALL SELECT 'Kodai Senga'
+# UNION ALL SELECT 'Griffin Jax'
+# UNION ALL SELECT 'Joey Gallo'
+# UNION ALL SELECT 'Colin Holderman'
+# UNION ALL SELECT ''
 # ORDER BY player_name
 # ;
 
@@ -376,7 +380,7 @@ def batters(year):
             AND year = %s
         GROUP BY year, Player
     ) b USING (year,Player,post_date)
-    LEFT JOIN zips_fangraphs_batters_rate c USING (year, Player, team_abb)
+    JOIN zips_FA_contract_value_batters cv USING (year, team_abb, Player)
     LEFT JOIN name_mapper nm ON (1
         AND a.Player = nm.wrong_name
         AND (nm.start_year IS NULL OR nm.start_year <= a.year)
@@ -392,10 +396,12 @@ def batters(year):
         AND (nm.position = '' OR nm.position = nm2.position)
         AND (nm.rl_team = '' OR nm.rl_team = nm2.rl_team)
     )
-    JOIN zips_FA_contract_value_batters cv ON (a.year = cv.year 
-        AND a.team_abb = cv.team_abb
-        AND IFNULL(nm2.wrong_name, a.Player) = cv.Player
-    ) 
+    LEFT JOIN zips_fangraphs_batters_rate c on (a.year = c.year
+        and a.team_abb = c.team_abb
+        and ifnull(nm2.wrong_name, a.Player) = c.Player
+    )
+    WHERE 1
+        and c.WAR is not null
     ;"""
     player_qry = player_q % (year)
     # raw_input(player_qry)
@@ -480,7 +486,7 @@ def pitchers(year):
     , ERA
     , a.G
     , a.GS
-    , IP
+    , a.IP
     , H
     , ER
     , HR
@@ -522,7 +528,7 @@ def pitchers(year):
             AND year = %s
         GROUP BY year, Player
     ) b USING (year,Player,post_date)
-    LEFT JOIN zips_fangraphs_pitchers_rate c USING (year, Player, team_abb)
+    JOIN zips_FA_contract_value_pitchers cv USING (year, team_abb, Player)
     LEFT JOIN name_mapper nm ON (1
         AND a.Player = nm.wrong_name
         AND (nm.start_year IS NULL OR nm.start_year <= a.year)
@@ -538,10 +544,12 @@ def pitchers(year):
         AND (nm.position = '' OR nm2.position = nm2.position)
         AND (nm.rl_team = '' OR nm2.rl_team = nm2.rl_team)
     )
-    JOIN zips_FA_contract_value_pitchers cv ON (a.year = cv.year 
-        AND a.team_abb = cv.team_abb
-        AND IFNULL(nm2.wrong_name, a.Player) = cv.Player
+    LEFT JOIN zips_fangraphs_pitchers_rate c on (a.year = c.year
+        and a.team_abb = c.team_abb
+        and ifnull(nm2.wrong_name, a.Player) = c.Player
     )
+    WHERE 1
+        AND c.WAR is not null
     ;"""
     
     player_qry = player_q % (year)
@@ -651,7 +659,7 @@ def pitchers(year):
 if __name__ == "__main__":        
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--year",type=int,default=2022)
+    parser.add_argument("--year",type=int,default=2023)
     args = parser.parse_args()
     
     process(args.year)

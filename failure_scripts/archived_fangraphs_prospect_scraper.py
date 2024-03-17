@@ -269,7 +269,7 @@ def process_amateur(year, row, list_type, cnt, max_players):
     try:
         blurb_split = "Report"+elements[name_index].getText()
         blurb = elements[blurb_index].getText().split(blurb_split)[1]
-        blurb = "".join([i if ord(i) < 128 else "" for i in blurb])
+        blurb = "".join([i if ord(i) < 128 else "*" for i in blurb])
     except IndexError:
         blurb = ""
 
@@ -316,7 +316,7 @@ def process_amateur(year, row, list_type, cnt, max_players):
 def process_fangraphs_url(player_url):
     sleep(sleep_time)
     player_data = requests.get(player_url)
-    player_utf_data = "".join([i if ord(i) < 128 else "" for i in player_data.content])
+    player_utf_data = "".join([i if ord(i) < 128 else "*" for i in player_data.content])
 
     player_soup = BeautifulSoup(player_utf_data, "lxml")
 
